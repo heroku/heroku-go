@@ -46,6 +46,10 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.Transport = http.DefaultTransport
 	}
 
+	if t.UserAgent != "" {
+		req.Header.Set("User-Agent", t.UserAgent)
+	}
+
 	req.Header.Set("Accept", "application/vnd.heroku+json; version=3")
 	req.Header.Set("Request-Id", uuid.New())
 	req.SetBasicAuth(t.Username, t.Password)
