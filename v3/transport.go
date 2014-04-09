@@ -98,7 +98,7 @@ func checkResponse(resp *http.Response) error {
 		}
 		err := json.NewDecoder(resp.Body).Decode(&e)
 		if err != nil {
-			return fmt.Errorf("Encountered an error : %s", resp.Status)
+			return fmt.Errorf("encountered an error : %s", resp.Status)
 		}
 		return fmt.Errorf("%s (%s)", e.Message, e.ID)
 	}
