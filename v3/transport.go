@@ -2,6 +2,7 @@ package heroku
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -89,6 +90,12 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+type Error struct {
+	error
+	ID  string
+	URL string
+}
+
 func checkResponse(resp *http.Response) error {
 	if resp.StatusCode/100 != 2 { // 200, 201, 202, etc
 		var e struct {
@@ -100,7 +107,7 @@ func checkResponse(resp *http.Response) error {
 		if err != nil {
 			return fmt.Errorf("encountered an error : %s", resp.Status)
 		}
-		return fmt.Errorf("%s (%s)", e.Message, e.ID)
+		return Error{error: errors.New(e.Message), ID: e.ID, URL: e.URL}
 	}
 	if msg := resp.Header.Get("X-Heroku-Warning"); msg != "" {
 		log.Println(os.Stderr, strings.TrimSpace(msg))
