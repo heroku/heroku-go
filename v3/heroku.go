@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	Version          = "v3"
+	Version          = ""
 	DefaultAPIURL    = "https://api.heroku.com"
 	DefaultUserAgent = "heroku/" + Version + " (" + runtime.GOOS + "; " + runtime.GOARCH + ")"
 )
@@ -180,15 +180,15 @@ func String(v string) *string {
 // An account represents an individual signed up to use the Heroku
 // platform.
 type Account struct {
-	AllowTracking bool      `json:"allow_tracking"`
-	Beta          bool      `json:"beta"`
-	CreatedAt     time.Time `json:"created_at"`
-	Email         string    `json:"email"`
-	ID            string    `json:"id"`
-	LastLogin     time.Time `json:"last_login"`
-	Name          *string   `json:"name"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	Verified      bool      `json:"verified"`
+	AllowTracking bool      `json:"allow_tracking"` // whether to allow third party web activity tracking
+	Beta          bool      `json:"beta"`           // whether allowed to utilize beta Heroku features
+	CreatedAt     time.Time `json:"created_at"`     // when account was created
+	Email         string    `json:"email"`          // unique email address of account
+	ID            string    `json:"id"`             // unique identifier of an account
+	LastLogin     time.Time `json:"last_login"`     // when account last authorized with Heroku
+	Name          *string   `json:"name"`           // full name of the account owner
+	UpdatedAt     time.Time `json:"updated_at"`     // when account was updated
+	Verified      bool      `json:"verified"`       // whether account has been verified with billing information
 }
 
 // Info for account.
@@ -198,46 +198,46 @@ func (s *Service) AccountInfo() (*Account, error) {
 }
 
 type AccountUpdateOpts struct {
-	AllowTracking *bool   `json:"allow_tracking,omitempty"`
-	Beta          *bool   `json:"beta,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	Password      string  `json:"password"`
+	AllowTracking *bool   `json:"allow_tracking,omitempty"` // whether to allow third party web activity tracking
+	Beta          *bool   `json:"beta,omitempty"`           // whether allowed to utilize beta Heroku features
+	Name          *string `json:"name,omitempty"`           // full name of the account owner
+	Password      string  `json:"password"`                 // current password on the account
 }
 
 // Update account.
 func (s *Service) AccountUpdate(o struct {
-	AllowTracking *bool   `json:"allow_tracking,omitempty"`
-	Beta          *bool   `json:"beta,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	Password      string  `json:"password"`
+	AllowTracking *bool   `json:"allow_tracking,omitempty"` // whether to allow third party web activity tracking
+	Beta          *bool   `json:"beta,omitempty"`           // whether allowed to utilize beta Heroku features
+	Name          *string `json:"name,omitempty"`           // full name of the account owner
+	Password      string  `json:"password"`                 // current password on the account
 }) (*Account, error) {
 	var account Account
 	return &account, s.Patch(&account, fmt.Sprintf("/account"), o)
 }
 
 type AccountChangeEmailOpts struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email"`    // unique email address of account
+	Password string `json:"password"` // current password on the account
 }
 
 // Change Email for account.
 func (s *Service) AccountChangeEmail(o struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email"`    // unique email address of account
+	Password string `json:"password"` // current password on the account
 }) (*Account, error) {
 	var account Account
 	return &account, s.Patch(&account, fmt.Sprintf("/account"), o)
 }
 
 type AccountChangePasswordOpts struct {
-	NewPassword string `json:"new_password"`
-	Password    string `json:"password"`
+	NewPassword string `json:"new_password"` // the new password for the account when changing the password
+	Password    string `json:"password"`     // current password on the account
 }
 
 // Change Password for account.
 func (s *Service) AccountChangePassword(o struct {
-	NewPassword string `json:"new_password"`
-	Password    string `json:"password"`
+	NewPassword string `json:"new_password"` // the new password for the account when changing the password
+	Password    string `json:"password"`     // current password on the account
 }) (*Account, error) {
 	var account Account
 	return &account, s.Patch(&account, fmt.Sprintf("/account"), o)
@@ -246,14 +246,14 @@ func (s *Service) AccountChangePassword(o struct {
 // An account feature represents a Heroku labs capability that can be
 // enabled or disabled for an account on Heroku.
 type AccountFeature struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Description string    `json:"description"`
-	DocURL      string    `json:"doc_url"`
-	Enabled     bool      `json:"enabled"`
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	State       string    `json:"state"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`  // when account feature was created
+	Description string    `json:"description"` // description of account feature
+	DocURL      string    `json:"doc_url"`     // documentation URL of account feature
+	Enabled     bool      `json:"enabled"`     // whether or not account feature has been enabled
+	ID          string    `json:"id"`          // unique identifier of account feature
+	Name        string    `json:"name"`        // unique name of account feature
+	State       string    `json:"state"`       // state of account feature
+	UpdatedAt   time.Time `json:"updated_at"`  // when account feature was updated
 }
 
 // Info for an existing account feature.
@@ -269,12 +269,12 @@ func (s *Service) AccountFeatureList(lr *ListRange) ([]*AccountFeature, error) {
 }
 
 type AccountFeatureUpdateOpts struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled"` // whether or not account feature has been enabled
 }
 
 // Update an existing account feature.
 func (s *Service) AccountFeatureUpdate(accountFeatureIdentity string, o struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled"` // whether or not account feature has been enabled
 }) (*AccountFeature, error) {
 	var accountFeature AccountFeature
 	return &accountFeature, s.Patch(&accountFeature, fmt.Sprintf("/account/features/%v", accountFeatureIdentity), o)
@@ -282,26 +282,26 @@ func (s *Service) AccountFeatureUpdate(accountFeatureIdentity string, o struct {
 
 // Add-ons represent add-ons that have been provisioned for an app.
 type Addon struct {
-	ConfigVars []string  `json:"config_vars"`
-	CreatedAt  time.Time `json:"created_at"`
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
+	ConfigVars []string  `json:"config_vars"` // config vars associated with this application
+	CreatedAt  time.Time `json:"created_at"`  // when add-on was updated
+	ID         string    `json:"id"`          // unique identifier of add-on
+	Name       string    `json:"name"`        // name of the add-on unique within its app
 	Plan       struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		ID   string `json:"id"`   // unique identifier of this plan
+		Name string `json:"name"` // unique name of this plan
 	} `json:"plan"` // identity of add-on plan
-	ProviderID string    `json:"provider_id"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ProviderID string    `json:"provider_id"` // id of this add-on with its provider
+	UpdatedAt  time.Time `json:"updated_at"`  // when add-on was updated
 }
 type AddonCreateOpts struct {
 	Config *map[string]string `json:"config,omitempty"` // custom add-on provisioning options
-	Plan   string             `json:"plan"`
+	Plan   string             `json:"plan"`             // unique identifier of this plan
 }
 
 // Create a new add-on.
 func (s *Service) AddonCreate(appIdentity string, o struct {
 	Config *map[string]string `json:"config,omitempty"` // custom add-on provisioning options
-	Plan   string             `json:"plan"`
+	Plan   string             `json:"plan"`             // unique identifier of this plan
 }) (*Addon, error) {
 	var addon Addon
 	return &addon, s.Post(&addon, fmt.Sprintf("/apps/%v/addons", appIdentity), o)
@@ -325,24 +325,24 @@ func (s *Service) AddonList(appIdentity string, lr *ListRange) ([]*Addon, error)
 }
 
 type AddonUpdateOpts struct {
-	Plan string `json:"plan"`
+	Plan string `json:"plan"` // unique identifier of this plan
 }
 
 // Change add-on plan. Some add-ons may not support changing plans. In
 // that case, an error will be returned.
 func (s *Service) AddonUpdate(addonIdentity string, appIdentity string, o struct {
-	Plan string `json:"plan"`
+	Plan string `json:"plan"` // unique identifier of this plan
 }) (*Addon, error) {
 	var addon Addon
-	return &addon, s.Patch(&addon, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addonIdentity), o)
+	return &addon, s.Patch(&addon, fmt.Sprintf("/apps/%v/addons/%v", addonIdentity, appIdentity), o)
 }
 
 // Add-on services represent add-ons that may be provisioned for apps.
 type AddonService struct {
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"` // when addon-service was created
+	ID        string    `json:"id"`         // unique identifier of this addon-service
+	Name      string    `json:"name"`       // unique name of this addon-service
+	UpdatedAt time.Time `json:"updated_at"` // when addon-service was updated
 }
 
 // Info for existing addon-service.
@@ -360,42 +360,42 @@ func (s *Service) AddonServiceList(lr *ListRange) ([]*AddonService, error) {
 // An app represents the program that you would like to deploy and run
 // on Heroku.
 type App struct {
-	ArchivedAt                   *time.Time `json:"archived_at"`
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description"`
-	CreatedAt                    time.Time  `json:"created_at"`
-	GitURL                       string     `json:"git_url"`
-	ID                           string     `json:"id"`
-	Maintenance                  bool       `json:"maintenance"`
-	Name                         string     `json:"name"`
+	ArchivedAt                   *time.Time `json:"archived_at"`                    // when app was archived
+	BuildpackProvidedDescription *string    `json:"buildpack_provided_description"` // description from buildpack of app
+	CreatedAt                    time.Time  `json:"created_at"`                     // when app was created
+	GitURL                       string     `json:"git_url"`                        // git repo URL of app
+	ID                           string     `json:"id"`                             // unique identifier of app
+	Maintenance                  bool       `json:"maintenance"`                    // maintenance status of app
+	Name                         string     `json:"name"`                           // unique name of app
 	Owner                        struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"owner"` // identity of app owner
 	Region struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		ID   string `json:"id"`   // unique identifier of region
+		Name string `json:"name"` // unique name of region
 	} `json:"region"` // identity of app region
-	ReleasedAt *time.Time `json:"released_at"`
-	RepoSize   *int       `json:"repo_size"`
-	SlugSize   *int       `json:"slug_size"`
+	ReleasedAt *time.Time `json:"released_at"` // when app was released
+	RepoSize   *int       `json:"repo_size"`   // git repo size in bytes of app
+	SlugSize   *int       `json:"slug_size"`   // slug size in bytes of app
 	Stack      struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		ID   string `json:"id"`   // unique identifier of stack
+		Name string `json:"name"` // unique name of stack
 	} `json:"stack"` // identity of app stack
-	UpdatedAt time.Time `json:"updated_at"`
-	WebURL    string    `json:"web_url"`
+	UpdatedAt time.Time `json:"updated_at"` // when app was updated
+	WebURL    string    `json:"web_url"`    // web URL of app
 }
 type AppCreateOpts struct {
-	Name   *string `json:"name,omitempty"`
-	Region *string `json:"region,omitempty"`
-	Stack  *string `json:"stack,omitempty"`
+	Name   *string `json:"name,omitempty"`   // unique name of app
+	Region *string `json:"region,omitempty"` // unique identifier of region
+	Stack  *string `json:"stack,omitempty"`  // unique name of stack
 }
 
 // Create a new app.
 func (s *Service) AppCreate(o struct {
-	Name   *string `json:"name,omitempty"`
-	Region *string `json:"region,omitempty"`
-	Stack  *string `json:"stack,omitempty"`
+	Name   *string `json:"name,omitempty"`   // unique name of app
+	Region *string `json:"region,omitempty"` // unique identifier of region
+	Stack  *string `json:"stack,omitempty"`  // unique name of stack
 }) (*App, error) {
 	var app App
 	return &app, s.Post(&app, fmt.Sprintf("/apps"), o)
@@ -419,14 +419,14 @@ func (s *Service) AppList(lr *ListRange) ([]*App, error) {
 }
 
 type AppUpdateOpts struct {
-	Maintenance *bool   `json:"maintenance,omitempty"`
-	Name        *string `json:"name,omitempty"`
+	Maintenance *bool   `json:"maintenance,omitempty"` // maintenance status of app
+	Name        *string `json:"name,omitempty"`        // unique name of app
 }
 
 // Update an existing app.
 func (s *Service) AppUpdate(appIdentity string, o struct {
-	Maintenance *bool   `json:"maintenance,omitempty"`
-	Name        *string `json:"name,omitempty"`
+	Maintenance *bool   `json:"maintenance,omitempty"` // maintenance status of app
+	Name        *string `json:"name,omitempty"`        // unique name of app
 }) (*App, error) {
 	var app App
 	return &app, s.Patch(&app, fmt.Sprintf("/apps/%v", appIdentity), o)
@@ -435,14 +435,14 @@ func (s *Service) AppUpdate(appIdentity string, o struct {
 // An app feature represents a Heroku labs capability that can be
 // enabled or disabled for an app on Heroku.
 type AppFeature struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Description string    `json:"description"`
-	DocURL      string    `json:"doc_url"`
-	Enabled     bool      `json:"enabled"`
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	State       string    `json:"state"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`  // when app feature was created
+	Description string    `json:"description"` // description of app feature
+	DocURL      string    `json:"doc_url"`     // documentation URL of app feature
+	Enabled     bool      `json:"enabled"`     // whether or not app feature has been enabled
+	ID          string    `json:"id"`          // unique identifier of app feature
+	Name        string    `json:"name"`        // unique name of app feature
+	State       string    `json:"state"`       // state of app feature
+	UpdatedAt   time.Time `json:"updated_at"`  // when app feature was updated
 }
 
 // Info for an existing app feature.
@@ -458,12 +458,12 @@ func (s *Service) AppFeatureList(appIdentity string, lr *ListRange) ([]*AppFeatu
 }
 
 type AppFeatureUpdateOpts struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled"` // whether or not app feature has been enabled
 }
 
 // Update an existing app feature.
 func (s *Service) AppFeatureUpdate(appFeatureIdentity string, appIdentity string, o struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled"` // whether or not app feature has been enabled
 }) (*AppFeature, error) {
 	var appFeature AppFeature
 	return &appFeature, s.Patch(&appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), o)
@@ -473,31 +473,31 @@ func (s *Service) AppFeatureUpdate(appFeatureIdentity string, appIdentity string
 // ownership of an app.
 type AppTransfer struct {
 	App struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		ID   string `json:"id"`   // unique identifier of app
+		Name string `json:"name"` // unique name of app
 	} `json:"app"` // app involved in the transfer
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"` // when app transfer was created
+	ID        string    `json:"id"`         // unique identifier of app transfer
 	Owner     struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"owner"` // identity of the owner of the transfer
 	Recipient struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"recipient"` // identity of the recipient of the transfer
-	State     string    `json:"state"`
-	UpdatedAt time.Time `json:"updated_at"`
+	State     string    `json:"state"`      // the current state of an app transfer
+	UpdatedAt time.Time `json:"updated_at"` // when app transfer was updated
 }
 type AppTransferCreateOpts struct {
-	App       string `json:"app"`
-	Recipient string `json:"recipient"`
+	App       string `json:"app"`       // unique identifier of app
+	Recipient string `json:"recipient"` // unique email address of account
 }
 
 // Create a new app transfer.
 func (s *Service) AppTransferCreate(o struct {
-	App       string `json:"app"`
-	Recipient string `json:"recipient"`
+	App       string `json:"app"`       // unique identifier of app
+	Recipient string `json:"recipient"` // unique email address of account
 }) (*AppTransfer, error) {
 	var appTransfer AppTransfer
 	return &appTransfer, s.Post(&appTransfer, fmt.Sprintf("/account/app-transfers"), o)
@@ -521,12 +521,12 @@ func (s *Service) AppTransferList(lr *ListRange) ([]*AppTransfer, error) {
 }
 
 type AppTransferUpdateOpts struct {
-	State string `json:"state"`
+	State string `json:"state"` // the current state of an app transfer
 }
 
 // Update an existing app transfer.
 func (s *Service) AppTransferUpdate(appTransferIdentity string, o struct {
-	State string `json:"state"`
+	State string `json:"state"` // the current state of an app transfer
 }) (*AppTransfer, error) {
 	var appTransfer AppTransfer
 	return &appTransfer, s.Patch(&appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), o)
@@ -535,23 +535,23 @@ func (s *Service) AppTransferUpdate(appTransferIdentity string, o struct {
 // A collaborator represents an account that has been given access to an
 // app on Heroku.
 type Collaborator struct {
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"` // when collaborator was created
+	ID        string    `json:"id"`         // unique identifier of collaborator
+	UpdatedAt time.Time `json:"updated_at"` // when collaborator was updated
 	User      struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"user"` // identity of collaborated account
 }
 type CollaboratorCreateOpts struct {
-	Silent *bool  `json:"silent,omitempty"`
-	User   string `json:"user"`
+	Silent *bool  `json:"silent,omitempty"` // whether to suppress email invitation when creating collaborator
+	User   string `json:"user"`             // unique email address of account
 }
 
 // Create a new collaborator.
 func (s *Service) CollaboratorCreate(appIdentity string, o struct {
-	Silent *bool  `json:"silent,omitempty"`
-	User   string `json:"user"`
+	Silent *bool  `json:"silent,omitempty"` // whether to suppress email invitation when creating collaborator
+	User   string `json:"user"`             // unique email address of account
 }) (*Collaborator, error) {
 	var collaborator Collaborator
 	return &collaborator, s.Post(&collaborator, fmt.Sprintf("/apps/%v/collaborators", appIdentity), o)
@@ -595,18 +595,18 @@ func (s *Service) ConfigVarUpdate(appIdentity string, o *map[string]string) (Con
 
 // Domains define what web routes should be routed to an app on Heroku.
 type Domain struct {
-	CreatedAt time.Time `json:"created_at"`
-	Hostname  string    `json:"hostname"`
-	ID        string    `json:"id"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"` // when domain was created
+	Hostname  string    `json:"hostname"`   // full hostname
+	ID        string    `json:"id"`         // unique identifier of this domain
+	UpdatedAt time.Time `json:"updated_at"` // when domain was updated
 }
 type DomainCreateOpts struct {
-	Hostname string `json:"hostname"`
+	Hostname string `json:"hostname"` // full hostname
 }
 
 // Create a new domain.
 func (s *Service) DomainCreate(appIdentity string, o struct {
-	Hostname string `json:"hostname"`
+	Hostname string `json:"hostname"` // full hostname
 }) (*Domain, error) {
 	var domain Domain
 	return &domain, s.Post(&domain, fmt.Sprintf("/apps/%v/domains", appIdentity), o)
@@ -631,33 +631,35 @@ func (s *Service) DomainList(appIdentity string, lr *ListRange) ([]*Domain, erro
 
 // Dynos encapsulate running processes of an app on Heroku.
 type Dyno struct {
-	AttachURL *string   `json:"attach_url"`
-	Command   string    `json:"command"`
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
+	AttachURL *string `json:"attach_url"` // a URL to stream output from for attached processes or null for
+	// non-attached processes
+	Command   string    `json:"command"`    // command used to start this process
+	CreatedAt time.Time `json:"created_at"` // when dyno was created
+	ID        string    `json:"id"`         // unique identifier of this dyno
+	Name      string    `json:"name"`       // the name of this process on this dyno
 	Release   struct {
-		ID      string `json:"id"`
-		Version int    `json:"version"`
+		ID      string `json:"id"`      // unique identifier of release
+		Version int    `json:"version"` // unique version assigned to the release
 	} `json:"release"` // app release of the dyno
-	Size      string    `json:"size"`
-	State     string    `json:"state"`
-	Type      string    `json:"type"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Size  string `json:"size"`  // dyno size (default: "1X")
+	State string `json:"state"` // current status of process (either: crashed, down, idle, starting, or
+	// up)
+	Type      string    `json:"type"`       // type of process
+	UpdatedAt time.Time `json:"updated_at"` // when process last changed state
 }
 type DynoCreateOpts struct {
-	Attach  *bool              `json:"attach,omitempty"`
-	Command string             `json:"command"`
-	Env     *map[string]string `json:"env,omitempty"`
-	Size    *string            `json:"size,omitempty"`
+	Attach  *bool              `json:"attach,omitempty"` // whether to stream output or not
+	Command string             `json:"command"`          // command used to start this process
+	Env     *map[string]string `json:"env,omitempty"`    // custom environment to add to the dyno config vars
+	Size    *string            `json:"size,omitempty"`   // dyno size (default: "1X")
 }
 
 // Create a new dyno.
 func (s *Service) DynoCreate(appIdentity string, o struct {
-	Attach  *bool              `json:"attach,omitempty"`
-	Command string             `json:"command"`
-	Env     *map[string]string `json:"env,omitempty"`
-	Size    *string            `json:"size,omitempty"`
+	Attach  *bool              `json:"attach,omitempty"` // whether to stream output or not
+	Command string             `json:"command"`          // command used to start this process
+	Env     *map[string]string `json:"env,omitempty"`    // custom environment to add to the dyno config vars
+	Size    *string            `json:"size,omitempty"`   // dyno size (default: "1X")
 }) (*Dyno, error) {
 	var dyno Dyno
 	return &dyno, s.Post(&dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity), o)
@@ -691,13 +693,13 @@ func (s *Service) DynoList(appIdentity string, lr *ListRange) ([]*Dyno, error) {
 // `process_types` attribute for the [slug](#slug) currently released on
 // an app.
 type Formation struct {
-	Command   string    `json:"command"`
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	Quantity  int       `json:"quantity"`
-	Size      string    `json:"size"`
-	Type      string    `json:"type"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Command   string    `json:"command"`    // command to use to launch this process
+	CreatedAt time.Time `json:"created_at"` // when process type was created
+	ID        string    `json:"id"`         // unique identifier of this process type
+	Quantity  int       `json:"quantity"`   // number of processes to maintain
+	Size      string    `json:"size"`       // dyno size (default: "1X")
+	Type      string    `json:"type"`       // type of process to maintain
+	UpdatedAt time.Time `json:"updated_at"` // when dyno type was updated
 }
 
 // Info for a process type
@@ -714,9 +716,9 @@ func (s *Service) FormationList(appIdentity string, lr *ListRange) ([]*Formation
 
 type FormationBatchUpdateOpts struct {
 	Updates []struct {
-		Process  string  `json:"process"`
-		Quantity *int    `json:"quantity,omitempty"`
-		Size     *string `json:"size,omitempty"`
+		Process  string  `json:"process"`            // unique identifier of this process type
+		Quantity *int    `json:"quantity,omitempty"` // number of processes to maintain
+		Size     *string `json:"size,omitempty"`     // dyno size (default: "1X")
 	} `json:"updates"` // Array with formation updates. Each element must have "process", the
 	// id or name of the process type to be updated, and can optionally
 	// update its "quantity" or "size".
@@ -725,9 +727,9 @@ type FormationBatchUpdateOpts struct {
 // Batch update process types
 func (s *Service) FormationBatchUpdate(appIdentity string, o struct {
 	Updates []struct {
-		Process  string  `json:"process"`
-		Quantity *int    `json:"quantity,omitempty"`
-		Size     *string `json:"size,omitempty"`
+		Process  string  `json:"process"`            // unique identifier of this process type
+		Quantity *int    `json:"quantity,omitempty"` // number of processes to maintain
+		Size     *string `json:"size,omitempty"`     // dyno size (default: "1X")
 	} `json:"updates"` // Array with formation updates. Each element must have "process", the
 	// id or name of the process type to be updated, and can optionally
 	// update its "quantity" or "size".
@@ -737,14 +739,14 @@ func (s *Service) FormationBatchUpdate(appIdentity string, o struct {
 }
 
 type FormationUpdateOpts struct {
-	Quantity *int    `json:"quantity,omitempty"`
-	Size     *string `json:"size,omitempty"`
+	Quantity *int    `json:"quantity,omitempty"` // number of processes to maintain
+	Size     *string `json:"size,omitempty"`     // dyno size (default: "1X")
 }
 
 // Update process type
 func (s *Service) FormationUpdate(appIdentity string, formationIdentity string, o struct {
-	Quantity *int    `json:"quantity,omitempty"`
-	Size     *string `json:"size,omitempty"`
+	Quantity *int    `json:"quantity,omitempty"` // number of processes to maintain
+	Size     *string `json:"size,omitempty"`     // dyno size (default: "1X")
 }) (*Formation, error) {
 	var formation Formation
 	return &formation, s.Patch(&formation, fmt.Sprintf("/apps/%v/formation/%v", appIdentity, formationIdentity), o)
@@ -753,20 +755,20 @@ func (s *Service) FormationUpdate(appIdentity string, formationIdentity string, 
 // Keys represent public SSH keys associated with an account and are
 // used to authorize accounts as they are performing git operations.
 type Key struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Email       string    `json:"email"`
-	Fingerprint string    `json:"fingerprint"`
-	ID          string    `json:"id"`
-	PublicKey   string    `json:"public_key"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`  // when key was created
+	Email       string    `json:"email"`       // email address provided in key contents
+	Fingerprint string    `json:"fingerprint"` // a unique identifying string based on contents
+	ID          string    `json:"id"`          // unique identifier of this key
+	PublicKey   string    `json:"public_key"`  // full public_key as uploaded
+	UpdatedAt   time.Time `json:"updated_at"`  // when key was updated
 }
 type KeyCreateOpts struct {
-	PublicKey string `json:"public_key"`
+	PublicKey string `json:"public_key"` // full public_key as uploaded
 }
 
 // Create a new key.
 func (s *Service) KeyCreate(o struct {
-	PublicKey string `json:"public_key"`
+	PublicKey string `json:"public_key"` // full public_key as uploaded
 }) (*Key, error) {
 	var key Key
 	return &key, s.Post(&key, fmt.Sprintf("/account/keys"), o)
@@ -799,21 +801,21 @@ func (s *Service) KeyList(lr *ListRange) ([]*Key, error) {
 // removed by removing the add-on.
 type LogDrain struct {
 	Addon *struct {
-		ID string `json:"id"`
-	} `json:"addon"`
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	Token     string    `json:"token"`
-	UpdatedAt time.Time `json:"updated_at"`
-	URL       string    `json:"url"`
+		ID string `json:"id"` // unique identifier of add-on
+	} `json:"addon"` // addon that created the drain
+	CreatedAt time.Time `json:"created_at"` // when log drain was created
+	ID        string    `json:"id"`         // unique identifier of this log drain
+	Token     string    `json:"token"`      // token associated with the log drain
+	UpdatedAt time.Time `json:"updated_at"` // when log drain was updated
+	URL       string    `json:"url"`        // url associated with the log drain
 }
 type LogDrainCreateOpts struct {
-	URL string `json:"url"`
+	URL string `json:"url"` // url associated with the log drain
 }
 
 // Create a new log drain.
 func (s *Service) LogDrainCreate(appIdentity string, o struct {
-	URL string `json:"url"`
+	URL string `json:"url"` // url associated with the log drain
 }) (*LogDrain, error) {
 	var logDrain LogDrain
 	return &logDrain, s.Post(&logDrain, fmt.Sprintf("/apps/%v/log-drains", appIdentity), o)
@@ -839,24 +841,24 @@ func (s *Service) LogDrainList(appIdentity string, lr *ListRange) ([]*LogDrain, 
 
 // A log session is a reference to the http based log stream for an app.
 type LogSession struct {
-	CreatedAt  time.Time `json:"created_at"`
-	ID         string    `json:"id"`
-	LogplexURL string    `json:"logplex_url"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	CreatedAt  time.Time `json:"created_at"`  // when log connection was created
+	ID         string    `json:"id"`          // unique identifier of this log session
+	LogplexURL string    `json:"logplex_url"` // URL for log streaming session
+	UpdatedAt  time.Time `json:"updated_at"`  // when log session was updated
 }
 type LogSessionCreateOpts struct {
-	Dyno   *string `json:"dyno,omitempty"`
-	Lines  *int    `json:"lines,omitempty"`
-	Source *string `json:"source,omitempty"`
-	Tail   *bool   `json:"tail,omitempty"`
+	Dyno   *string `json:"dyno,omitempty"`   // dyno to limit results to
+	Lines  *int    `json:"lines,omitempty"`  // number of log lines to stream at once
+	Source *string `json:"source,omitempty"` // log source to limit results to
+	Tail   *bool   `json:"tail,omitempty"`   // whether to stream ongoing logs
 }
 
 // Create a new log session.
 func (s *Service) LogSessionCreate(appIdentity string, o struct {
-	Dyno   *string `json:"dyno,omitempty"`
-	Lines  *int    `json:"lines,omitempty"`
-	Source *string `json:"source,omitempty"`
-	Tail   *bool   `json:"tail,omitempty"`
+	Dyno   *string `json:"dyno,omitempty"`   // dyno to limit results to
+	Lines  *int    `json:"lines,omitempty"`  // number of log lines to stream at once
+	Source *string `json:"source,omitempty"` // log source to limit results to
+	Tail   *bool   `json:"tail,omitempty"`   // whether to stream ongoing logs
 }) (*LogSession, error) {
 	var logSession LogSession
 	return &logSession, s.Post(&logSession, fmt.Sprintf("/apps/%v/log-sessions", appIdentity), o)
@@ -868,43 +870,47 @@ func (s *Service) LogSessionCreate(appIdentity string, o struct {
 // documentation](https://devcenter.heroku.com/articles/oauth)
 type OAuthAuthorization struct {
 	AccessToken *struct {
-		ExpiresIn *int   `json:"expires_in"`
-		ID        string `json:"id"`
-		Token     string `json:"token"`
+		ExpiresIn *int `json:"expires_in"` // seconds until OAuth token expires; may be `null` for tokens with
+		// indefinite lifetime
+		ID    string `json:"id"`    // unique identifier of OAuth token
+		Token string `json:"token"` // contents of the token to be used for authorization
 	} `json:"access_token"` // access token for this authorization
 	Client *struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		RedirectURI string `json:"redirect_uri"`
+		ID          string `json:"id"`           // unique identifier of this OAuth client
+		Name        string `json:"name"`         // OAuth client name
+		RedirectURI string `json:"redirect_uri"` // endpoint for redirection after authorization with OAuth client
 	} `json:"client"` // identifier of the client that obtained this authorization, if any
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at"` // when OAuth authorization was created
 	Grant     *struct {
-		Code      string `json:"code"`
-		ExpiresIn int    `json:"expires_in"`
-		ID        string `json:"id"`
+		Code      string `json:"code"`       // grant code received from OAuth web application authorization
+		ExpiresIn int    `json:"expires_in"` // seconds until OAuth grant expires
+		ID        string `json:"id"`         // unique identifier of OAuth grant
 	} `json:"grant"` // this authorization's grant
-	ID           string `json:"id"`
+	ID           string `json:"id"` // unique identifier of OAuth authorization
 	RefreshToken *struct {
-		ExpiresIn *int   `json:"expires_in"`
-		ID        string `json:"id"`
-		Token     string `json:"token"`
+		ExpiresIn *int `json:"expires_in"` // seconds until OAuth token expires; may be `null` for tokens with
+		// indefinite lifetime
+		ID    string `json:"id"`    // unique identifier of OAuth token
+		Token string `json:"token"` // contents of the token to be used for authorization
 	} `json:"refresh_token"` // refresh token for this authorization
-	Scope     []string  `json:"scope"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Scope     []string  `json:"scope"`      // The scope of access OAuth authorization allows
+	UpdatedAt time.Time `json:"updated_at"` // when OAuth authorization was updated
 }
 type OAuthAuthorizationCreateOpts struct {
-	Client      *string  `json:"client,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	ExpiresIn   *int     `json:"expires_in,omitempty"`
-	Scope       []string `json:"scope"`
+	Client      *string `json:"client,omitempty"`      // unique identifier of this OAuth client
+	Description *string `json:"description,omitempty"` // human-friendly description of this OAuth authorization
+	ExpiresIn   *int    `json:"expires_in,omitempty"`  // seconds until OAuth token expires; may be `null` for tokens with
+	// indefinite lifetime
+	Scope []string `json:"scope"` // The scope of access OAuth authorization allows
 }
 
 // Create a new OAuth authorization.
 func (s *Service) OAuthAuthorizationCreate(o struct {
-	Client      *string  `json:"client,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	ExpiresIn   *int     `json:"expires_in,omitempty"`
-	Scope       []string `json:"scope"`
+	Client      *string `json:"client,omitempty"`      // unique identifier of this OAuth client
+	Description *string `json:"description,omitempty"` // human-friendly description of this OAuth authorization
+	ExpiresIn   *int    `json:"expires_in,omitempty"`  // seconds until OAuth token expires; may be `null` for tokens with
+	// indefinite lifetime
+	Scope []string `json:"scope"` // The scope of access OAuth authorization allows
 }) (*OAuthAuthorization, error) {
 	var oauthAuthorization OAuthAuthorization
 	return &oauthAuthorization, s.Post(&oauthAuthorization, fmt.Sprintf("/oauth/authorizations"), o)
@@ -932,23 +938,23 @@ func (s *Service) OAuthAuthorizationList(lr *ListRange) ([]*OAuthAuthorization, 
 // information please refer to the [Heroku OAuth
 // documentation](https://devcenter.heroku.com/articles/oauth).
 type OAuthClient struct {
-	CreatedAt         time.Time `json:"created_at"`
-	ID                string    `json:"id"`
-	IgnoresDelinquent *bool     `json:"ignores_delinquent"`
-	Name              string    `json:"name"`
-	RedirectURI       string    `json:"redirect_uri"`
-	Secret            string    `json:"secret"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	CreatedAt         time.Time `json:"created_at"`         // when OAuth client was created
+	ID                string    `json:"id"`                 // unique identifier of this OAuth client
+	IgnoresDelinquent *bool     `json:"ignores_delinquent"` // whether the client is still operable given a delinquent account
+	Name              string    `json:"name"`               // OAuth client name
+	RedirectURI       string    `json:"redirect_uri"`       // endpoint for redirection after authorization with OAuth client
+	Secret            string    `json:"secret"`             // secret used to obtain OAuth authorizations under this client
+	UpdatedAt         time.Time `json:"updated_at"`         // when OAuth client was updated
 }
 type OAuthClientCreateOpts struct {
-	Name        string `json:"name"`
-	RedirectURI string `json:"redirect_uri"`
+	Name        string `json:"name"`         // OAuth client name
+	RedirectURI string `json:"redirect_uri"` // endpoint for redirection after authorization with OAuth client
 }
 
 // Create a new OAuth client.
 func (s *Service) OAuthClientCreate(o struct {
-	Name        string `json:"name"`
-	RedirectURI string `json:"redirect_uri"`
+	Name        string `json:"name"`         // OAuth client name
+	RedirectURI string `json:"redirect_uri"` // endpoint for redirection after authorization with OAuth client
 }) (*OAuthClient, error) {
 	var oauthClient OAuthClient
 	return &oauthClient, s.Post(&oauthClient, fmt.Sprintf("/oauth/clients"), o)
@@ -972,14 +978,14 @@ func (s *Service) OAuthClientList(lr *ListRange) ([]*OAuthClient, error) {
 }
 
 type OAuthClientUpdateOpts struct {
-	Name        *string `json:"name,omitempty"`
-	RedirectURI *string `json:"redirect_uri,omitempty"`
+	Name        *string `json:"name,omitempty"`         // OAuth client name
+	RedirectURI *string `json:"redirect_uri,omitempty"` // endpoint for redirection after authorization with OAuth client
 }
 
 // Update OAuth client
 func (s *Service) OAuthClientUpdate(oauthClientIdentity string, o struct {
-	Name        *string `json:"name,omitempty"`
-	RedirectURI *string `json:"redirect_uri,omitempty"`
+	Name        *string `json:"name,omitempty"`         // OAuth client name
+	RedirectURI *string `json:"redirect_uri,omitempty"` // endpoint for redirection after authorization with OAuth client
 }) (*OAuthClient, error) {
 	var oauthClient OAuthClient
 	return &oauthClient, s.Patch(&oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity), o)
@@ -996,59 +1002,64 @@ type OAuthGrant struct{}
 // documentation](https://devcenter.heroku.com/articles/oauth)
 type OAuthToken struct {
 	AccessToken struct {
-		ExpiresIn *int   `json:"expires_in"`
-		ID        string `json:"id"`
-		Token     string `json:"token"`
+		ExpiresIn *int `json:"expires_in"` // seconds until OAuth token expires; may be `null` for tokens with
+		// indefinite lifetime
+		ID    string `json:"id"`    // unique identifier of OAuth token
+		Token string `json:"token"` // contents of the token to be used for authorization
 	} `json:"access_token"` // current access token
 	Authorization struct {
-		ID string `json:"id"`
+		ID string `json:"id"` // unique identifier of OAuth authorization
 	} `json:"authorization"` // authorization for this set of tokens
 	Client *struct {
-		Secret string `json:"secret"`
+		Secret string `json:"secret"` // secret used to obtain OAuth authorizations under this client
 	} `json:"client"` // OAuth client secret used to obtain token
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at"` // when OAuth token was created
 	Grant     struct {
-		Code string `json:"code"`
-		Type string `json:"type"`
+		Code string `json:"code"` // grant code received from OAuth web application authorization
+		Type string `json:"type"` // type of grant requested, one of `authorization_code` or
+		// `refresh_token`
 	} `json:"grant"` // grant used on the underlying authorization
-	ID           string `json:"id"`
+	ID           string `json:"id"` // unique identifier of OAuth token
 	RefreshToken struct {
-		ExpiresIn *int   `json:"expires_in"`
-		ID        string `json:"id"`
-		Token     string `json:"token"`
+		ExpiresIn *int `json:"expires_in"` // seconds until OAuth token expires; may be `null` for tokens with
+		// indefinite lifetime
+		ID    string `json:"id"`    // unique identifier of OAuth token
+		Token string `json:"token"` // contents of the token to be used for authorization
 	} `json:"refresh_token"` // refresh token for this authorization
 	Session struct {
-		ID string `json:"id"`
+		ID string `json:"id"` // unique identifier of OAuth token
 	} `json:"session"` // OAuth session using this token
-	UpdatedAt time.Time `json:"updated_at"`
+	UpdatedAt time.Time `json:"updated_at"` // when OAuth token was updated
 	User      struct {
-		ID string `json:"id"`
+		ID string `json:"id"` // unique identifier of an account
 	} `json:"user"` // Reference to the user associated with this token
 }
 type OAuthTokenCreateOpts struct {
 	Client struct {
-		Secret *string `json:"secret,omitempty"`
+		Secret *string `json:"secret,omitempty"` // secret used to obtain OAuth authorizations under this client
 	} `json:"client"`
 	Grant struct {
-		Code *string `json:"code,omitempty"`
-		Type *string `json:"type,omitempty"`
+		Code *string `json:"code,omitempty"` // grant code received from OAuth web application authorization
+		Type *string `json:"type,omitempty"` // type of grant requested, one of `authorization_code` or
+		// `refresh_token`
 	} `json:"grant"`
 	RefreshToken struct {
-		Token *string `json:"token,omitempty"`
+		Token *string `json:"token,omitempty"` // contents of the token to be used for authorization
 	} `json:"refresh_token"`
 }
 
 // Create a new OAuth token.
 func (s *Service) OAuthTokenCreate(o struct {
 	Client struct {
-		Secret *string `json:"secret,omitempty"`
+		Secret *string `json:"secret,omitempty"` // secret used to obtain OAuth authorizations under this client
 	} `json:"client"`
 	Grant struct {
-		Code *string `json:"code,omitempty"`
-		Type *string `json:"type,omitempty"`
+		Code *string `json:"code,omitempty"` // grant code received from OAuth web application authorization
+		Type *string `json:"type,omitempty"` // type of grant requested, one of `authorization_code` or
+		// `refresh_token`
 	} `json:"grant"`
 	RefreshToken struct {
-		Token *string `json:"token,omitempty"`
+		Token *string `json:"token,omitempty"` // contents of the token to be used for authorization
 	} `json:"refresh_token"`
 }) (*OAuthToken, error) {
 	var oauthToken OAuthToken
@@ -1058,11 +1069,11 @@ func (s *Service) OAuthTokenCreate(o struct {
 // Organizations allow you to manage access to a shared group of
 // applications across your development team.
 type Organization struct {
-	CreditCardCollections bool   `json:"credit_card_collections"`
-	Default               bool   `json:"default"`
-	Name                  string `json:"name"`
-	ProvisionedLicenses   bool   `json:"provisioned_licenses"`
-	Role                  string `json:"role"`
+	CreditCardCollections bool   `json:"credit_card_collections"` // whether charges incurred by the org are paid by credit card.
+	Default               bool   `json:"default"`                 // whether to use this organization when none is specified
+	Name                  string `json:"name"`                    // unique name of organization
+	ProvisionedLicenses   bool   `json:"provisioned_licenses"`    // whether the org is provisioned licenses by salesforce.
+	Role                  string `json:"role"`                    // role in the organization
 }
 
 // List organizations in which you are a member.
@@ -1072,12 +1083,12 @@ func (s *Service) OrganizationList(lr *ListRange) ([]*Organization, error) {
 }
 
 type OrganizationUpdateOpts struct {
-	Default *bool `json:"default,omitempty"`
+	Default *bool `json:"default,omitempty"` // whether to use this organization when none is specified
 }
 
 // Set or Unset the organization as your default organization.
 func (s *Service) OrganizationUpdate(organizationIdentity string, o struct {
-	Default *bool `json:"default,omitempty"`
+	Default *bool `json:"default,omitempty"` // whether to use this organization when none is specified
 }) (*Organization, error) {
 	var organization Organization
 	return &organization, s.Patch(&organization, fmt.Sprintf("/organizations/%v", organizationIdentity), o)
@@ -1086,38 +1097,38 @@ func (s *Service) OrganizationUpdate(organizationIdentity string, o struct {
 // An organization app encapsulates the organization specific
 // functionality of Heroku apps.
 type OrganizationApp struct {
-	ArchivedAt                   *time.Time `json:"archived_at"`
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description"`
-	CreatedAt                    time.Time  `json:"created_at"`
-	GitURL                       string     `json:"git_url"`
-	ID                           string     `json:"id"`
-	Joined                       bool       `json:"joined"`
-	Locked                       bool       `json:"locked"`
-	Maintenance                  bool       `json:"maintenance"`
-	Name                         string     `json:"name"`
+	ArchivedAt                   *time.Time `json:"archived_at"`                    // when app was archived
+	BuildpackProvidedDescription *string    `json:"buildpack_provided_description"` // description from buildpack of app
+	CreatedAt                    time.Time  `json:"created_at"`                     // when app was created
+	GitURL                       string     `json:"git_url"`                        // git repo URL of app
+	ID                           string     `json:"id"`                             // unique identifier of app
+	Joined                       bool       `json:"joined"`                         // is the current member a collaborator on this app.
+	Locked                       bool       `json:"locked"`                         // are other organization members forbidden from joining this app.
+	Maintenance                  bool       `json:"maintenance"`                    // maintenance status of app
+	Name                         string     `json:"name"`                           // unique name of app
 	Owner                        struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"owner"` // identity of app owner
 	Region struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		ID   string `json:"id"`   // unique identifier of region
+		Name string `json:"name"` // unique name of region
 	} `json:"region"` // identity of app region
-	ReleasedAt *time.Time `json:"released_at"`
-	RepoSize   *int       `json:"repo_size"`
-	SlugSize   *int       `json:"slug_size"`
+	ReleasedAt *time.Time `json:"released_at"` // when app was released
+	RepoSize   *int       `json:"repo_size"`   // git repo size in bytes of app
+	SlugSize   *int       `json:"slug_size"`   // slug size in bytes of app
 	Stack      struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+		ID   string `json:"id"`   // unique identifier of stack
+		Name string `json:"name"` // unique name of stack
 	} `json:"stack"` // identity of app stack
-	UpdatedAt time.Time `json:"updated_at"`
-	WebURL    string    `json:"web_url"`
+	UpdatedAt time.Time `json:"updated_at"` // when app was updated
+	WebURL    string    `json:"web_url"`    // web URL of app
 }
 type OrganizationAppCreateOpts struct {
-	Locked *bool   `json:"locked,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Region *string `json:"region,omitempty"`
-	Stack  *string `json:"stack,omitempty"`
+	Locked *bool   `json:"locked,omitempty"` // are other organization members forbidden from joining this app.
+	Name   *string `json:"name,omitempty"`   // unique name of app
+	Region *string `json:"region,omitempty"` // unique name of region
+	Stack  *string `json:"stack,omitempty"`  // unique name of stack
 }
 
 // Create a new organization app. Use this endpoint instead of the
@@ -1125,10 +1136,10 @@ type OrganizationAppCreateOpts struct {
 // an organization in which you are a member, rather than your personal
 // account.
 func (s *Service) OrganizationAppCreate(organizationIdentity string, o struct {
-	Locked *bool   `json:"locked,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Region *string `json:"region,omitempty"`
-	Stack  *string `json:"stack,omitempty"`
+	Locked *bool   `json:"locked,omitempty"` // are other organization members forbidden from joining this app.
+	Name   *string `json:"name,omitempty"`   // unique name of app
+	Region *string `json:"region,omitempty"` // unique name of region
+	Stack  *string `json:"stack,omitempty"`  // unique name of stack
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
 	return &organizationApp, s.Post(&organizationApp, fmt.Sprintf("/organizations/%v/apps", organizationIdentity), o)
@@ -1141,36 +1152,36 @@ func (s *Service) OrganizationAppList(organizationIdentity string, lr *ListRange
 }
 
 type OrganizationAppUpdateLockedOpts struct {
-	Locked bool `json:"locked"`
+	Locked bool `json:"locked"` // are other organization members forbidden from joining this app.
 }
 
 // Lock or unlock an organization app.
 func (s *Service) OrganizationAppUpdateLocked(appIdentity string, o struct {
-	Locked bool `json:"locked"`
+	Locked bool `json:"locked"` // are other organization members forbidden from joining this app.
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
 	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), o)
 }
 
 type OrganizationAppTransferToAccountOpts struct {
-	Owner string `json:"owner"`
+	Owner string `json:"owner"` // unique email address of account
 }
 
 // Transfer an existing organization app to another Heroku account.
 func (s *Service) OrganizationAppTransferToAccount(appIdentity string, o struct {
-	Owner string `json:"owner"`
+	Owner string `json:"owner"` // unique email address of account
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
 	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), o)
 }
 
 type OrganizationAppTransferToOrganizationOpts struct {
-	Owner string `json:"owner"`
+	Owner string `json:"owner"` // unique name of organization
 }
 
 // Transfer an existing organization app to another organization.
 func (s *Service) OrganizationAppTransferToOrganization(appIdentity string, o struct {
-	Owner string `json:"owner"`
+	Owner string `json:"owner"` // unique name of organization
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
 	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), o)
@@ -1179,18 +1190,18 @@ func (s *Service) OrganizationAppTransferToOrganization(appIdentity string, o st
 // An organization collaborator represents an account that has been
 // given access to an organization app on Heroku.
 type OrganizationAppCollaborator struct {
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	Role      string    `json:"role"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"` // when collaborator was created
+	ID        string    `json:"id"`         // unique identifier of collaborator
+	Role      string    `json:"role"`       // role in the organization
+	UpdatedAt time.Time `json:"updated_at"` // when collaborator was updated
 	User      struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"user"` // identity of collaborated account
 }
 type OrganizationAppCollaboratorCreateOpts struct {
-	Silent *bool  `json:"silent,omitempty"`
-	User   string `json:"user"`
+	Silent *bool  `json:"silent,omitempty"` // whether to suppress email invitation when creating collaborator
+	User   string `json:"user"`             // unique email address of account
 }
 
 // Create a new collaborator on an organization app. Use this endpoint
@@ -1199,8 +1210,8 @@ type OrganizationAppCollaboratorCreateOpts struct {
 // (https://devcenter.heroku.com/articles/org-users-access#roles)
 // according to their role in the organization.
 func (s *Service) OrganizationAppCollaboratorCreate(appIdentity string, o struct {
-	Silent *bool  `json:"silent,omitempty"`
-	User   string `json:"user"`
+	Silent *bool  `json:"silent,omitempty"` // whether to suppress email invitation when creating collaborator
+	User   string `json:"user"`             // unique email address of account
 }) (*OrganizationAppCollaborator, error) {
 	var organizationAppCollaborator OrganizationAppCollaborator
 	return &organizationAppCollaborator, s.Post(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators", appIdentity), o)
@@ -1226,20 +1237,20 @@ func (s *Service) OrganizationAppCollaboratorList(appIdentity string, lr *ListRa
 // An organization member is an individual with access to an
 // organization.
 type OrganizationMember struct {
-	CreatedAt time.Time `json:"created_at"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"` // when organization-member was created
+	Email     string    `json:"email"`      // email address of the organization member
+	Role      string    `json:"role"`       // role in the organization
+	UpdatedAt time.Time `json:"updated_at"` // when organization-member was updated
 }
 type OrganizationMemberCreateOrUpdateOpts struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Email string `json:"email"` // email address of the organization member
+	Role  string `json:"role"`  // role in the organization
 }
 
 // Create a new organization member, or update their role.
 func (s *Service) OrganizationMemberCreateOrUpdate(organizationIdentity string, o struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Email string `json:"email"` // email address of the organization member
+	Role  string `json:"role"`  // role in the organization
 }) (*OrganizationMember, error) {
 	var organizationMember OrganizationMember
 	return &organizationMember, s.Put(&organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
@@ -1259,17 +1270,17 @@ func (s *Service) OrganizationMemberList(organizationIdentity string, lr *ListRa
 // Plans represent different configurations of add-ons that may be added
 // to apps.
 type Plan struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Default     bool      `json:"default"`
-	Description string    `json:"description"`
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
+	CreatedAt   time.Time `json:"created_at"`  // when plan was created
+	Default     bool      `json:"default"`     // whether this plan is the default for its addon service
+	Description string    `json:"description"` // description of plan
+	ID          string    `json:"id"`          // unique identifier of this plan
+	Name        string    `json:"name"`        // unique name of this plan
 	Price       struct {
-		Cents int    `json:"cents"`
-		Unit  string `json:"unit"`
+		Cents int    `json:"cents"` // price in cents per unit of plan
+		Unit  string `json:"unit"`  // unit of price for plan
 	} `json:"price"` // price
-	State     string    `json:"state"`
-	UpdatedAt time.Time `json:"updated_at"`
+	State     string    `json:"state"`      // release status for plan
+	UpdatedAt time.Time `json:"updated_at"` // when plan was updated
 }
 
 // Info for existing plan.
@@ -1287,7 +1298,7 @@ func (s *Service) PlanList(addonServiceIdentity string, lr *ListRange) ([]*Plan,
 // Rate Limit represents the number of request tokens each account
 // holds. Requests to this endpoint do not count towards the rate limit.
 type RateLimit struct {
-	Remaining int `json:"remaining"`
+	Remaining int `json:"remaining"` // allowed requests remaining in current interval
 }
 
 // Info for rate limits.
@@ -1299,11 +1310,11 @@ func (s *Service) RateLimitInfo() (*RateLimit, error) {
 // A region represents a geographic location in which your application
 // may run.
 type Region struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Description string    `json:"description"`
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`  // when region was created
+	Description string    `json:"description"` // description of region
+	ID          string    `json:"id"`          // unique identifier of region
+	Name        string    `json:"name"`        // unique name of region
+	UpdatedAt   time.Time `json:"updated_at"`  // when region was updated
 }
 
 // Info for existing region.
@@ -1321,18 +1332,18 @@ func (s *Service) RegionList(lr *ListRange) ([]*Region, error) {
 // A release represents a combination of code, config vars and add-ons
 // for an app on Heroku.
 type Release struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Description string    `json:"description"`
-	ID          string    `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`  // when release was created
+	Description string    `json:"description"` // description of changes in this release
+	ID          string    `json:"id"`          // unique identifier of release
 	Slug        *struct {
-		ID string `json:"id"`
+		ID string `json:"id"` // unique identifier of slug
 	} `json:"slug"` // slug running in this release
-	UpdatedAt time.Time `json:"updated_at"`
+	UpdatedAt time.Time `json:"updated_at"` // when release was updated
 	User      struct {
-		Email string `json:"email"`
-		ID    string `json:"id"`
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"user"` // user that created the release
-	Version int `json:"version"`
+	Version int `json:"version"` // unique version assigned to the release
 }
 
 // Info for existing release.
@@ -1348,27 +1359,27 @@ func (s *Service) ReleaseList(appIdentity string, lr *ListRange) ([]*Release, er
 }
 
 type ReleaseCreateOpts struct {
-	Description *string `json:"description,omitempty"`
-	Slug        string  `json:"slug"`
+	Description *string `json:"description,omitempty"` // description of changes in this release
+	Slug        string  `json:"slug"`                  // unique identifier of slug
 }
 
 // Create new release. The API cannot be used to create releases on
 // Bamboo apps.
 func (s *Service) ReleaseCreate(appIdentity string, o struct {
-	Description *string `json:"description,omitempty"`
-	Slug        string  `json:"slug"`
+	Description *string `json:"description,omitempty"` // description of changes in this release
+	Slug        string  `json:"slug"`                  // unique identifier of slug
 }) (*Release, error) {
 	var release Release
 	return &release, s.Post(&release, fmt.Sprintf("/apps/%v/releases", appIdentity), o)
 }
 
 type ReleaseRollbackOpts struct {
-	Release string `json:"release"`
+	Release string `json:"release"` // unique identifier of release
 }
 
 // Rollback to an existing release.
 func (s *Service) ReleaseRollback(appIdentity string, o struct {
-	Release string `json:"release"`
+	Release string `json:"release"` // unique identifier of release
 }) (*Release, error) {
 	var release Release
 	return &release, s.Post(&release, fmt.Sprintf("/apps/%v/releases", appIdentity), o)
@@ -1378,17 +1389,18 @@ func (s *Service) ReleaseRollback(appIdentity string, o struct {
 // the platform.
 type Slug struct {
 	Blob struct {
-		Method string `json:"method"`
-		URL    string `json:"url"`
+		Method string `json:"method"` // method to be used to interact with the slug blob
+		URL    string `json:"url"`    // URL to interact with the slug blob
 	} `json:"blob"` // pointer to the url where clients can fetch or store the actual
 	// release binary
-	BuildpackProvidedDescription *string           `json:"buildpack_provided_description"`
-	Commit                       *string           `json:"commit"`
-	CreatedAt                    time.Time         `json:"created_at"`
-	ID                           string            `json:"id"`
-	ProcessTypes                 map[string]string `json:"process_types"`
-	Size                         *int              `json:"size"`
-	UpdatedAt                    time.Time         `json:"updated_at"`
+	BuildpackProvidedDescription *string `json:"buildpack_provided_description"` // description from buildpack of slug
+	Commit                       *string `json:"commit"`                         // identification of the code with your version control system (eg: SHA
+	// of the git HEAD)
+	CreatedAt    time.Time         `json:"created_at"`    // when slug was created
+	ID           string            `json:"id"`            // unique identifier of slug
+	ProcessTypes map[string]string `json:"process_types"` // hash mapping process type names to their respective command
+	Size         *int              `json:"size"`          // size of slug, in bytes
+	UpdatedAt    time.Time         `json:"updated_at"`    // when slug was updated
 }
 
 // Info for existing slug.
@@ -1398,9 +1410,10 @@ func (s *Service) SlugInfo(appIdentity string, slugIdentity string) (*Slug, erro
 }
 
 type SlugCreateOpts struct {
-	BuildpackProvidedDescription *string            `json:"buildpack_provided_description,omitempty"`
-	Commit                       *string            `json:"commit,omitempty"`
-	ProcessTypes                 *map[string]string `json:"process_types"`
+	BuildpackProvidedDescription *string `json:"buildpack_provided_description,omitempty"` // description from buildpack of slug
+	Commit                       *string `json:"commit,omitempty"`                         // identification of the code with your version control system (eg: SHA
+	// of the git HEAD)
+	ProcessTypes *map[string]string `json:"process_types"` // hash mapping process type names to their respective command
 }
 
 // Create a new slug. For more information please refer to [Deploying
@@ -1408,9 +1421,10 @@ type SlugCreateOpts struct {
 // API](https://devcenter.heroku.com/articles/platform-api-deploying-slug
 // s?preview=1).
 func (s *Service) SlugCreate(appIdentity string, o struct {
-	BuildpackProvidedDescription *string            `json:"buildpack_provided_description,omitempty"`
-	Commit                       *string            `json:"commit,omitempty"`
-	ProcessTypes                 *map[string]string `json:"process_types"`
+	BuildpackProvidedDescription *string `json:"buildpack_provided_description,omitempty"` // description from buildpack of slug
+	Commit                       *string `json:"commit,omitempty"`                         // identification of the code with your version control system (eg: SHA
+	// of the git HEAD)
+	ProcessTypes *map[string]string `json:"process_types"` // hash mapping process type names to their respective command
 }) (*Slug, error) {
 	var slug Slug
 	return &slug, s.Post(&slug, fmt.Sprintf("/apps/%v/slugs", appIdentity), o)
@@ -1421,24 +1435,28 @@ func (s *Service) SlugCreate(appIdentity string, o struct {
 // Heroku app. Note that an app must have the `ssl:endpoint` addon
 // installed before it can provision an SSL Endpoint using these APIs.
 type SSLEndpoint struct {
-	CertificateChain string    `json:"certificate_chain"`
-	CName            string    `json:"cname"`
-	CreatedAt        time.Time `json:"created_at"`
-	ID               string    `json:"id"`
-	Name             string    `json:"name"`
-	UpdatedAt        time.Time `json:"updated_at"`
+	CertificateChain string    `json:"certificate_chain"` // raw contents of the public certificate chain (eg: .crt or .pem file)
+	CName            string    `json:"cname"`             // canonical name record, the address to point a domain at
+	CreatedAt        time.Time `json:"created_at"`        // when endpoint was created
+	ID               string    `json:"id"`                // unique identifier of this SSL endpoint
+	Name             string    `json:"name"`              // unique name for SSL endpoint
+	UpdatedAt        time.Time `json:"updated_at"`        // when endpoint was updated
 }
 type SSLEndpointCreateOpts struct {
-	CertificateChain string `json:"certificate_chain"`
-	Preprocess       *bool  `json:"preprocess,omitempty"`
-	PrivateKey       string `json:"private_key"`
+	CertificateChain string `json:"certificate_chain"`    // raw contents of the public certificate chain (eg: .crt or .pem file)
+	Preprocess       *bool  `json:"preprocess,omitempty"` // allow Heroku to modify an uploaded public certificate chain if deemed
+	// advantageous by adding missing intermediaries, stripping unnecessary
+	// ones, etc.
+	PrivateKey string `json:"private_key"` // contents of the private key (eg .key file)
 }
 
 // Create a new SSL endpoint.
 func (s *Service) SSLEndpointCreate(appIdentity string, o struct {
-	CertificateChain string `json:"certificate_chain"`
-	Preprocess       *bool  `json:"preprocess,omitempty"`
-	PrivateKey       string `json:"private_key"`
+	CertificateChain string `json:"certificate_chain"`    // raw contents of the public certificate chain (eg: .crt or .pem file)
+	Preprocess       *bool  `json:"preprocess,omitempty"` // allow Heroku to modify an uploaded public certificate chain if deemed
+	// advantageous by adding missing intermediaries, stripping unnecessary
+	// ones, etc.
+	PrivateKey string `json:"private_key"` // contents of the private key (eg .key file)
 }) (*SSLEndpoint, error) {
 	var sslEndpoint SSLEndpoint
 	return &sslEndpoint, s.Post(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), o)
@@ -1452,7 +1470,7 @@ func (s *Service) SSLEndpointDelete(appIdentity string, sslEndpointIdentity stri
 // Info for existing SSL endpoint.
 func (s *Service) SSLEndpointInfo(appIdentity string, sslEndpointIdentity string) (*SSLEndpoint, error) {
 	var sslEndpoint SSLEndpoint
-	return &sslEndpoint, s.Get(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", sslEndpointIdentity, appIdentity), nil)
+	return &sslEndpoint, s.Get(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), nil)
 }
 
 // List existing SSL endpoints.
@@ -1462,31 +1480,35 @@ func (s *Service) SSLEndpointList(appIdentity string, lr *ListRange) ([]*SSLEndp
 }
 
 type SSLEndpointUpdateOpts struct {
-	CertificateChain *string `json:"certificate_chain,omitempty"`
-	Preprocess       *bool   `json:"preprocess,omitempty"`
-	PrivateKey       *string `json:"private_key,omitempty"`
-	Rollback         *bool   `json:"rollback,omitempty"`
+	CertificateChain *string `json:"certificate_chain,omitempty"` // raw contents of the public certificate chain (eg: .crt or .pem file)
+	Preprocess       *bool   `json:"preprocess,omitempty"`        // allow Heroku to modify an uploaded public certificate chain if deemed
+	// advantageous by adding missing intermediaries, stripping unnecessary
+	// ones, etc.
+	PrivateKey *string `json:"private_key,omitempty"` // contents of the private key (eg .key file)
+	Rollback   *bool   `json:"rollback,omitempty"`    // indicates that a rollback should be performed
 }
 
 // Update an existing SSL endpoint.
 func (s *Service) SSLEndpointUpdate(appIdentity string, sslEndpointIdentity string, o struct {
-	CertificateChain *string `json:"certificate_chain,omitempty"`
-	Preprocess       *bool   `json:"preprocess,omitempty"`
-	PrivateKey       *string `json:"private_key,omitempty"`
-	Rollback         *bool   `json:"rollback,omitempty"`
+	CertificateChain *string `json:"certificate_chain,omitempty"` // raw contents of the public certificate chain (eg: .crt or .pem file)
+	Preprocess       *bool   `json:"preprocess,omitempty"`        // allow Heroku to modify an uploaded public certificate chain if deemed
+	// advantageous by adding missing intermediaries, stripping unnecessary
+	// ones, etc.
+	PrivateKey *string `json:"private_key,omitempty"` // contents of the private key (eg .key file)
+	Rollback   *bool   `json:"rollback,omitempty"`    // indicates that a rollback should be performed
 }) (*SSLEndpoint, error) {
 	var sslEndpoint SSLEndpoint
-	return &sslEndpoint, s.Patch(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", sslEndpointIdentity, appIdentity), o)
+	return &sslEndpoint, s.Patch(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), o)
 }
 
 // Stacks are the different application execution environments available
 // in the Heroku platform.
 type Stack struct {
-	CreatedAt time.Time `json:"created_at"`
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	State     string    `json:"state"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"` // when stack was introduced
+	ID        string    `json:"id"`         // unique identifier of stack
+	Name      string    `json:"name"`       // unique name of stack
+	State     string    `json:"state"`      // availability of this stack: beta, deprecated or public
+	UpdatedAt time.Time `json:"updated_at"` // when stack was last modified
 }
 
 // Stack info.
