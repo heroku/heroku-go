@@ -1,5 +1,5 @@
 {
-  "description": "The platform API empowers developers to automate, extend and combine Heroku with other services.",
+  "$schema": "http://json-schema.org/draft-04/hyper-schema",
   "definitions": {
     "account-feature": {
       "description": "An account feature represents a Heroku labs capability that can be enabled or disabled for an account on Heroku.",
@@ -231,7 +231,8 @@
           "example": "Tina Edmonds",
           "readOnly": false,
           "type": [
-            "string"
+            "string",
+            "null"
           ]
         },
         "new_password": {
@@ -374,6 +375,9 @@
         "last_login": {
           "$ref": "#/definitions/account/definitions/last_login"
         },
+        "name": {
+          "$ref": "#/definitions/account/definitions/name"
+        },
         "updated_at": {
           "$ref": "#/definitions/account/definitions/updated_at"
         },
@@ -486,7 +490,9 @@
             "BAZ"
           ],
           "items": {
-            "type": "string"
+            "type": [
+              "string"
+            ]
           },
           "readOnly": true,
           "type": [
@@ -718,10 +724,10 @@
         "identity": {
           "anyOf": [
             {
-              "$ref": "#/definitions/app/definitions/id"
+              "$ref": "#/definitions/app-feature/definitions/id"
             },
             {
-              "$ref": "#/definitions/app/definitions/name"
+              "$ref": "#/definitions/app-feature/definitions/name"
             }
           ]
         },
@@ -1041,7 +1047,7 @@
           "description": "git repo URL of app",
           "example": "git@heroku.com/example.git",
           "format": "uri",
-          "pattern": "^git@heroku\\.com/[a-z][a-z0-9-]{3,30}\\.git$",
+          "pattern": "^git@heroku\\.com:[a-z][a-z0-9-]{3,30}\\.git$",
           "readOnly": true,
           "type": [
             "string"
@@ -1128,7 +1134,7 @@
           "description": "web URL of app",
           "example": "http://example.herokuapp.com",
           "format": "uri",
-          "pattern": "^http://[a-z][a-z0-9-]{3,30}\\.herokuapp\\.com$",
+          "pattern": "^http://[a-z][a-z0-9-]{3,30}\\.herokuapp\\.com/$",
           "readOnly": true,
           "type": [
             "string"
@@ -2480,7 +2486,9 @@
             "array"
           ],
           "items": {
-            "type": "string"
+            "type": [
+              "string"
+            ]
           }
         },
         "updated_at": {
@@ -3078,6 +3086,92 @@
         }
       }
     },
+    "organization-app-collaborator": {
+      "description": "An organization collaborator represents an account that has been given access to an organization app on Heroku.",
+      "id": "schema/organization-app-collaborator",
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "stability": "prototype",
+      "title": "Heroku Platform API - Organization App Collaborator",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+      },
+      "links": [
+        {
+          "description": "Create a new collaborator on an organization app. Use this endpoint instead of the `/apps/{app_id_or_name}/collaborator` endpoint when you want the collaborator to be granted [privileges] (https://devcenter.heroku.com/articles/org-users-access#roles) according to their role in the organization.",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators",
+          "method": "POST",
+          "rel": "create",
+          "schema": {
+            "properties": {
+              "silent": {
+                "$ref": "#/definitions/collaborator/definitions/silent"
+              },
+              "user": {
+                "$ref": "#/definitions/account/definitions/identity"
+              }
+            },
+            "required": [
+              "user"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "title": "Create"
+        },
+        {
+          "description": "Delete an existing collaborator from an organization app.",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
+          "method": "DELETE",
+          "rel": "destroy",
+          "title": "Delete"
+        },
+        {
+          "description": "Info for a collaborator on an organization app.",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
+          "method": "GET",
+          "rel": "self",
+          "title": "Info"
+        },
+        {
+          "description": "List collaborators on an organization app.",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators",
+          "method": "GET",
+          "rel": "instances",
+          "title": "List"
+        }
+      ],
+      "properties": {
+        "created_at": {
+          "$ref": "#/definitions/collaborator/definitions/created_at"
+        },
+        "id": {
+          "$ref": "#/definitions/collaborator/definitions/id"
+        },
+        "role": {
+          "$ref": "#/definitions/organization/definitions/role"
+        },
+        "updated_at": {
+          "$ref": "#/definitions/collaborator/definitions/updated_at"
+        },
+        "user": {
+          "description": "identity of collaborated account",
+          "properties": {
+            "email": {
+              "$ref": "#/definitions/account/definitions/email"
+            },
+            "id": {
+              "$ref": "#/definitions/account/definitions/id"
+            }
+          },
+          "type": [
+            "object"
+          ]
+        }
+      }
+    },
     "organization-app": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization app encapsulates the organization specific functionality of Heroku apps.",
@@ -3107,7 +3201,7 @@
       },
       "links": [
         {
-          "description": "Create a new organization app.",
+          "description": "Create a new organization app. Use this endpoint instead of the `/apps` endpoint when you want to create an app that will be owned by an organization in which you are a member, rather than your personal account.",
           "href": "/organizations/{(%23%2Fdefinitions%2Forganization%2Fdefinitions%2Fidentity)}/apps",
           "method": "POST",
           "rel": "create",
@@ -3150,6 +3244,9 @@
                 "$ref": "#/definitions/organization-app/definitions/locked"
               }
             },
+            "required": [
+              "locked"
+            ],
             "type": [
               "object"
             ]
@@ -3167,6 +3264,9 @@
                 "$ref": "#/definitions/account/definitions/identity"
               }
             },
+            "required": [
+              "owner"
+            ],
             "type": [
               "object"
             ]
@@ -3184,6 +3284,9 @@
                 "$ref": "#/definitions/organization/definitions/name"
               }
             },
+            "required": [
+              "owner"
+            ],
             "type": [
               "object"
             ]
@@ -3278,92 +3381,6 @@
         }
       }
     },
-    "organization-collaborator": {
-      "description": "An organization collaborator represents an account that has been given access to an organization app on Heroku.",
-      "id": "schema/organization-collaborator",
-      "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "stability": "prototype",
-      "title": "Heroku Platform API - Organization Collaborator",
-      "type": [
-        "object"
-      ],
-      "definitions": {
-      },
-      "links": [
-        {
-          "description": "Create a new collaborator.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators",
-          "method": "POST",
-          "rel": "create",
-          "schema": {
-            "properties": {
-              "silent": {
-                "$ref": "#/definitions/collaborator/definitions/silent"
-              },
-              "user": {
-                "$ref": "#/definitions/account/definitions/identity"
-              }
-            },
-            "required": [
-              "user"
-            ],
-            "type": [
-              "object"
-            ]
-          },
-          "title": "Create"
-        },
-        {
-          "description": "Delete an existing collaborator from an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
-          "method": "DELETE",
-          "rel": "destroy",
-          "title": "Delete"
-        },
-        {
-          "description": "Info for a collaborator on an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
-          "method": "GET",
-          "rel": "self",
-          "title": "Info"
-        },
-        {
-          "description": "List collaborators on an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators",
-          "method": "GET",
-          "rel": "instances",
-          "title": "List"
-        }
-      ],
-      "properties": {
-        "created_at": {
-          "$ref": "#/definitions/collaborator/definitions/created_at"
-        },
-        "id": {
-          "$ref": "#/definitions/collaborator/definitions/id"
-        },
-        "role": {
-          "$ref": "#/definitions/organization/definitions/role"
-        },
-        "updated_at": {
-          "$ref": "#/definitions/collaborator/definitions/updated_at"
-        },
-        "user": {
-          "description": "identity of collaborated account",
-          "properties": {
-            "email": {
-              "$ref": "#/definitions/account/definitions/email"
-            },
-            "id": {
-              "$ref": "#/definitions/account/definitions/id"
-            }
-          },
-          "type": [
-            "object"
-          ]
-        }
-      }
-    },
     "organization-member": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization member is an individual with access to an organization.",
@@ -3423,6 +3440,10 @@
                 "$ref": "#/definitions/organization/definitions/role"
               }
             },
+            "required": [
+              "email",
+              "role"
+            ],
             "type": [
               "object"
             ]
@@ -3545,7 +3566,7 @@
               "object"
             ]
           },
-          "title": "Update Default"
+          "title": "Update"
         }
       ],
       "properties": {
@@ -4548,11 +4569,11 @@
     "oauth-token": {
       "$ref": "#/definitions/oauth-token"
     },
+    "organization-app-collaborator": {
+      "$ref": "#/definitions/organization-app-collaborator"
+    },
     "organization-app": {
       "$ref": "#/definitions/organization-app"
-    },
-    "organization-collaborator": {
-      "$ref": "#/definitions/organization-collaborator"
     },
     "organization-member": {
       "$ref": "#/definitions/organization-member"
@@ -4582,9 +4603,15 @@
       "$ref": "#/definitions/stack"
     }
   },
-  "$schema": "http://json-schema.org/draft-04/hyper-schema",
-  "title": "Heroku Platform API",
   "type": [
     "object"
-  ]
+  ],
+  "description": "The platform API empowers developers to automate, extend and combine Heroku with other services.",
+  "links": [
+    {
+      "href": "https://api.heroku.com",
+      "rel": "self"
+    }
+  ],
+  "title": "Heroku Platform API"
 }
