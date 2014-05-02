@@ -308,12 +308,12 @@ func (s *Service) AddonCreate(appIdentity string, o struct {
 }
 
 // Delete an existing add-on.
-func (s *Service) AddonDelete(addonIdentity string, appIdentity string) error {
+func (s *Service) AddonDelete(appIdentity string, addonIdentity string) error {
 	return s.Delete(fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addonIdentity))
 }
 
 // Info for an existing add-on.
-func (s *Service) AddonInfo(addonIdentity string, appIdentity string) (*Addon, error) {
+func (s *Service) AddonInfo(appIdentity string, addonIdentity string) (*Addon, error) {
 	var addon Addon
 	return &addon, s.Get(&addon, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addonIdentity), nil)
 }
@@ -330,11 +330,11 @@ type AddonUpdateOpts struct {
 
 // Change add-on plan. Some add-ons may not support changing plans. In
 // that case, an error will be returned.
-func (s *Service) AddonUpdate(addonIdentity string, appIdentity string, o struct {
+func (s *Service) AddonUpdate(appIdentity string, addonIdentity string, o struct {
 	Plan string `json:"plan"` // unique identifier of this plan
 }) (*Addon, error) {
 	var addon Addon
-	return &addon, s.Patch(&addon, fmt.Sprintf("/apps/%v/addons/%v", addonIdentity, appIdentity), o)
+	return &addon, s.Patch(&addon, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addonIdentity), o)
 }
 
 // Add-on services represent add-ons that may be provisioned for apps.
@@ -446,7 +446,7 @@ type AppFeature struct {
 }
 
 // Info for an existing app feature.
-func (s *Service) AppFeatureInfo(appFeatureIdentity string, appIdentity string) (*AppFeature, error) {
+func (s *Service) AppFeatureInfo(appIdentity string, appFeatureIdentity string) (*AppFeature, error) {
 	var appFeature AppFeature
 	return &appFeature, s.Get(&appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), nil)
 }
@@ -462,7 +462,7 @@ type AppFeatureUpdateOpts struct {
 }
 
 // Update an existing app feature.
-func (s *Service) AppFeatureUpdate(appFeatureIdentity string, appIdentity string, o struct {
+func (s *Service) AppFeatureUpdate(appIdentity string, appFeatureIdentity string, o struct {
 	Enabled bool `json:"enabled"` // whether or not app feature has been enabled
 }) (*AppFeature, error) {
 	var appFeature AppFeature
