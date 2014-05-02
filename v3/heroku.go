@@ -579,16 +579,16 @@ func (s *Service) CollaboratorList(appIdentity string, lr *ListRange) ([]*Collab
 type ConfigVar map[string]string
 
 // Get config-vars for app.
-func (s *Service) ConfigVarInfo(appIdentity string) (ConfigVar, error) {
+func (s *Service) ConfigVarInfo(appIdentity string) (map[string]string, error) {
 	var configVar ConfigVar
 	return configVar, s.Get(&configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), nil)
 }
 
-type ConfigVarUpdateOpts *map[string]string
+type ConfigVarUpdateOpts map[string]*string
 
 // Update config-vars for app. You can update existing config-vars by
 // setting them again, and remove by setting it to `NULL`.
-func (s *Service) ConfigVarUpdate(appIdentity string, o *map[string]string) (ConfigVar, error) {
+func (s *Service) ConfigVarUpdate(appIdentity string, o map[string]*string) (map[string]string, error) {
 	var configVar ConfigVar
 	return configVar, s.Patch(&configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), o)
 }
@@ -1413,7 +1413,7 @@ type SlugCreateOpts struct {
 	BuildpackProvidedDescription *string `json:"buildpack_provided_description,omitempty"` // description from buildpack of slug
 	Commit                       *string `json:"commit,omitempty"`                         // identification of the code with your version control system (eg: SHA
 	// of the git HEAD)
-	ProcessTypes *map[string]string `json:"process_types"` // hash mapping process type names to their respective command
+	ProcessTypes map[string]string `json:"process_types"` // hash mapping process type names to their respective command
 }
 
 // Create a new slug. For more information please refer to [Deploying
@@ -1424,7 +1424,7 @@ func (s *Service) SlugCreate(appIdentity string, o struct {
 	BuildpackProvidedDescription *string `json:"buildpack_provided_description,omitempty"` // description from buildpack of slug
 	Commit                       *string `json:"commit,omitempty"`                         // identification of the code with your version control system (eg: SHA
 	// of the git HEAD)
-	ProcessTypes *map[string]string `json:"process_types"` // hash mapping process type names to their respective command
+	ProcessTypes map[string]string `json:"process_types"` // hash mapping process type names to their respective command
 }) (*Slug, error) {
 	var slug Slug
 	return &slug, s.Post(&slug, fmt.Sprintf("/apps/%v/slugs", appIdentity), o)
