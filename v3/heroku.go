@@ -469,6 +469,60 @@ func (s *Service) AppFeatureUpdate(appIdentity string, appFeatureIdentity string
 	return &appFeature, s.Patch(&appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), o)
 }
 
+// An app setup represents an app on Heroku that is setup using an
+// environment, addons, and scripts described in an app.json manifest
+// file.
+type AppSetup struct {
+	App struct {
+		ID   string `json:"id"`   // unique identifier of app
+		Name string `json:"name"` // unique name of app
+	} `json:"app"` // identity of app
+	Build struct {
+		ID     string `json:"id"`     // unique identifier of build
+		Status string `json:"status"` // status of build
+	} `json:"build"` // identity and status of build
+	CreatedAt      time.Time `json:"created_at"`      // when app setup was created
+	FailureMessage *string   `json:"failure_message"` // reason that app setup has failed
+	ID             string    `json:"id"`              // unique identifier of app setup
+	ManifestErrors []string  `json:"manifest_errors"` // errors associated with invalid app.json manifest file
+	Postdeploy     *struct {
+		ExitCode int    `json:"exit_code"` // The exit code of the postdeploy script
+		Output   string `json:"output"`    // output of the postdeploy script
+	} `json:"postdeploy"` // result of postdeploy script
+	Status    string    `json:"status"`     // the overall status of app setup
+	UpdatedAt time.Time `json:"updated_at"` // when app setup was updated
+}
+type AppSetupCreateOpts struct {
+	Overrides *struct {
+		Env *struct{} `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
+	} `json:"overrides,omitempty"` // overrides of keys in the app.json manifest file
+	SourceBlob *struct {
+		URL *string `json:"url,omitempty"` // URL of gzipped tarball of source code containing app.json manifest
+		// file
+	} `json:"source_blob,omitempty"` // gzipped tarball of source code containing app.json manifest file
+}
+
+// Create a new app setup from a gzipped tar archive containing an
+// app.json manifest file.
+func (s *Service) AppSetupCreate(o struct {
+	Overrides *struct {
+		Env *struct{} `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
+	} `json:"overrides,omitempty"` // overrides of keys in the app.json manifest file
+	SourceBlob *struct {
+		URL *string `json:"url,omitempty"` // URL of gzipped tarball of source code containing app.json manifest
+		// file
+	} `json:"source_blob,omitempty"` // gzipped tarball of source code containing app.json manifest file
+}) (*AppSetup, error) {
+	var appSetup AppSetup
+	return &appSetup, s.Post(&appSetup, fmt.Sprintf("/app-setups"), o)
+}
+
+// Get the status of an app setup.
+func (s *Service) AppSetupInfo(appSetupIdentity string) (*AppSetup, error) {
+	var appSetup AppSetup
+	return &appSetup, s.Get(&appSetup, fmt.Sprintf("/app-setups/%v", appSetupIdentity), nil)
+}
+
 // An app transfer represents a two party interaction for transferring
 // ownership of an app.
 type AppTransfer struct {
@@ -530,6 +584,77 @@ func (s *Service) AppTransferUpdate(appTransferIdentity string, o struct {
 }) (*AppTransfer, error) {
 	var appTransfer AppTransfer
 	return &appTransfer, s.Patch(&appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), o)
+}
+
+// A build represents the process of transforming a code tarball into a
+// slug
+type Build struct {
+	CreatedAt time.Time `json:"created_at"` // when build was created
+	ID        string    `json:"id"`         // unique identifier of build
+	Slug      *struct {
+		ID string `json:"id"` // unique identifier of slug
+	} `json:"slug"` // slug created by this build
+	SourceBlob struct {
+		URL string `json:"url"` // URL where gzipped tar archive of source code for build was
+		// downloaded.
+		Version *string `json:"version"` // Version of the gzipped tarball.
+	} `json:"source_blob"` // location of gzipped tarball of source code used to create build
+	Status    string    `json:"status"`     // status of build
+	UpdatedAt time.Time `json:"updated_at"` // when build was updated
+	User      struct {
+		Email string `json:"email"` // unique email address of account
+		ID    string `json:"id"`    // unique identifier of an account
+	} `json:"user"` // user that started the build
+}
+type BuildCreateOpts struct {
+	SourceBlob *struct {
+		URL *string `json:"url,omitempty"` // URL where gzipped tar archive of source code for build was
+		// downloaded.
+		Version *string `json:"version,omitempty"` // Version of the gzipped tarball.
+	} `json:"source_blob,omitempty"` // location of gzipped tarball of source code used to create build
+}
+
+// Create a new build.
+func (s *Service) BuildCreate(appIdentity string, o struct {
+	SourceBlob *struct {
+		URL *string `json:"url,omitempty"` // URL where gzipped tar archive of source code for build was
+		// downloaded.
+		Version *string `json:"version,omitempty"` // Version of the gzipped tarball.
+	} `json:"source_blob,omitempty"` // location of gzipped tarball of source code used to create build
+}) (*Build, error) {
+	var build Build
+	return &build, s.Post(&build, fmt.Sprintf("/apps/%v/builds", appIdentity), o)
+}
+
+// Info for existing build.
+func (s *Service) BuildInfo(appIdentity string, buildIdentity string) (*Build, error) {
+	var build Build
+	return &build, s.Get(&build, fmt.Sprintf("/apps/%v/builds/%v", appIdentity, buildIdentity), nil)
+}
+
+// List existing build.
+func (s *Service) BuildList(appIdentity string, lr *ListRange) ([]*Build, error) {
+	var buildList []*Build
+	return buildList, s.Get(&buildList, fmt.Sprintf("/apps/%v/builds", appIdentity), lr)
+}
+
+// A build result contains the output from a build.
+type BuildResult struct {
+	Build struct {
+		ID     string `json:"id"`     // unique identifier of build
+		Status string `json:"status"` // status of build
+	} `json:"build"` // identity of build
+	ExitCode float64 `json:"exit_code"` // status from the build
+	Lines    []struct {
+		Line   string `json:"line"`
+		Stream string `json:"stream"`
+	} `json:"lines"`
+}
+
+// Info for existing result.
+func (s *Service) BuildResultInfo(appIdentity string, buildIdentity string) (*BuildResult, error) {
+	var buildResult BuildResult
+	return &buildResult, s.Get(&buildResult, fmt.Sprintf("/apps/%v/builds/%v/result", appIdentity, buildIdentity), nil)
 }
 
 // A collaborator represents an account that has been given access to an
@@ -755,8 +880,9 @@ func (s *Service) FormationUpdate(appIdentity string, formationIdentity string, 
 // Keys represent public SSH keys associated with an account and are
 // used to authorize accounts as they are performing git operations.
 type Key struct {
+	Comment     string    `json:"comment"`     // comment on the key
 	CreatedAt   time.Time `json:"created_at"`  // when key was created
-	Email       string    `json:"email"`       // email address provided in key contents
+	Email       string    `json:"email"`       // deprecated. Please refer to 'comment' instead
 	Fingerprint string    `json:"fingerprint"` // a unique identifying string based on contents
 	ID          string    `json:"id"`          // unique identifier of this key
 	PublicKey   string    `json:"public_key"`  // full public_key as uploaded

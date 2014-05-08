@@ -3,7 +3,7 @@
   "definitions": {
     "account-feature": {
       "description": "An account feature represents a Heroku labs capability that can be enabled or disabled for an account on Heroku.",
-      "id": "schema/account-feature",
+      "id": "schemata/account-feature",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Account Feature",
@@ -154,7 +154,7 @@
     },
     "account": {
       "description": "An account represents an individual signed up to use the Heroku platform.",
-      "id": "schema/account",
+      "id": "schemata/account",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Account",
@@ -388,7 +388,7 @@
     },
     "addon-service": {
       "description": "Add-on services represent add-ons that may be provisioned for apps.",
-      "id": "schema/addon-service",
+      "id": "schemata/addon-service",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Add-on Service",
@@ -475,7 +475,7 @@
     },
     "addon": {
       "description": "Add-ons represent add-ons that have been provisioned for an app.",
-      "id": "schema/addon",
+      "id": "schemata/addon",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Add-on",
@@ -671,7 +671,7 @@
     },
     "app-feature": {
       "description": "An app feature represents a Heroku labs capability that can be enabled or disabled for an app on Heroku.",
-      "id": "schema/app-feature",
+      "id": "schemata/app-feature",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - App Feature",
@@ -820,9 +820,232 @@
         }
       }
     },
+    "app-setup": {
+      "description": "An app setup represents an app on Heroku that is setup using an environment, addons, and scripts described in an app.json manifest file.",
+      "id": "schemata/app-setup",
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "stability": "prototype",
+      "title": "Heroku Setup API - App Setup",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "id": {
+          "description": "unique identifier of app setup",
+          "example": "01234567-89ab-cdef-0123-456789abcdef",
+          "readOnly": true,
+          "type": [
+            "string"
+          ],
+          "format": "uuid"
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/app-setup/definitions/id"
+            }
+          ]
+        },
+        "created_at": {
+          "description": "when app setup was created",
+          "example": "2012-01-01T12:00:00Z",
+          "readOnly": true,
+          "type": [
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "when app setup was updated",
+          "example": "2012-01-01T12:00:00Z",
+          "readOnly": true,
+          "type": [
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "status": {
+          "description": "the overall status of app setup",
+          "example": "succeeded",
+          "enum": [
+            "failed",
+            "pending",
+            "succeeded"
+          ],
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "failure_message": {
+          "description": "reason that app setup has failed",
+          "example": "invalid app.json",
+          "readOnly": true,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "manifest_errors": {
+          "description": "errors associated with invalid app.json manifest file",
+          "example": [
+            "config var FOO is required"
+          ],
+          "readOnly": true,
+          "items": {
+            "type": [
+              "string"
+            ]
+          },
+          "type": [
+            "array"
+          ]
+        },
+        "postdeploy": {
+          "description": "result of postdeploy script",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "output": {
+              "description": "output of the postdeploy script",
+              "example": "assets precompiled",
+              "readOnly": true,
+              "type": [
+                "string"
+              ]
+            },
+            "exit_code": {
+              "description": "The exit code of the postdeploy script",
+              "example": 1,
+              "readOnly": true,
+              "type": [
+                "integer"
+              ]
+            }
+          },
+          "readOnly": true
+        }
+      },
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/app-setup/definitions/id"
+        },
+        "created_at": {
+          "$ref": "#/definitions/app-setup/definitions/created_at"
+        },
+        "updated_at": {
+          "$ref": "#/definitions/app-setup/definitions/updated_at"
+        },
+        "status": {
+          "$ref": "#/definitions/app-setup/definitions/status"
+        },
+        "failure_message": {
+          "$ref": "#/definitions/app-setup/definitions/failure_message"
+        },
+        "app": {
+          "description": "identity of app",
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/app/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/app/definitions/name"
+            }
+          }
+        },
+        "build": {
+          "description": "identity and status of build",
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/build/definitions/id"
+            },
+            "status": {
+              "$ref": "#/definitions/build/definitions/status"
+            }
+          }
+        },
+        "manifest_errors": {
+          "$ref": "#/definitions/app-setup/definitions/manifest_errors"
+        },
+        "postdeploy": {
+          "$ref": "#/definitions/app-setup/definitions/postdeploy"
+        }
+      },
+      "links": [
+        {
+          "description": "Create a new app setup from a gzipped tar archive containing an app.json manifest file.",
+          "title": "Create",
+          "rel": "create",
+          "method": "POST",
+          "href": "/app-setups",
+          "schema": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "source_blob": {
+                "description": "gzipped tarball of source code containing app.json manifest file",
+                "example": "https://example.com/source.tgz?token=xyz",
+                "properties": {
+                  "url": {
+                    "description": "URL of gzipped tarball of source code containing app.json manifest file",
+                    "example": "https://example.com/source.tgz?token=xyz",
+                    "readOnly": true,
+                    "type": [
+                      "string"
+                    ]
+                  }
+                },
+                "type": [
+                  "object"
+                ]
+              },
+              "overrides": {
+                "description": "overrides of keys in the app.json manifest file",
+                "example": {
+                  "env": {
+                    "WEB_CONCURRENCY": "1"
+                  }
+                },
+                "properties": {
+                  "env": {
+                    "description": "overrides of the env specified in the app.json manifest file",
+                    "example": {
+                      "WEB_CONCURRENCY": "1"
+                    },
+                    "readOnly": true,
+                    "type": [
+                      "object"
+                    ]
+                  }
+                },
+                "type": [
+                  "object"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "description": "Get the status of an app setup.",
+          "title": "Info",
+          "rel": "self",
+          "method": "GET",
+          "href": "/app-setups/{(%23%2Fdefinitions%2Fapp-setup%2Fdefinitions%2Fidentity)}"
+        }
+      ]
+    },
     "app-transfer": {
       "description": "An app transfer represents a two party interaction for transferring ownership of an app.",
-      "id": "schema/app-transfer",
+      "id": "schemata/app-transfer",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - App Transfer",
@@ -1007,7 +1230,7 @@
     },
     "app": {
       "description": "An app represents the program that you would like to deploy and run on Heroku.",
-      "id": "schema/app",
+      "id": "schemata/app",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - App",
@@ -1288,9 +1511,255 @@
         }
       }
     },
+    "build-result": {
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "description": "A build result contains the output from a build.",
+      "id": "schemata/build-result",
+      "title": "Heroku Build API - Build Result",
+      "stability": "prototype",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "exit_code": {
+          "description": "status from the build",
+          "example": 0,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "line": {
+          "description": "a single line of output to STDOUT or STDERR from the build.",
+          "type": [
+            "object"
+          ],
+          "definitions": {
+            "stream": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "STDOUT",
+                "STDERR"
+              ]
+            },
+            "line": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "properties": {
+            "stream": {
+              "$ref": "#/definitions/build-result/definitions/line/definitions/stream"
+            },
+            "line": {
+              "$ref": "#/definitions/build-result/definitions/line/definitions/line"
+            }
+          }
+        }
+      },
+      "links": [
+        {
+          "description": "Info for existing result.",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds/{(%23%2Fdefinitions%2Fbuild%2Fdefinitions%2Fidentity)}/result",
+          "method": "GET",
+          "rel": "self",
+          "title": "Info"
+        }
+      ],
+      "properties": {
+        "build": {
+          "description": "identity of build",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/build/definitions/id"
+            },
+            "status": {
+              "$ref": "#/definitions/build/definitions/status"
+            }
+          },
+          "type": [
+            "object"
+          ]
+        },
+        "exit_code": {
+          "$ref": "#/definitions/build-result/definitions/exit_code"
+        },
+        "lines": {
+          "type": [
+            "array"
+          ],
+          "items": {
+            "$ref": "#/definitions/build-result/definitions/line"
+          }
+        }
+      }
+    },
+    "build": {
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "description": "A build represents the process of transforming a code tarball into a slug",
+      "id": "schemata/build",
+      "title": "Heroku Build API - Build",
+      "stability": "prototype",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "created_at": {
+          "description": "when build was created",
+          "example": "2012-01-01T12:00:00Z",
+          "format": "date-time",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "id": {
+          "description": "unique identifier of build",
+          "example": "01234567-89ab-cdef-0123-456789abcdef",
+          "format": "uuid",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/build/definitions/id"
+            }
+          ]
+        },
+        "source_blob": {
+          "description": "location of gzipped tarball of source code used to create build",
+          "properties": {
+            "url": {
+              "description": "URL where gzipped tar archive of source code for build was downloaded.",
+              "example": "https://example.com/source.tgz?token=xyz",
+              "readOnly": true,
+              "type": [
+                "string"
+              ]
+            },
+            "version": {
+              "description": "Version of the gzipped tarball.",
+              "example": "v1.3.0",
+              "readOnly": true,
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object"
+          ]
+        },
+        "status": {
+          "description": "status of build",
+          "enum": [
+            "failed",
+            "pending",
+            "succeeded"
+          ],
+          "example": "succeeded",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "updated_at": {
+          "description": "when build was updated",
+          "example": "2012-01-01T12:00:00Z",
+          "format": "date-time",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "links": [
+        {
+          "description": "Create a new build.",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds",
+          "method": "POST",
+          "rel": "create",
+          "schema": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "source_blob": {
+                "$ref": "#/definitions/build/definitions/source_blob"
+              }
+            }
+          },
+          "title": "Create"
+        },
+        {
+          "description": "Info for existing build.",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds/{(%23%2Fdefinitions%2Fbuild%2Fdefinitions%2Fidentity)}",
+          "method": "GET",
+          "rel": "self",
+          "title": "Info"
+        },
+        {
+          "description": "List existing build.",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds",
+          "method": "GET",
+          "rel": "instances",
+          "title": "List"
+        }
+      ],
+      "properties": {
+        "created_at": {
+          "$ref": "#/definitions/build/definitions/created_at"
+        },
+        "id": {
+          "$ref": "#/definitions/build/definitions/id"
+        },
+        "source_blob": {
+          "$ref": "#/definitions/build/definitions/source_blob"
+        },
+        "slug": {
+          "description": "slug created by this build",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/slug/definitions/id"
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/definitions/build/definitions/status"
+        },
+        "updated_at": {
+          "$ref": "#/definitions/build/definitions/updated_at"
+        },
+        "user": {
+          "description": "user that started the build",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/account/definitions/id"
+            },
+            "email": {
+              "$ref": "#/definitions/account/definitions/email"
+            }
+          },
+          "type": [
+            "object"
+          ]
+        }
+      }
+    },
     "collaborator": {
       "description": "A collaborator represents an account that has been given access to an app on Heroku.",
-      "id": "schema/collaborator",
+      "id": "schemata/collaborator",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Collaborator",
@@ -1428,7 +1897,7 @@
     },
     "config-var": {
       "description": "Config Vars allow you to manage the configuration information provided to an app on Heroku.",
-      "id": "schema/config-var",
+      "id": "schemata/config-var",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Config Vars",
@@ -1487,7 +1956,7 @@
     },
     "domain": {
       "description": "Domains define what web routes should be routed to an app on Heroku.",
-      "id": "schema/domain",
+      "id": "schemata/domain",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Domain",
@@ -1601,7 +2070,7 @@
     },
     "dyno": {
       "description": "Dynos encapsulate running processes of an app on Heroku.",
-      "id": "schema/dyno",
+      "id": "schemata/dyno",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Dyno",
@@ -1828,7 +2297,7 @@
     },
     "formation": {
       "description": "The formation of processes that should be maintained for an app. Update the formation to scale processes or change dyno sizes. Available process type names and commands are defined by the `process_types` attribute for the [slug](#slug) currently released on an app.",
-      "id": "schema/formation",
+      "id": "schemata/formation",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Formation",
@@ -2028,7 +2497,7 @@
     },
     "key": {
       "description": "Keys represent public SSH keys associated with an account and are used to authorize accounts as they are performing git operations.",
-      "id": "schema/key",
+      "id": "schemata/key",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Key",
@@ -2036,6 +2505,14 @@
         "object"
       ],
       "definitions": {
+        "comment": {
+          "description": "comment on the key",
+          "example": "username@host",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
         "created_at": {
           "description": "when key was created",
           "example": "2012-01-01T12:00:00Z",
@@ -2046,9 +2523,9 @@
           ]
         },
         "email": {
-          "description": "email address provided in key contents",
-          "example": "username@example.com",
-          "format": "email",
+          "deprecated": true,
+          "description": "deprecated. Please refer to 'comment' instead",
+          "example": "username@host",
           "readOnly": true,
           "type": [
             "string"
@@ -2143,6 +2620,9 @@
         }
       ],
       "properties": {
+        "comment": {
+          "$ref": "#/definitions/key/definitions/comment"
+        },
         "created_at": {
           "$ref": "#/definitions/key/definitions/created_at"
         },
@@ -2165,7 +2645,7 @@
     },
     "log-drain": {
       "description": "[Log drains](https://devcenter.heroku.com/articles/logging#syslog-drains) provide a way to forward your Heroku logs to an external syslog server for long-term archiving. This external service must be configured to receive syslog packets from Heroku, whereupon its URL can be added to an app using this API. Some addons will add a log drain when they are provisioned to an app. These drains can only be removed by removing the add-on.",
-      "id": "schema/log-drain",
+      "id": "schemata/log-drain",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Log Drain",
@@ -2307,7 +2787,7 @@
     },
     "log-session": {
       "description": "A log session is a reference to the http based log stream for an app.",
-      "id": "schema/log-session",
+      "id": "schemata/log-session",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Log Session",
@@ -2435,7 +2915,7 @@
     },
     "oauth-authorization": {
       "description": "OAuth authorizations represent clients that a Heroku user has authorized to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
-      "id": "schema/oauth-authorization",
+      "id": "schemata/oauth-authorization",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Authorization",
@@ -2642,7 +3122,7 @@
     },
     "oauth-client": {
       "description": "OAuth clients are applications that Heroku users can authorize to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth).",
-      "id": "schema/oauth-client",
+      "id": "schemata/oauth-client",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Client",
@@ -2811,7 +3291,7 @@
     },
     "oauth-grant": {
       "description": "OAuth grants are used to obtain authorizations on behalf of a user. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
-      "id": "schema/oauth-grant",
+      "id": "schemata/oauth-grant",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Grant",
@@ -2867,7 +3347,7 @@
     },
     "oauth-token": {
       "description": "OAuth tokens provide access for authorized clients to act on behalf of a Heroku user to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
-      "id": "schema/oauth-token",
+      "id": "schemata/oauth-token",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Token",
@@ -3088,7 +3568,7 @@
     },
     "organization-app-collaborator": {
       "description": "An organization collaborator represents an account that has been given access to an organization app on Heroku.",
-      "id": "schema/organization-app-collaborator",
+      "id": "schemata/organization-app-collaborator",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization App Collaborator",
@@ -3175,7 +3655,7 @@
     "organization-app": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization app encapsulates the organization specific functionality of Heroku apps.",
-      "id": "schema/organization-app",
+      "id": "schemata/organization-app",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization App",
       "type": [
@@ -3384,7 +3864,7 @@
     "organization-member": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization member is an individual with access to an organization.",
-      "id": "schema/organization-member",
+      "id": "schemata/organization-member",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization Member",
       "type": [
@@ -3483,7 +3963,7 @@
     "organization": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "Organizations allow you to manage access to a shared group of applications across your development team.",
-      "id": "schema/organization",
+      "id": "schemata/organization",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization",
       "type": [
@@ -3589,7 +4069,7 @@
     },
     "plan": {
       "description": "Plans represent different configurations of add-ons that may be added to apps.",
-      "id": "schema/plan",
+      "id": "schemata/plan",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Plan",
@@ -3739,7 +4219,7 @@
     },
     "rate-limit": {
       "description": "Rate Limit represents the number of request tokens each account holds. Requests to this endpoint do not count towards the rate limit.",
-      "id": "schema/rate-limit",
+      "id": "schemata/rate-limit",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Rate Limit",
@@ -3773,7 +4253,7 @@
     },
     "region": {
       "description": "A region represents a geographic location in which your application may run.",
-      "id": "schema/region",
+      "id": "schemata/region",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Region",
@@ -3871,7 +4351,7 @@
     },
     "release": {
       "description": "A release represents a combination of code, config vars and add-ons for an app on Heroku.",
-      "id": "schema/release",
+      "id": "schemata/release",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Release",
@@ -4038,7 +4518,7 @@
     },
     "slug": {
       "description": "A slug is a snapshot of your application code that is ready to run on the platform.",
-      "id": "schema/slug",
+      "id": "schemata/slug",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Slug",
@@ -4218,7 +4698,7 @@
     },
     "ssl-endpoint": {
       "description": "[SSL Endpoint](https://devcenter.heroku.com/articles/ssl-endpoint) is a public address serving custom SSL cert for HTTPS traffic to a Heroku app. Note that an app must have the `ssl:endpoint` addon installed before it can provision an SSL Endpoint using these APIs.",
-      "id": "schema/ssl-endpoint",
+      "id": "schemata/ssl-endpoint",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "title": "Heroku Platform API - SSL Endpoint",
       "stability": "production",
@@ -4414,7 +4894,7 @@
     },
     "stack": {
       "description": "Stacks are the different application execution environments available in the Heroku platform.",
-      "id": "schema/stack",
+      "id": "schemata/stack",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Stack",
@@ -4527,11 +5007,20 @@
     "app-feature": {
       "$ref": "#/definitions/app-feature"
     },
+    "app-setup": {
+      "$ref": "#/definitions/app-setup"
+    },
     "app-transfer": {
       "$ref": "#/definitions/app-transfer"
     },
     "app": {
       "$ref": "#/definitions/app"
+    },
+    "build-result": {
+      "$ref": "#/definitions/build-result"
+    },
+    "build": {
+      "$ref": "#/definitions/build"
     },
     "collaborator": {
       "$ref": "#/definitions/collaborator"
