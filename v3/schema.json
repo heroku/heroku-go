@@ -824,7 +824,7 @@
       "description": "An app setup represents an app on Heroku that is setup using an environment, addons, and scripts described in an app.json manifest file.",
       "id": "schemata/app-setup",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "stability": "prototype",
+      "stability": "production",
       "title": "Heroku Setup API - App Setup",
       "type": [
         "object"
@@ -875,6 +875,15 @@
           "readOnly": true,
           "type": [
             "string"
+          ]
+        },
+        "resolved_success_url": {
+          "description": "fully qualified success url",
+          "example": "http://example.herokuapp.com/welcome",
+          "readOnly": true,
+          "type": [
+            "string",
+            "null"
           ]
         },
         "failure_message": {
@@ -977,6 +986,9 @@
         },
         "postdeploy": {
           "$ref": "#/definitions/app-setup/definitions/postdeploy"
+        },
+        "resolved_success_url": {
+          "$ref": "#/definitions/app-setup/definitions/resolved_success_url"
         }
       },
       "links": [
@@ -1012,16 +1024,26 @@
                 "description": "overrides of keys in the app.json manifest file",
                 "example": {
                   "env": {
-                    "WEB_CONCURRENCY": "1"
+                    "FOO": "bar",
+                    "BAZ": "qux"
                   }
                 },
                 "properties": {
                   "env": {
                     "description": "overrides of the env specified in the app.json manifest file",
                     "example": {
-                      "WEB_CONCURRENCY": "1"
+                      "FOO": "bar",
+                      "BAZ": "qux"
                     },
                     "readOnly": true,
+                    "additionalProperties": false,
+                    "patternProperties": {
+                      "^\\w+$": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    },
                     "type": [
                       "object"
                     ]
@@ -1268,8 +1290,7 @@
         },
         "git_url": {
           "description": "git repo URL of app",
-          "example": "git@heroku.com/example.git",
-          "format": "uri",
+          "example": "git@heroku.com:example.git",
           "pattern": "^git@heroku\\.com:[a-z][a-z0-9-]{3,30}\\.git$",
           "readOnly": true,
           "type": [
@@ -1516,7 +1537,7 @@
       "description": "A build result contains the output from a build.",
       "id": "schemata/build-result",
       "title": "Heroku Build API - Build Result",
-      "stability": "prototype",
+      "stability": "production",
       "type": [
         "object"
       ],
@@ -1534,6 +1555,11 @@
           "type": [
             "object"
           ],
+          "example": {
+            "stream": "STDOUT",
+            "line": "-----> Ruby app detected\n"
+          },
+          "readOnly": true,
           "definitions": {
             "stream": {
               "type": [
@@ -1542,12 +1568,18 @@
               "enum": [
                 "STDOUT",
                 "STDERR"
-              ]
+              ],
+              "description": "The output stream where the line was sent.",
+              "example": "STDOUT",
+              "readOnly": true
             },
             "line": {
               "type": [
                 "string"
-              ]
+              ],
+              "example": "-----> Ruby app detected\n",
+              "readOnly": true,
+              "description": "A line of output from the build."
             }
           },
           "properties": {
@@ -1593,7 +1625,14 @@
           ],
           "items": {
             "$ref": "#/definitions/build-result/definitions/line"
-          }
+          },
+          "description": "A list of all the lines of a build's output.",
+          "example": [
+            {
+              "line": "-----> Ruby app detected\n",
+              "stream": "STDOUT"
+            }
+          ]
         }
       }
     },
@@ -1602,7 +1641,7 @@
       "description": "A build represents the process of transforming a code tarball into a slug",
       "id": "schemata/build",
       "title": "Heroku Build API - Build",
-      "stability": "prototype",
+      "stability": "production",
       "type": [
         "object"
       ],
@@ -1694,7 +1733,10 @@
               "source_blob": {
                 "$ref": "#/definitions/build/definitions/source_blob"
               }
-            }
+            },
+            "required": [
+              "source_blob"
+            ]
           },
           "title": "Create"
         },
@@ -1725,6 +1767,7 @@
         },
         "slug": {
           "description": "slug created by this build",
+          "example": "01234567-89ab-cdef-0123-456789abcdef",
           "properties": {
             "id": {
               "$ref": "#/definitions/slug/definitions/id"
@@ -3677,12 +3720,20 @@
           "type": [
             "boolean"
           ]
+        },
+        "personal": {
+          "default": false,
+          "description": "force creation of the app in the user account even if a default org is set.",
+          "example": false,
+          "type": [
+            "boolean"
+          ]
         }
       },
       "links": [
         {
-          "description": "Create a new organization app. Use this endpoint instead of the `/apps` endpoint when you want to create an app that will be owned by an organization in which you are a member, rather than your personal account.",
-          "href": "/organizations/{(%23%2Fdefinitions%2Forganization%2Fdefinitions%2Fidentity)}/apps",
+          "description": "Create a new app in the specified organization, in the default organization if unspecified,  or in personal account, if default organization is not set.",
+          "href": "/organizations/apps",
           "method": "POST",
           "rel": "create",
           "schema": {
@@ -3692,6 +3743,12 @@
               },
               "name": {
                 "$ref": "#/definitions/app/definitions/name"
+              },
+              "organization": {
+                "$ref": "#/definitions/organization/definitions/name"
+              },
+              "personal": {
+                "$ref": "#/definitions/organization-app/definitions/personal"
               },
               "region": {
                 "$ref": "#/definitions/region/definitions/name"
@@ -3707,11 +3764,25 @@
           "title": "Create"
         },
         {
+          "description": "List apps in the default organization, or in personal account, if default organization is not set.",
+          "href": "/organizations/apps",
+          "method": "GET",
+          "rel": "instances",
+          "title": "List"
+        },
+        {
           "description": "List organization apps.",
           "href": "/organizations/{(%23%2Fdefinitions%2Forganization%2Fdefinitions%2Fidentity)}/apps",
           "method": "GET",
           "rel": "instances",
-          "title": "List"
+          "title": "List For Organization"
+        },
+        {
+          "description": "Info for an organization app.",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
+          "method": "GET",
+          "rel": "self",
+          "title": "Info"
         },
         {
           "description": "Lock or unlock an organization app.",
@@ -3802,6 +3873,18 @@
         "name": {
           "$ref": "#/definitions/app/definitions/name"
         },
+        "organization": {
+          "description": "organization that owns this app",
+          "properties": {
+            "name": {
+              "$ref": "#/definitions/organization/definitions/name"
+            }
+          },
+          "type": [
+            "null",
+            "object"
+          ]
+        },
         "owner": {
           "description": "identity of app owner",
           "properties": {
@@ -3813,6 +3896,7 @@
             }
           },
           "type": [
+            "null",
             "object"
           ]
         },

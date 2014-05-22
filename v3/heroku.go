@@ -489,12 +489,13 @@ type AppSetup struct {
 		ExitCode int    `json:"exit_code"` // The exit code of the postdeploy script
 		Output   string `json:"output"`    // output of the postdeploy script
 	} `json:"postdeploy"` // result of postdeploy script
-	Status    string    `json:"status"`     // the overall status of app setup
-	UpdatedAt time.Time `json:"updated_at"` // when app setup was updated
+	ResolvedSuccessURL *string   `json:"resolved_success_url"` // fully qualified success url
+	Status             string    `json:"status"`               // the overall status of app setup
+	UpdatedAt          time.Time `json:"updated_at"`           // when app setup was updated
 }
 type AppSetupCreateOpts struct {
 	Overrides *struct {
-		Env *struct{} `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
+		Env *map[string]string `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
 	} `json:"overrides,omitempty"` // overrides of keys in the app.json manifest file
 	SourceBlob *struct {
 		URL *string `json:"url,omitempty"` // URL of gzipped tarball of source code containing app.json manifest
@@ -506,7 +507,7 @@ type AppSetupCreateOpts struct {
 // app.json manifest file.
 func (s *Service) AppSetupCreate(o struct {
 	Overrides *struct {
-		Env *struct{} `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
+		Env *map[string]string `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
 	} `json:"overrides,omitempty"` // overrides of keys in the app.json manifest file
 	SourceBlob *struct {
 		URL *string `json:"url,omitempty"` // URL of gzipped tarball of source code containing app.json manifest
@@ -607,20 +608,20 @@ type Build struct {
 	} `json:"user"` // user that started the build
 }
 type BuildCreateOpts struct {
-	SourceBlob *struct {
+	SourceBlob struct {
 		URL *string `json:"url,omitempty"` // URL where gzipped tar archive of source code for build was
 		// downloaded.
 		Version *string `json:"version,omitempty"` // Version of the gzipped tarball.
-	} `json:"source_blob,omitempty"` // location of gzipped tarball of source code used to create build
+	} `json:"source_blob"` // location of gzipped tarball of source code used to create build
 }
 
 // Create a new build.
 func (s *Service) BuildCreate(appIdentity string, o struct {
-	SourceBlob *struct {
+	SourceBlob struct {
 		URL *string `json:"url,omitempty"` // URL where gzipped tar archive of source code for build was
 		// downloaded.
 		Version *string `json:"version,omitempty"` // Version of the gzipped tarball.
-	} `json:"source_blob,omitempty"` // location of gzipped tarball of source code used to create build
+	} `json:"source_blob"` // location of gzipped tarball of source code used to create build
 }) (*Build, error) {
 	var build Build
 	return &build, s.Post(&build, fmt.Sprintf("/apps/%v/builds", appIdentity), o)
@@ -646,9 +647,9 @@ type BuildResult struct {
 	} `json:"build"` // identity of build
 	ExitCode float64 `json:"exit_code"` // status from the build
 	Lines    []struct {
-		Line   string `json:"line"`
-		Stream string `json:"stream"`
-	} `json:"lines"`
+		Line   string `json:"line"`   // A line of output from the build.
+		Stream string `json:"stream"` // The output stream where the line was sent.
+	} `json:"lines"` // A list of all the lines of a build's output.
 }
 
 // Info for existing result.
@@ -1232,7 +1233,10 @@ type OrganizationApp struct {
 	Locked                       bool       `json:"locked"`                         // are other organization members forbidden from joining this app.
 	Maintenance                  bool       `json:"maintenance"`                    // maintenance status of app
 	Name                         string     `json:"name"`                           // unique name of app
-	Owner                        struct {
+	Organization                 *struct {
+		Name string `json:"name"` // unique name of organization
+	} `json:"organization"` // organization that owns this app
+	Owner *struct {
 		Email string `json:"email"` // unique email address of account
 		ID    string `json:"id"`    // unique identifier of an account
 	} `json:"owner"` // identity of app owner
@@ -1251,30 +1255,48 @@ type OrganizationApp struct {
 	WebURL    string    `json:"web_url"`    // web URL of app
 }
 type OrganizationAppCreateOpts struct {
-	Locked *bool   `json:"locked,omitempty"` // are other organization members forbidden from joining this app.
-	Name   *string `json:"name,omitempty"`   // unique name of app
+	Locked       *bool   `json:"locked,omitempty"`       // are other organization members forbidden from joining this app.
+	Name         *string `json:"name,omitempty"`         // unique name of app
+	Organization *string `json:"organization,omitempty"` // unique name of organization
+	Personal     *bool   `json:"personal,omitempty"`     // force creation of the app in the user account even if a default org
+	// is set.
 	Region *string `json:"region,omitempty"` // unique name of region
 	Stack  *string `json:"stack,omitempty"`  // unique name of stack
 }
 
-// Create a new organization app. Use this endpoint instead of the
-// `/apps` endpoint when you want to create an app that will be owned by
-// an organization in which you are a member, rather than your personal
-// account.
-func (s *Service) OrganizationAppCreate(organizationIdentity string, o struct {
-	Locked *bool   `json:"locked,omitempty"` // are other organization members forbidden from joining this app.
-	Name   *string `json:"name,omitempty"`   // unique name of app
+// Create a new app in the specified organization, in the default
+// organization if unspecified,  or in personal account, if default
+// organization is not set.
+func (s *Service) OrganizationAppCreate(o struct {
+	Locked       *bool   `json:"locked,omitempty"`       // are other organization members forbidden from joining this app.
+	Name         *string `json:"name,omitempty"`         // unique name of app
+	Organization *string `json:"organization,omitempty"` // unique name of organization
+	Personal     *bool   `json:"personal,omitempty"`     // force creation of the app in the user account even if a default org
+	// is set.
 	Region *string `json:"region,omitempty"` // unique name of region
 	Stack  *string `json:"stack,omitempty"`  // unique name of stack
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Post(&organizationApp, fmt.Sprintf("/organizations/%v/apps", organizationIdentity), o)
+	return &organizationApp, s.Post(&organizationApp, fmt.Sprintf("/organizations/apps"), o)
+}
+
+// List apps in the default organization, or in personal account, if
+// default organization is not set.
+func (s *Service) OrganizationAppList(lr *ListRange) ([]*OrganizationApp, error) {
+	var organizationAppList []*OrganizationApp
+	return organizationAppList, s.Get(&organizationAppList, fmt.Sprintf("/organizations/apps"), lr)
 }
 
 // List organization apps.
-func (s *Service) OrganizationAppList(organizationIdentity string, lr *ListRange) ([]*OrganizationApp, error) {
+func (s *Service) OrganizationAppListForOrganization(organizationIdentity string, lr *ListRange) ([]*OrganizationApp, error) {
 	var organizationAppList []*OrganizationApp
 	return organizationAppList, s.Get(&organizationAppList, fmt.Sprintf("/organizations/%v/apps", organizationIdentity), lr)
+}
+
+// Info for an organization app.
+func (s *Service) OrganizationAppInfo(appIdentity string) (*OrganizationApp, error) {
+	var organizationApp OrganizationApp
+	return &organizationApp, s.Get(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), nil)
 }
 
 type OrganizationAppUpdateLockedOpts struct {
