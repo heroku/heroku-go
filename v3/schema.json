@@ -3,7 +3,6 @@
   "definitions": {
     "account-feature": {
       "description": "An account feature represents a Heroku labs capability that can be enabled or disabled for an account on Heroku.",
-      "id": "schemata/account-feature",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Account Feature",
@@ -154,7 +153,6 @@
     },
     "account": {
       "description": "An account represents an individual signed up to use the Heroku platform.",
-      "id": "schemata/account",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Account",
@@ -388,7 +386,6 @@
     },
     "addon-service": {
       "description": "Add-on services represent add-ons that may be provisioned for apps.",
-      "id": "schemata/addon-service",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Add-on Service",
@@ -475,7 +472,6 @@
     },
     "addon": {
       "description": "Add-ons represent add-ons that have been provisioned for an app.",
-      "id": "schemata/addon",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Add-on",
@@ -671,7 +667,6 @@
     },
     "app-feature": {
       "description": "An app feature represents a Heroku labs capability that can be enabled or disabled for an app on Heroku.",
-      "id": "schemata/app-feature",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - App Feature",
@@ -822,7 +817,6 @@
     },
     "app-setup": {
       "description": "An app setup represents an app on Heroku that is setup using an environment, addons, and scripts described in an app.json manifest file.",
-      "id": "schemata/app-setup",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Setup API - App Setup",
@@ -1067,7 +1061,6 @@
     },
     "app-transfer": {
       "description": "An app transfer represents a two party interaction for transferring ownership of an app.",
-      "id": "schemata/app-transfer",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - App Transfer",
@@ -1252,7 +1245,6 @@
     },
     "app": {
       "description": "An app represents the program that you would like to deploy and run on Heroku.",
-      "id": "schemata/app",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - App",
@@ -1535,7 +1527,6 @@
     "build-result": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "A build result contains the output from a build.",
-      "id": "schemata/build-result",
       "title": "Heroku Build API - Build Result",
       "stability": "production",
       "type": [
@@ -1639,7 +1630,6 @@
     "build": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "A build represents the process of transforming a code tarball into a slug",
-      "id": "schemata/build",
       "title": "Heroku Build API - Build",
       "stability": "production",
       "type": [
@@ -1802,7 +1792,6 @@
     },
     "collaborator": {
       "description": "A collaborator represents an account that has been given access to an app on Heroku.",
-      "id": "schemata/collaborator",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Collaborator",
@@ -1940,7 +1929,6 @@
     },
     "config-var": {
       "description": "Config Vars allow you to manage the configuration information provided to an app on Heroku.",
-      "id": "schemata/config-var",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Config Vars",
@@ -1999,7 +1987,6 @@
     },
     "domain": {
       "description": "Domains define what web routes should be routed to an app on Heroku.",
-      "id": "schemata/domain",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Domain",
@@ -2113,7 +2100,6 @@
     },
     "dyno": {
       "description": "Dynos encapsulate running processes of an app on Heroku.",
-      "id": "schemata/dyno",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Dyno",
@@ -2340,7 +2326,6 @@
     },
     "formation": {
       "description": "The formation of processes that should be maintained for an app. Update the formation to scale processes or change dyno sizes. Available process type names and commands are defined by the `process_types` attribute for the [slug](#slug) currently released on an app.",
-      "id": "schemata/formation",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Formation",
@@ -2540,7 +2525,6 @@
     },
     "key": {
       "description": "Keys represent public SSH keys associated with an account and are used to authorize accounts as they are performing git operations.",
-      "id": "schemata/key",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Key",
@@ -2688,7 +2672,6 @@
     },
     "log-drain": {
       "description": "[Log drains](https://devcenter.heroku.com/articles/logging#syslog-drains) provide a way to forward your Heroku logs to an external syslog server for long-term archiving. This external service must be configured to receive syslog packets from Heroku, whereupon its URL can be added to an app using this API. Some addons will add a log drain when they are provisioned to an app. These drains can only be removed by removing the add-on.",
-      "id": "schemata/log-drain",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Log Drain",
@@ -2830,7 +2813,6 @@
     },
     "log-session": {
       "description": "A log session is a reference to the http based log stream for an app.",
-      "id": "schemata/log-session",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Log Session",
@@ -2958,7 +2940,6 @@
     },
     "oauth-authorization": {
       "description": "OAuth authorizations represent clients that a Heroku user has authorized to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
-      "id": "schemata/oauth-authorization",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Authorization",
@@ -3165,7 +3146,6 @@
     },
     "oauth-client": {
       "description": "OAuth clients are applications that Heroku users can authorize to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth).",
-      "id": "schemata/oauth-client",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Client",
@@ -3334,7 +3314,6 @@
     },
     "oauth-grant": {
       "description": "OAuth grants are used to obtain authorizations on behalf of a user. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
-      "id": "schemata/oauth-grant",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Grant",
@@ -3390,7 +3369,6 @@
     },
     "oauth-token": {
       "description": "OAuth tokens provide access for authorized clients to act on behalf of a Heroku user to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
-      "id": "schemata/oauth-token",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - OAuth Token",
@@ -3611,7 +3589,6 @@
     },
     "organization-app-collaborator": {
       "description": "An organization collaborator represents an account that has been given access to an organization app on Heroku.",
-      "id": "schemata/organization-app-collaborator",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization App Collaborator",
@@ -3698,7 +3675,6 @@
     "organization-app": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization app encapsulates the organization specific functionality of Heroku apps.",
-      "id": "schemata/organization-app",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization App",
       "type": [
@@ -3948,7 +3924,6 @@
     "organization-member": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization member is an individual with access to an organization.",
-      "id": "schemata/organization-member",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization Member",
       "type": [
@@ -4047,7 +4022,6 @@
     "organization": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "Organizations allow you to manage access to a shared group of applications across your development team.",
-      "id": "schemata/organization",
       "stability": "prototype",
       "title": "Heroku Platform API - Organization",
       "type": [
@@ -4153,7 +4127,6 @@
     },
     "plan": {
       "description": "Plans represent different configurations of add-ons that may be added to apps.",
-      "id": "schemata/plan",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Plan",
@@ -4303,7 +4276,6 @@
     },
     "rate-limit": {
       "description": "Rate Limit represents the number of request tokens each account holds. Requests to this endpoint do not count towards the rate limit.",
-      "id": "schemata/rate-limit",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Rate Limit",
@@ -4337,7 +4309,6 @@
     },
     "region": {
       "description": "A region represents a geographic location in which your application may run.",
-      "id": "schemata/region",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Region",
@@ -4435,7 +4406,6 @@
     },
     "release": {
       "description": "A release represents a combination of code, config vars and add-ons for an app on Heroku.",
-      "id": "schemata/release",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Release",
@@ -4602,7 +4572,6 @@
     },
     "slug": {
       "description": "A slug is a snapshot of your application code that is ready to run on the platform.",
-      "id": "schemata/slug",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Slug",
@@ -4782,7 +4751,6 @@
     },
     "ssl-endpoint": {
       "description": "[SSL Endpoint](https://devcenter.heroku.com/articles/ssl-endpoint) is a public address serving custom SSL cert for HTTPS traffic to a Heroku app. Note that an app must have the `ssl:endpoint` addon installed before it can provision an SSL Endpoint using these APIs.",
-      "id": "schemata/ssl-endpoint",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "title": "Heroku Platform API - SSL Endpoint",
       "stability": "production",
@@ -4978,7 +4946,6 @@
     },
     "stack": {
       "description": "Stacks are the different application execution environments available in the Heroku platform.",
-      "id": "schemata/stack",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "title": "Heroku Platform API - Stack",
