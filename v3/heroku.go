@@ -294,6 +294,10 @@ func (s *Service) AccountFeatureUpdate(accountFeatureIdentity string, o struct {
 
 // Add-ons represent add-ons that have been provisioned for an app.
 type Addon struct {
+	AddonService struct {
+		ID   string `json:"id"`   // unique identifier of this addon-service
+		Name string `json:"name"` // unique name of this addon-service
+	} `json:"addon_service"` // identity of add-on service
 	ConfigVars []string  `json:"config_vars"` // config vars associated with this application
 	CreatedAt  time.Time `json:"created_at"`  // when add-on was updated
 	ID         string    `json:"id"`          // unique identifier of add-on
@@ -350,6 +354,8 @@ func (s *Service) AddonUpdate(appIdentity string, addonIdentity string, o struct
 }
 
 // Add-on services represent add-ons that may be provisioned for apps.
+// Endpoints under add-on services can be accessed without
+// authentication.
 type AddonService struct {
 	CreatedAt time.Time `json:"created_at"` // when addon-service was created
 	ID        string    `json:"id"`         // unique identifier of this addon-service
@@ -506,25 +512,35 @@ type AppSetup struct {
 	UpdatedAt          time.Time `json:"updated_at"`           // when app setup was updated
 }
 type AppSetupCreateOpts struct {
+	App *struct {
+		Name   *string `json:"name,omitempty"`   // unique name of app
+		Region *string `json:"region,omitempty"` // unique identifier of region
+		Stack  *string `json:"stack,omitempty"`  // unique name of stack
+	} `json:"app,omitempty"` // optional parameters for created app
 	Overrides *struct {
 		Env *map[string]string `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
 	} `json:"overrides,omitempty"` // overrides of keys in the app.json manifest file
-	SourceBlob *struct {
+	SourceBlob struct {
 		URL *string `json:"url,omitempty"` // URL of gzipped tarball of source code containing app.json manifest
 		// file
-	} `json:"source_blob,omitempty"` // gzipped tarball of source code containing app.json manifest file
+	} `json:"source_blob"` // gzipped tarball of source code containing app.json manifest file
 }
 
 // Create a new app setup from a gzipped tar archive containing an
 // app.json manifest file.
 func (s *Service) AppSetupCreate(o struct {
+	App *struct {
+		Name   *string `json:"name,omitempty"`   // unique name of app
+		Region *string `json:"region,omitempty"` // unique identifier of region
+		Stack  *string `json:"stack,omitempty"`  // unique name of stack
+	} `json:"app,omitempty"` // optional parameters for created app
 	Overrides *struct {
 		Env *map[string]string `json:"env,omitempty"` // overrides of the env specified in the app.json manifest file
 	} `json:"overrides,omitempty"` // overrides of keys in the app.json manifest file
-	SourceBlob *struct {
+	SourceBlob struct {
 		URL *string `json:"url,omitempty"` // URL of gzipped tarball of source code containing app.json manifest
 		// file
-	} `json:"source_blob,omitempty"` // gzipped tarball of source code containing app.json manifest file
+	} `json:"source_blob"` // gzipped tarball of source code containing app.json manifest file
 }) (*AppSetup, error) {
 	var appSetup AppSetup
 	return &appSetup, s.Post(&appSetup, fmt.Sprintf("/app-setups"), o)
@@ -1306,9 +1322,9 @@ func (s *Service) OrganizationAppListForOrganization(organizationIdentity string
 }
 
 // Info for an organization app.
-func (s *Service) OrganizationAppInfo(appIdentity string) (*OrganizationApp, error) {
+func (s *Service) OrganizationAppInfo(organizationAppIdentity string) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Get(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), nil)
+	return &organizationApp, s.Get(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), nil)
 }
 
 type OrganizationAppUpdateLockedOpts struct {
@@ -1316,11 +1332,11 @@ type OrganizationAppUpdateLockedOpts struct {
 }
 
 // Lock or unlock an organization app.
-func (s *Service) OrganizationAppUpdateLocked(appIdentity string, o struct {
+func (s *Service) OrganizationAppUpdateLocked(organizationAppIdentity string, o struct {
 	Locked bool `json:"locked"` // are other organization members forbidden from joining this app.
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), o)
+	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
 }
 
 type OrganizationAppTransferToAccountOpts struct {
@@ -1328,11 +1344,11 @@ type OrganizationAppTransferToAccountOpts struct {
 }
 
 // Transfer an existing organization app to another Heroku account.
-func (s *Service) OrganizationAppTransferToAccount(appIdentity string, o struct {
+func (s *Service) OrganizationAppTransferToAccount(organizationAppIdentity string, o struct {
 	Owner string `json:"owner"` // unique email address of account
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), o)
+	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
 }
 
 type OrganizationAppTransferToOrganizationOpts struct {
@@ -1340,11 +1356,11 @@ type OrganizationAppTransferToOrganizationOpts struct {
 }
 
 // Transfer an existing organization app to another organization.
-func (s *Service) OrganizationAppTransferToOrganization(appIdentity string, o struct {
+func (s *Service) OrganizationAppTransferToOrganization(organizationAppIdentity string, o struct {
 	Owner string `json:"owner"` // unique name of organization
 }) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", appIdentity), o)
+	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
 }
 
 // An organization collaborator represents an account that has been
@@ -1378,20 +1394,20 @@ func (s *Service) OrganizationAppCollaboratorCreate(appIdentity string, o struct
 }
 
 // Delete an existing collaborator from an organization app.
-func (s *Service) OrganizationAppCollaboratorDelete(appIdentity string, collaboratorIdentity string) error {
-	return s.Delete(fmt.Sprintf("/organizations/apps/%v/collaborators/%v", appIdentity, collaboratorIdentity))
+func (s *Service) OrganizationAppCollaboratorDelete(organizationAppIdentity string, organizationAppCollaboratorIdentity string) error {
+	return s.Delete(fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity))
 }
 
 // Info for a collaborator on an organization app.
-func (s *Service) OrganizationAppCollaboratorInfo(appIdentity string, collaboratorIdentity string) (*OrganizationAppCollaborator, error) {
+func (s *Service) OrganizationAppCollaboratorInfo(organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaborator, error) {
 	var organizationAppCollaborator OrganizationAppCollaborator
-	return &organizationAppCollaborator, s.Get(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", appIdentity, collaboratorIdentity), nil)
+	return &organizationAppCollaborator, s.Get(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity), nil)
 }
 
 // List collaborators on an organization app.
-func (s *Service) OrganizationAppCollaboratorList(appIdentity string, lr *ListRange) ([]*OrganizationAppCollaborator, error) {
+func (s *Service) OrganizationAppCollaboratorList(organizationAppIdentity string, lr *ListRange) ([]*OrganizationAppCollaborator, error) {
 	var organizationAppCollaboratorList []*OrganizationAppCollaborator
-	return organizationAppCollaboratorList, s.Get(&organizationAppCollaboratorList, fmt.Sprintf("/organizations/apps/%v/collaborators", appIdentity), lr)
+	return organizationAppCollaboratorList, s.Get(&organizationAppCollaboratorList, fmt.Sprintf("/organizations/apps/%v/collaborators", organizationAppIdentity), lr)
 }
 
 // An organization member is an individual with access to an
@@ -1428,7 +1444,8 @@ func (s *Service) OrganizationMemberList(organizationIdentity string, lr *ListRa
 }
 
 // Plans represent different configurations of add-ons that may be added
-// to apps.
+// to apps. Endpoints under add-on services can be accessed without
+// authentication.
 type Plan struct {
 	CreatedAt   time.Time `json:"created_at"`  // when plan was created
 	Default     bool      `json:"default"`     // whether this plan is the default for its addon service

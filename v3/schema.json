@@ -1,10 +1,11 @@
 {
-  "$schema": "http://json-schema.org/draft-04/hyper-schema",
+  "$schema": "http://interagent.github.io/interagent-hyper-schema",
   "definitions": {
     "account-feature": {
       "description": "An account feature represents a Heroku labs capability that can be enabled or disabled for an account on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Account Feature",
       "type": [
         "object"
@@ -94,6 +95,9 @@
           "href": "/account/features/{(%23%2Fdefinitions%2Faccount-feature%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/account-feature"
+          },
           "title": "Info"
         },
         {
@@ -101,6 +105,14 @@
           "href": "/account/features",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/account-feature"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -120,6 +132,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/account-feature"
           },
           "title": "Update"
         }
@@ -155,6 +170,7 @@
       "description": "An account represents an individual signed up to use the Heroku platform.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Account",
       "type": [
         "object"
@@ -274,6 +290,9 @@
           "href": "/account",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/account"
+          },
           "title": "Info"
         },
         {
@@ -302,6 +321,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/account"
           },
           "title": "Update"
         },
@@ -351,6 +373,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/account"
+          },
           "title": "Change Password"
         }
       ],
@@ -385,9 +410,10 @@
       }
     },
     "addon-service": {
-      "description": "Add-on services represent add-ons that may be provisioned for apps.",
+      "description": "Add-on services represent add-ons that may be provisioned for apps. Endpoints under add-on services can be accessed without authentication.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Add-on Service",
       "type": [
         "object"
@@ -445,6 +471,9 @@
           "href": "/addon-services/{(%23%2Fdefinitions%2Faddon-service%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/addon-service"
+          },
           "title": "Info"
         },
         {
@@ -452,6 +481,14 @@
           "href": "/addon-services",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/addon-service"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -474,6 +511,7 @@
       "description": "Add-ons represent add-ons that have been provisioned for an app.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Add-on",
       "type": [
         "object"
@@ -586,6 +624,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/addon"
+          },
           "title": "Create"
         },
         {
@@ -593,6 +634,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/addons/{(%23%2Fdefinitions%2Faddon%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/addon"
+          },
           "title": "Delete"
         },
         {
@@ -600,6 +644,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/addons/{(%23%2Fdefinitions%2Faddon%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/addon"
+          },
           "title": "Info"
         },
         {
@@ -607,6 +654,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/addons",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/addon"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -631,6 +686,21 @@
         }
       ],
       "properties": {
+        "addon_service": {
+          "description": "identity of add-on service",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/addon-service/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/addon-service/definitions/name"
+            }
+          },
+          "strictProperties": true,
+          "type": [
+            "object"
+          ]
+        },
         "config_vars": {
           "$ref": "#/definitions/addon/definitions/config_vars"
         },
@@ -653,6 +723,7 @@
               "$ref": "#/definitions/plan/definitions/name"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -669,6 +740,7 @@
       "description": "An app feature represents a Heroku labs capability that can be enabled or disabled for an app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - App Feature",
       "type": [
         "object"
@@ -758,6 +830,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/features/{(%23%2Fdefinitions%2Fapp-feature%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/app-feature"
+          },
           "title": "Info"
         },
         {
@@ -765,6 +840,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/features",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/app-feature"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -784,6 +867,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/app-feature"
           },
           "title": "Update"
         }
@@ -819,6 +905,7 @@
       "description": "An app setup represents an app on Heroku that is setup using an environment, addons, and scripts described in an app.json manifest file.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Setup API - App Setup",
       "type": [
         "object"
@@ -949,6 +1036,7 @@
         },
         "app": {
           "description": "identity of app",
+          "strictProperties": true,
           "type": [
             "object"
           ],
@@ -963,6 +1051,7 @@
         },
         "build": {
           "description": "identity and status of build",
+          "strictProperties": true,
           "type": [
             "object"
           ],
@@ -993,10 +1082,30 @@
           "method": "POST",
           "href": "/app-setups",
           "schema": {
+            "required": [
+              "source_blob"
+            ],
             "type": [
               "object"
             ],
             "properties": {
+              "app": {
+                "description": "optional parameters for created app",
+                "properties": {
+                  "name": {
+                    "$ref": "#/definitions/app/definitions/name"
+                  },
+                  "region": {
+                    "$ref": "#/definitions/region/definitions/identity"
+                  },
+                  "stack": {
+                    "$ref": "#/definitions/stack/definitions/identity"
+                  }
+                },
+                "type": [
+                  "object"
+                ]
+              },
               "source_blob": {
                 "description": "gzipped tarball of source code containing app.json manifest file",
                 "example": "https://example.com/source.tgz?token=xyz",
@@ -1048,6 +1157,9 @@
                 ]
               }
             }
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/app-setup"
           }
         },
         {
@@ -1055,7 +1167,10 @@
           "title": "Info",
           "rel": "self",
           "method": "GET",
-          "href": "/app-setups/{(%23%2Fdefinitions%2Fapp-setup%2Fdefinitions%2Fidentity)}"
+          "href": "/app-setups/{(%23%2Fdefinitions%2Fapp-setup%2Fdefinitions%2Fidentity)}",
+          "targetSchema": {
+            "$ref": "#/definitions/app-setup"
+          }
         }
       ]
     },
@@ -1063,6 +1178,7 @@
       "description": "An app transfer represents a two party interaction for transferring ownership of an app.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - App Transfer",
       "type": [
         "object"
@@ -1142,6 +1258,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/app-transfer"
+          },
           "title": "Create"
         },
         {
@@ -1149,6 +1268,9 @@
           "href": "/account/app-transfers/{(%23%2Fdefinitions%2Fapp-transfer%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/app-transfer"
+          },
           "title": "Delete"
         },
         {
@@ -1156,6 +1278,9 @@
           "href": "/account/app-transfers/{(%23%2Fdefinitions%2Fapp-transfer%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/app-transfer"
+          },
           "title": "Info"
         },
         {
@@ -1163,6 +1288,14 @@
           "href": "/account/app-transfers",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/app-transfer"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -1182,6 +1315,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/app-transfer"
           },
           "title": "Update"
         }
@@ -1217,6 +1353,7 @@
               "$ref": "#/definitions/account/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1231,6 +1368,7 @@
               "$ref": "#/definitions/account/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1247,6 +1385,7 @@
       "description": "An app represents the program that you would like to deploy and run on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - App",
       "type": [
         "object"
@@ -1368,7 +1507,7 @@
         },
         "web_url": {
           "description": "web URL of app",
-          "example": "http://example.herokuapp.com",
+          "example": "http://example.herokuapp.com/",
           "format": "uri",
           "pattern": "^http://[a-z][a-z0-9-]{3,30}\\.herokuapp\\.com/$",
           "readOnly": true,
@@ -1399,6 +1538,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/app"
+          },
           "title": "Create"
         },
         {
@@ -1406,6 +1548,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/app"
+          },
           "title": "Delete"
         },
         {
@@ -1413,13 +1558,29 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/app"
+          },
           "title": "Info"
         },
         {
           "description": "List existing apps.",
           "href": "/apps",
           "method": "GET",
+          "ranges": [
+            "id",
+            "name",
+            "updated_at"
+          ],
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/app"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -1439,6 +1600,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/app"
           },
           "title": "Update"
         }
@@ -1475,6 +1639,7 @@
               "$ref": "#/definitions/account/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1489,6 +1654,7 @@
               "$ref": "#/definitions/region/definitions/name"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1512,6 +1678,7 @@
               "$ref": "#/definitions/stack/definitions/name"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1529,10 +1696,13 @@
       "description": "A build result contains the output from a build.",
       "title": "Heroku Build API - Build Result",
       "stability": "production",
+      "strictProperties": true,
       "type": [
         "object"
       ],
       "definitions": {
+        "identity": {
+        },
         "exit_code": {
           "description": "status from the build",
           "example": 0,
@@ -1543,6 +1713,7 @@
         },
         "line": {
           "description": "a single line of output to STDOUT or STDERR from the build.",
+          "strictProperties": true,
           "type": [
             "object"
           ],
@@ -1589,6 +1760,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds/{(%23%2Fdefinitions%2Fbuild%2Fdefinitions%2Fidentity)}/result",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/build-result"
+          },
           "title": "Info"
         }
       ],
@@ -1632,6 +1806,7 @@
       "description": "A build represents the process of transforming a code tarball into a slug",
       "title": "Heroku Build API - Build",
       "stability": "production",
+      "strictProperties": true,
       "type": [
         "object"
       ],
@@ -1682,6 +1857,7 @@
               ]
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1728,6 +1904,9 @@
               "source_blob"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/build"
+          },
           "title": "Create"
         },
         {
@@ -1735,13 +1914,28 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds/{(%23%2Fdefinitions%2Fbuild%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/build"
+          },
           "title": "Info"
         },
         {
           "description": "List existing build.",
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/builds",
           "method": "GET",
+          "ranges": [
+            "id",
+            "started_at"
+          ],
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/build"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -1763,6 +1957,7 @@
               "$ref": "#/definitions/slug/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object",
             "null"
@@ -1784,6 +1979,7 @@
               "$ref": "#/definitions/account/definitions/email"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1794,6 +1990,7 @@
       "description": "A collaborator represents an account that has been given access to an app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Collaborator",
       "type": [
         "object"
@@ -1877,6 +2074,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/collaborator"
+          },
           "title": "Create"
         },
         {
@@ -1884,6 +2084,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/collaborator"
+          },
           "title": "Delete"
         },
         {
@@ -1891,6 +2094,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/collaborator"
+          },
           "title": "Info"
         },
         {
@@ -1898,6 +2104,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/collaborator"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -1921,6 +2135,7 @@
               "$ref": "#/definitions/account/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -1931,11 +2146,31 @@
       "description": "Config Vars allow you to manage the configuration information provided to an app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Config Vars",
       "type": [
         "object"
       ],
       "definitions": {
+        "config_vars": {
+          "additionalProperties": false,
+          "description": "hash of config vars",
+          "example": {
+            "FOO": "bar",
+            "BAZ": "qux"
+          },
+          "patternProperties": {
+            "^\\w+$": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object"
+          ]
+        }
       },
       "links": [
         {
@@ -1943,6 +2178,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/config-vars",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/config-var/definitions/config_vars"
+          },
           "title": "Info"
         },
         {
@@ -1954,8 +2192,8 @@
             "additionalProperties": false,
             "description": "hash of config changes – update values or delete by seting it to NULL",
             "example": {
-              "FOO": null,
-              "BAZ": "grault"
+              "FOO": "bar",
+              "BAZ": "qux"
             },
             "patternProperties": {
               "^\\w+$": {
@@ -1968,6 +2206,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/config-var/definitions/config_vars"
           },
           "title": "Update"
         }
@@ -1982,13 +2223,13 @@
             "string"
           ]
         }
-      },
-      "additionalProperties": false
+      }
     },
     "domain": {
       "description": "Domains define what web routes should be routed to an app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Domain",
       "type": [
         "object"
@@ -2059,6 +2300,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/domain"
+          },
           "title": "Create"
         },
         {
@@ -2066,6 +2310,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/domains/{(%23%2Fdefinitions%2Fdomain%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/domain"
+          },
           "title": "Delete"
         },
         {
@@ -2073,6 +2320,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/domains/{(%23%2Fdefinitions%2Fdomain%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/domain"
+          },
           "title": "Info"
         },
         {
@@ -2080,6 +2330,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/domains",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/domain"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -2102,6 +2360,7 @@
       "description": "Dynos encapsulate running processes of an app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Dyno",
       "type": [
         "object"
@@ -2156,6 +2415,7 @@
             }
           },
           "readOnly": false,
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -2249,6 +2509,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/dyno"
+          },
           "title": "Create"
         },
         {
@@ -2256,6 +2519,12 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/dynos/{(%23%2Fdefinitions%2Fdyno%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "empty",
+          "targetSchema": {
+            "additionalPoperties": false,
+            "type": [
+              "object"
+            ]
+          },
           "title": "Restart"
         },
         {
@@ -2263,6 +2532,12 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/dynos",
           "method": "DELETE",
           "rel": "empty",
+          "targetSchema": {
+            "additionalPoperties": false,
+            "type": [
+              "object"
+            ]
+          },
           "title": "Restart all"
         },
         {
@@ -2270,6 +2545,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/dynos/{(%23%2Fdefinitions%2Fdyno%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/dyno"
+          },
           "title": "Info"
         },
         {
@@ -2277,6 +2555,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/dynos",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/dyno"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -2306,6 +2592,7 @@
               "$ref": "#/definitions/release/definitions/version"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -2328,6 +2615,7 @@
       "description": "The formation of processes that should be maintained for an app. Update the formation to scale processes or change dyno sizes. Available process type names and commands are defined by the `process_types` attribute for the [slug](#slug) currently released on an app.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Formation",
       "type": [
         "object"
@@ -2431,6 +2719,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/formation/{(%23%2Fdefinitions%2Fformation%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/formation"
+          },
           "title": "Info"
         },
         {
@@ -2438,6 +2729,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/formation",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/formation"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -2473,6 +2772,14 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/formation"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "Batch update"
         },
         {
@@ -2492,6 +2799,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/formation"
           },
           "title": "Update",
           "type": [
@@ -2527,6 +2837,7 @@
       "description": "Keys represent public SSH keys associated with an account and are used to authorize accounts as they are performing git operations.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Key",
       "type": [
         "object"
@@ -2622,6 +2933,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/key"
+          },
           "title": "Create"
         },
         {
@@ -2629,6 +2943,9 @@
           "href": "/account/keys/{(%23%2Fdefinitions%2Fkey%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/key"
+          },
           "title": "Delete"
         },
         {
@@ -2636,6 +2953,14 @@
           "href": "/account/keys/{(%23%2Fdefinitions%2Fkey%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/key"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "Info"
         },
         {
@@ -2674,6 +2999,7 @@
       "description": "[Log drains](https://devcenter.heroku.com/articles/logging#syslog-drains) provide a way to forward your Heroku logs to an external syslog server for long-term archiving. This external service must be configured to receive syslog packets from Heroku, whereupon its URL can be added to an app using this API. Some addons will add a log drain when they are provisioned to an app. These drains can only be removed by removing the add-on.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Log Drain",
       "type": [
         "object"
@@ -2766,6 +3092,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/log-drain"
+          },
           "title": "Create"
         },
         {
@@ -2773,6 +3102,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/log-drains/{(%23%2Fdefinitions%2Flog-drain%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/log-drain"
+          },
           "title": "Delete"
         },
         {
@@ -2780,6 +3112,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/log-drains/{(%23%2Fdefinitions%2Flog-drain%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/log-drain"
+          },
           "title": "Info"
         },
         {
@@ -2787,6 +3122,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/log-drains",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/log-drain"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -2815,6 +3158,7 @@
       "description": "A log session is a reference to the http based log stream for an app.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Log Session",
       "type": [
         "object"
@@ -2920,6 +3264,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/log-session"
+          },
           "title": "Create"
         }
       ],
@@ -2942,6 +3289,7 @@
       "description": "OAuth authorizations represent clients that a Heroku user has authorized to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - OAuth Authorization",
       "type": [
         "object"
@@ -3033,6 +3381,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-authorization"
+          },
           "title": "Create"
         },
         {
@@ -3040,6 +3391,9 @@
           "href": "/oauth/authorizations/{(%23%2Fdefinitions%2Foauth-authorization%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-authorization"
+          },
           "title": "Delete"
         },
         {
@@ -3047,6 +3401,9 @@
           "href": "/oauth/authorizations/{(%23%2Fdefinitions%2Foauth-authorization%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-authorization"
+          },
           "title": "Info"
         },
         {
@@ -3054,6 +3411,14 @@
           "href": "/oauth/authorizations",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/oauth-authorization"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -3110,6 +3475,7 @@
               "$ref": "#/definitions/oauth-grant/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "null",
             "object"
@@ -3131,6 +3497,7 @@
               "$ref": "#/definitions/oauth-token/definitions/token"
             }
           },
+          "strictProperties": true,
           "type": [
             "null",
             "object"
@@ -3148,6 +3515,7 @@
       "description": "OAuth clients are applications that Heroku users can authorize to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth).",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - OAuth Client",
       "type": [
         "object"
@@ -3244,6 +3612,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-client"
+          },
           "title": "Create"
         },
         {
@@ -3251,6 +3622,9 @@
           "href": "/oauth/clients/{(%23%2Fdefinitions%2Foauth-client%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-client"
+          },
           "title": "Delete"
         },
         {
@@ -3265,6 +3639,14 @@
           "href": "/oauth/clients",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/oauth-client"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -3284,6 +3666,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-client"
           },
           "title": "Update"
         }
@@ -3316,6 +3701,7 @@
       "description": "OAuth grants are used to obtain authorizations on behalf of a user. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - OAuth Grant",
       "type": [
         "object"
@@ -3371,6 +3757,7 @@
       "description": "OAuth tokens provide access for authorized clients to act on behalf of a Heroku user to automate, customize or extend their usage of the platform. For more information please refer to the [Heroku OAuth documentation](https://devcenter.heroku.com/articles/oauth)",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - OAuth Token",
       "type": [
         "object"
@@ -3479,6 +3866,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/oauth-token"
+          },
           "title": "Create"
         }
       ],
@@ -3496,6 +3886,7 @@
               "$ref": "#/definitions/oauth-token/definitions/token"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3507,6 +3898,7 @@
               "$ref": "#/definitions/oauth-authorization/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3518,6 +3910,7 @@
               "$ref": "#/definitions/oauth-client/definitions/secret"
             }
           },
+          "strictProperties": true,
           "type": [
             "null",
             "object"
@@ -3536,6 +3929,7 @@
               "$ref": "#/definitions/oauth-grant/definitions/type"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3556,6 +3950,7 @@
               "$ref": "#/definitions/oauth-token/definitions/token"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3567,6 +3962,7 @@
               "$ref": "#/definitions/oauth-token/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3581,6 +3977,7 @@
               "$ref": "#/definitions/account/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3591,11 +3988,19 @@
       "description": "An organization collaborator represents an account that has been given access to an organization app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "prototype",
+      "strictProperties": true,
       "title": "Heroku Platform API - Organization App Collaborator",
       "type": [
         "object"
       ],
       "definitions": {
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/collaborator/definitions/email"
+            }
+          ]
+        }
       },
       "links": [
         {
@@ -3619,27 +4024,44 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/collaborator"
+          },
           "title": "Create"
         },
         {
           "description": "Delete an existing collaborator from an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Forganization-app-collaborator%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/collaborator"
+          },
           "title": "Delete"
         },
         {
           "description": "Info for a collaborator on an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Fcollaborator%2Fdefinitions%2Fidentity)}",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Forganization-app-collaborator%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/collaborator"
+          },
           "title": "Info"
         },
         {
           "description": "List collaborators on an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/collaborators",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}/collaborators",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/collaborator"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -3666,6 +4088,7 @@
               "$ref": "#/definitions/account/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -3687,6 +4110,13 @@
           "example": false,
           "type": [
             "boolean"
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/app/definitions/name"
+            }
           ]
         },
         "joined": {
@@ -3744,6 +4174,14 @@
           "href": "/organizations/apps",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/organization-app"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -3751,18 +4189,26 @@
           "href": "/organizations/{(%23%2Fdefinitions%2Forganization%2Fdefinitions%2Fidentity)}/apps",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/organization-app"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List For Organization"
         },
         {
           "description": "Info for an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
           "title": "Info"
         },
         {
           "description": "Lock or unlock an organization app.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}",
           "method": "PATCH",
           "rel": "update",
           "schema": {
@@ -3778,11 +4224,14 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/organization-app"
+          },
           "title": "Update Locked"
         },
         {
           "description": "Transfer an existing organization app to another Heroku account.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}",
           "method": "PATCH",
           "rel": "update",
           "schema": {
@@ -3802,7 +4251,7 @@
         },
         {
           "description": "Transfer an existing organization app to another organization.",
-          "href": "/organizations/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}",
+          "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}",
           "method": "PATCH",
           "rel": "update",
           "schema": {
@@ -3817,6 +4266,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/organization-app"
           },
           "title": "Transfer to Organization"
         }
@@ -3925,6 +4377,7 @@
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "An organization member is an individual with access to an organization.",
       "stability": "prototype",
+      "strictProperties": true,
       "title": "Heroku Platform API - Organization Member",
       "type": [
         "object"
@@ -3987,6 +4440,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/organization-member"
+          },
           "title": "Create or Update"
         },
         {
@@ -3994,6 +4450,9 @@
           "href": "/organizations/{(%23%2Fdefinitions%2Forganization%2Fdefinitions%2Fidentity)}/members/{(%23%2Fdefinitions%2Forganization-member%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/organization-member"
+          },
           "title": "Delete"
         },
         {
@@ -4001,6 +4460,14 @@
           "href": "/organizations/{(%23%2Fdefinitions%2Forganization%2Fdefinitions%2Fidentity)}/members",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/organization-member"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -4023,6 +4490,7 @@
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "Organizations allow you to manage access to a shared group of applications across your development team.",
       "stability": "prototype",
+      "strictProperties": true,
       "title": "Heroku Platform API - Organization",
       "type": [
         "object"
@@ -4087,6 +4555,14 @@
           "href": "/organizations",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/organization"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -4103,6 +4579,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/organization"
           },
           "title": "Update"
         }
@@ -4126,9 +4605,10 @@
       }
     },
     "plan": {
-      "description": "Plans represent different configurations of add-ons that may be added to apps.",
+      "description": "Plans represent different configurations of add-ons that may be added to apps. Endpoints under add-on services can be accessed without authentication.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Plan",
       "type": [
         "object"
@@ -4226,6 +4706,9 @@
           "href": "/addon-services/{(%23%2Fdefinitions%2Faddon-service%2Fdefinitions%2Fidentity)}/plans/{(%23%2Fdefinitions%2Fplan%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/plan"
+          },
           "title": "Info"
         },
         {
@@ -4233,6 +4716,14 @@
           "href": "/addon-services/{(%23%2Fdefinitions%2Faddon-service%2Fdefinitions%2Fidentity)}/plans",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/plan"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -4262,6 +4753,7 @@
               "$ref": "#/definitions/plan/definitions/unit"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -4278,11 +4770,14 @@
       "description": "Rate Limit represents the number of request tokens each account holds. Requests to this endpoint do not count towards the rate limit.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Rate Limit",
       "type": [
         "object"
       ],
       "definitions": {
+        "identity": {
+        },
         "remaining": {
           "description": "allowed requests remaining in current interval",
           "example": 2399,
@@ -4298,6 +4793,9 @@
           "href": "/account/rate-limits",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/rate-limit"
+          },
           "title": "Info"
         }
       ],
@@ -4311,6 +4809,7 @@
       "description": "A region represents a geographic location in which your application may run.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Region",
       "type": [
         "object"
@@ -4376,6 +4875,9 @@
           "href": "/regions/{(%23%2Fdefinitions%2Fregion%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/region"
+          },
           "title": "Info"
         },
         {
@@ -4383,6 +4885,14 @@
           "href": "/regions",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/region"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -4408,6 +4918,7 @@
       "description": "A release represents a combination of code, config vars and add-ons for an app on Heroku.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Release",
       "type": [
         "object"
@@ -4473,6 +4984,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/releases/{(%23%2Fdefinitions%2Frelease%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/release"
+          },
           "title": "Info"
         },
         {
@@ -4480,6 +4994,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/releases",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/release"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -4503,6 +5025,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/release"
+          },
           "title": "Create"
         },
         {
@@ -4522,6 +5047,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/release"
           },
           "title": "Rollback"
         }
@@ -4546,6 +5074,7 @@
               "$ref": "#/definitions/slug/definitions/id"
             }
           },
+          "strictProperties": true,
           "type": [
             "object",
             "null"
@@ -4561,6 +5090,7 @@
               "$ref": "#/definitions/account/definitions/email"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -4574,6 +5104,7 @@
       "description": "A slug is a snapshot of your application code that is ready to run on the platform.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Slug",
       "type": [
         "object"
@@ -4682,6 +5213,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/slugs/{(%23%2Fdefinitions%2Fslug%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/slug"
+          },
           "title": "Info"
         },
         {
@@ -4708,6 +5242,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/slug"
+          },
           "title": "Create"
         }
       ],
@@ -4722,6 +5259,7 @@
               "$ref": "#/definitions/slug/definitions/url"
             }
           },
+          "strictProperties": true,
           "type": [
             "object"
           ]
@@ -4754,6 +5292,7 @@
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "title": "Heroku Platform API - SSL Endpoint",
       "stability": "production",
+      "strictProperties": true,
       "type": [
         "object"
       ],
@@ -4873,6 +5412,9 @@
               "object"
             ]
           },
+          "targetSchema": {
+            "$ref": "#/definitions/ssl-endpoint"
+          },
           "title": "Create"
         },
         {
@@ -4880,6 +5422,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/ssl-endpoints/{(%23%2Fdefinitions%2Fssl-endpoint%2Fdefinitions%2Fidentity)}",
           "method": "DELETE",
           "rel": "destroy",
+          "targetSchema": {
+            "$ref": "#/definitions/ssl-endpoint"
+          },
           "title": "Delete"
         },
         {
@@ -4887,6 +5432,9 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/ssl-endpoints/{(%23%2Fdefinitions%2Fssl-endpoint%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/ssl-endpoint"
+          },
           "title": "Info"
         },
         {
@@ -4894,6 +5442,14 @@
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/ssl-endpoints",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/ssl-endpoint"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         },
         {
@@ -4919,6 +5475,9 @@
             "type": [
               "object"
             ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/ssl-endpoint"
           },
           "title": "Update"
         }
@@ -4948,6 +5507,7 @@
       "description": "Stacks are the different application execution environments available in the Heroku platform.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
+      "strictProperties": true,
       "title": "Heroku Platform API - Stack",
       "type": [
         "object"
@@ -5013,6 +5573,9 @@
           "href": "/stacks/{(%23%2Fdefinitions%2Fstack%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/stack"
+          },
           "title": "Info"
         },
         {
@@ -5020,6 +5583,14 @@
           "href": "/stacks",
           "method": "GET",
           "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/stack"
+            },
+            "type": [
+              "array"
+            ]
+          },
           "title": "List"
         }
       ],
@@ -5147,10 +5718,19 @@
     "object"
   ],
   "description": "The platform API empowers developers to automate, extend and combine Heroku with other services.",
+  "id": "http://api.heroku.com/schema#",
   "links": [
     {
       "href": "https://api.heroku.com",
       "rel": "self"
+    },
+    {
+      "href": "/schema",
+      "method": "GET",
+      "rel": "self",
+      "targetSchema": {
+        "additionalProperties": true
+      }
     }
   ],
   "title": "Heroku Platform API"
