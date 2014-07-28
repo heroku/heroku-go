@@ -47,6 +47,10 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.Transport = http.DefaultTransport
 	}
 
+	// Making a copy of the Request so that
+	// we don't modify the Request we were given.
+	req = cloneRequest(req)
+
 	if t.UserAgent != "" {
 		req.Header.Set("User-Agent", t.UserAgent)
 	}
@@ -113,4 +117,17 @@ func checkResponse(resp *http.Response) error {
 		log.Println(os.Stderr, strings.TrimSpace(msg))
 	}
 	return nil
+}
+
+// cloneRequest returns a clone of the provided *http.Request.
+func cloneRequest(req *http.Request) *http.Request {
+	// shallow copy of the struct
+	clone := new(http.Request)
+	*clone = *req
+	// deep copy of the Header
+	clone.Header = make(http.Header)
+	for k, s := range req.Header {
+		clone.Header[k] = s
+	}
+	return clone
 }
