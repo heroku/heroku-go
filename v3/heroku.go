@@ -513,8 +513,12 @@ type AppSetup struct {
 }
 type AppSetupCreateOpts struct {
 	App *struct {
-		Name   *string `json:"name,omitempty"`   // unique name of app
-		Region *string `json:"region,omitempty"` // unique identifier of region
+		Locked       *bool   `json:"locked,omitempty"`       // are other organization members forbidden from joining this app.
+		Name         *string `json:"name,omitempty"`         // unique name of app
+		Organization *string `json:"organization,omitempty"` // unique name of organization
+		Personal     *bool   `json:"personal,omitempty"`     // force creation of the app in the user account even if a default org
+		// is set.
+		Region *string `json:"region,omitempty"` // unique name of region
 		Stack  *string `json:"stack,omitempty"`  // unique name of stack
 	} `json:"app,omitempty"` // optional parameters for created app
 	Overrides *struct {
@@ -530,8 +534,12 @@ type AppSetupCreateOpts struct {
 // app.json manifest file.
 func (s *Service) AppSetupCreate(o struct {
 	App *struct {
-		Name   *string `json:"name,omitempty"`   // unique name of app
-		Region *string `json:"region,omitempty"` // unique identifier of region
+		Locked       *bool   `json:"locked,omitempty"`       // are other organization members forbidden from joining this app.
+		Name         *string `json:"name,omitempty"`         // unique name of app
+		Organization *string `json:"organization,omitempty"` // unique name of organization
+		Personal     *bool   `json:"personal,omitempty"`     // force creation of the app in the user account even if a default org
+		// is set.
+		Region *string `json:"region,omitempty"` // unique name of region
 		Stack  *string `json:"stack,omitempty"`  // unique name of stack
 	} `json:"app,omitempty"` // optional parameters for created app
 	Overrides *struct {
@@ -745,6 +753,30 @@ type ConfigVarUpdateOpts map[string]*string
 func (s *Service) ConfigVarUpdate(appIdentity string, o map[string]*string) (map[string]string, error) {
 	var configVar ConfigVar
 	return configVar, s.Patch(&configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), o)
+}
+
+// A credit represents value that will be used up before further charges
+// are assigned to an account.
+type Credit struct {
+	Amount    float64   `json:"amount"`     // total value of credit in cents
+	Balance   float64   `json:"balance"`    // remaining value of credit in cents
+	CreatedAt time.Time `json:"created_at"` // when credit was created
+	ExpiresAt time.Time `json:"expires_at"` // when credit will expire
+	ID        string    `json:"id"`         // unique identifier of credit
+	Title     string    `json:"title"`      // a name for credit
+	UpdatedAt time.Time `json:"updated_at"` // when credit was updated
+}
+
+// Info for existing credit.
+func (s *Service) CreditInfo(creditIdentity string) (*Credit, error) {
+	var credit Credit
+	return &credit, s.Get(&credit, fmt.Sprintf("/account/credits/%v", creditIdentity), nil)
+}
+
+// List existing credits.
+func (s *Service) CreditList(lr *ListRange) ([]*Credit, error) {
+	var creditList []*Credit
+	return creditList, s.Get(&creditList, fmt.Sprintf("/account/credits"), lr)
 }
 
 // Domains define what web routes should be routed to an app on Heroku.
@@ -1241,7 +1273,7 @@ type OrganizationUpdateOpts struct {
 	Default *bool `json:"default,omitempty"` // whether to use this organization when none is specified
 }
 
-// Set or Unset the organization as your default organization.
+// Set or unset the organization as your default organization.
 func (s *Service) OrganizationUpdate(organizationIdentity string, o struct {
 	Default *bool `json:"default,omitempty"` // whether to use this organization when none is specified
 }) (*Organization, error) {
