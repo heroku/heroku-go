@@ -114,7 +114,7 @@ func checkResponse(resp *http.Response) error {
 		return Error{error: errors.New(e.Message), ID: e.ID, URL: e.URL}
 	}
 	if msg := resp.Header.Get("X-Heroku-Warning"); msg != "" {
-		log.Println(os.Stderr, strings.TrimSpace(msg))
+		log.Println(strings.TrimSpace(msg))
 	}
 	return nil
 }
