@@ -42,6 +42,19 @@ type Transport struct {
 	Transport http.RoundTripper
 }
 
+// Forward CancelRequest to underlying Transport
+func (t *Transport) CancelRequest(req *http.Request) {
+	type canceler interface {
+		CancelRequest(*http.Request)
+	}
+	tr, ok := t.Transport.(canceler)
+	if !ok {
+		log.Printf("heroku: Client Transport of type %T doesn't support CancelRequest; Timeout not supported\n", t.Transport)
+		return
+	}
+	tr.CancelRequest(req)
+}
+
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if t.Transport == nil {
 		t.Transport = http.DefaultTransport
