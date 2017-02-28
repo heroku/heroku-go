@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ernesto-jimenez/go-querystring/query"
+	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"reflect"
