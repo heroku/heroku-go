@@ -165,11 +165,11 @@ func (lr *ListRange) SetHeader(req *http.Request) {
 	if lr.Max != 0 {
 		hdrval += fmt.Sprintf("; max=%d", lr.Max)
 		if lr.Descending {
-			hdrval += ", "
+			hdrval += "; "
 		}
 	}
 	if lr.Descending {
-		hdrval += ", order=desc"
+		hdrval += "order=desc"
 	}
 	req.Header.Set("Range", hdrval)
 	return
