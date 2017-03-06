@@ -12,14 +12,16 @@ package heroku
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"reflect"
 	"runtime"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -47,7 +49,7 @@ func NewService(c *http.Client) *Service {
 }
 
 // NewRequest generates an HTTP request, but does not perform the request.
-func (s *Service) NewRequest(method, path string, body interface{}, q interface{}) (*http.Request, error) {
+func (s *Service) NewRequest(ctx context.Context, method, path string, body interface{}, q interface{}) (*http.Request, error) {
 	var ctype string
 	var rbody io.Reader
 	switch t := body.(type) {
@@ -78,6 +80,7 @@ func (s *Service) NewRequest(method, path string, body interface{}, q interface{
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(ctx)
 	if q != nil {
 		v, err := query.Values(q)
 		if err != nil {
@@ -98,8 +101,8 @@ func (s *Service) NewRequest(method, path string, body interface{}, q interface{
 }
 
 // Do sends a request and decodes the response into v.
-func (s *Service) Do(v interface{}, method, path string, body interface{}, q interface{}, lr *ListRange) error {
-	req, err := s.NewRequest(method, path, body, q)
+func (s *Service) Do(ctx context.Context, v interface{}, method, path string, body interface{}, q interface{}, lr *ListRange) error {
+	req, err := s.NewRequest(ctx, method, path, body, q)
 	if err != nil {
 		return err
 	}
@@ -122,28 +125,28 @@ func (s *Service) Do(v interface{}, method, path string, body interface{}, q int
 }
 
 // Get sends a GET request and decodes the response into v.
-func (s *Service) Get(v interface{}, path string, query interface{}, lr *ListRange) error {
-	return s.Do(v, "GET", path, nil, query, lr)
+func (s *Service) Get(ctx context.Context, v interface{}, path string, query interface{}, lr *ListRange) error {
+	return s.Do(ctx, v, "GET", path, nil, query, lr)
 }
 
 // Patch sends a Path request and decodes the response into v.
-func (s *Service) Patch(v interface{}, path string, body interface{}) error {
-	return s.Do(v, "PATCH", path, body, nil, nil)
+func (s *Service) Patch(ctx context.Context, v interface{}, path string, body interface{}) error {
+	return s.Do(ctx, v, "PATCH", path, body, nil, nil)
 }
 
 // Post sends a POST request and decodes the response into v.
-func (s *Service) Post(v interface{}, path string, body interface{}) error {
-	return s.Do(v, "POST", path, body, nil, nil)
+func (s *Service) Post(ctx context.Context, v interface{}, path string, body interface{}) error {
+	return s.Do(ctx, v, "POST", path, body, nil, nil)
 }
 
 // Put sends a PUT request and decodes the response into v.
-func (s *Service) Put(v interface{}, path string, body interface{}) error {
-	return s.Do(v, "PUT", path, body, nil, nil)
+func (s *Service) Put(ctx context.Context, v interface{}, path string, body interface{}) error {
+	return s.Do(ctx, v, "PUT", path, body, nil, nil)
 }
 
 // Delete sends a DELETE request.
-func (s *Service) Delete(v interface{}, path string) error {
-	return s.Do(v, "DELETE", path, nil, nil, nil)
+func (s *Service) Delete(ctx context.Context, v interface{}, path string) error {
+	return s.Do(ctx, v, "DELETE", path, nil, nil, nil)
 }
 
 // ListRange describes a range.
@@ -259,9 +262,9 @@ type AccountInfoResult struct {
 }
 
 // Info for account.
-func (s *Service) AccountInfo() (*AccountInfoResult, error) {
+func (s *Service) AccountInfo(ctx context.Context) (*AccountInfoResult, error) {
 	var account AccountInfoResult
-	return &account, s.Get(&account, fmt.Sprintf("/account"), nil, nil)
+	return &account, s.Get(ctx, &account, fmt.Sprintf("/account"), nil, nil)
 }
 
 type AccountUpdateOpts struct {
@@ -297,9 +300,9 @@ type AccountUpdateResult struct {
 }
 
 // Update account.
-func (s *Service) AccountUpdate(o AccountUpdateOpts) (*AccountUpdateResult, error) {
+func (s *Service) AccountUpdate(ctx context.Context, o AccountUpdateOpts) (*AccountUpdateResult, error) {
 	var account AccountUpdateResult
-	return &account, s.Patch(&account, fmt.Sprintf("/account"), o)
+	return &account, s.Patch(ctx, &account, fmt.Sprintf("/account"), o)
 }
 
 type AccountDeleteResult struct {
@@ -330,9 +333,9 @@ type AccountDeleteResult struct {
 }
 
 // Delete account. Note that this action cannot be undone.
-func (s *Service) AccountDelete() (*AccountDeleteResult, error) {
+func (s *Service) AccountDelete(ctx context.Context) (*AccountDeleteResult, error) {
 	var account AccountDeleteResult
-	return &account, s.Delete(&account, fmt.Sprintf("/account"))
+	return &account, s.Delete(ctx, &account, fmt.Sprintf("/account"))
 }
 
 // An account feature represents a Heroku labs capability that can be
@@ -359,9 +362,9 @@ type AccountFeatureInfoResult struct {
 }
 
 // Info for an existing account feature.
-func (s *Service) AccountFeatureInfo(accountFeatureIdentity string) (*AccountFeatureInfoResult, error) {
+func (s *Service) AccountFeatureInfo(ctx context.Context, accountFeatureIdentity string) (*AccountFeatureInfoResult, error) {
 	var accountFeature AccountFeatureInfoResult
-	return &accountFeature, s.Get(&accountFeature, fmt.Sprintf("/account/features/%v", accountFeatureIdentity), nil, nil)
+	return &accountFeature, s.Get(ctx, &accountFeature, fmt.Sprintf("/account/features/%v", accountFeatureIdentity), nil, nil)
 }
 
 type AccountFeatureListResult []struct {
@@ -376,9 +379,9 @@ type AccountFeatureListResult []struct {
 }
 
 // List existing account features.
-func (s *Service) AccountFeatureList(lr *ListRange) (AccountFeatureListResult, error) {
+func (s *Service) AccountFeatureList(ctx context.Context, lr *ListRange) (AccountFeatureListResult, error) {
 	var accountFeature AccountFeatureListResult
-	return accountFeature, s.Get(&accountFeature, fmt.Sprintf("/account/features"), nil, lr)
+	return accountFeature, s.Get(ctx, &accountFeature, fmt.Sprintf("/account/features"), nil, lr)
 }
 
 type AccountFeatureUpdateOpts struct {
@@ -396,9 +399,9 @@ type AccountFeatureUpdateResult struct {
 }
 
 // Update an existing account feature.
-func (s *Service) AccountFeatureUpdate(accountFeatureIdentity string, o AccountFeatureUpdateOpts) (*AccountFeatureUpdateResult, error) {
+func (s *Service) AccountFeatureUpdate(ctx context.Context, accountFeatureIdentity string, o AccountFeatureUpdateOpts) (*AccountFeatureUpdateResult, error) {
 	var accountFeature AccountFeatureUpdateResult
-	return &accountFeature, s.Patch(&accountFeature, fmt.Sprintf("/account/features/%v", accountFeatureIdentity), o)
+	return &accountFeature, s.Patch(ctx, &accountFeature, fmt.Sprintf("/account/features/%v", accountFeatureIdentity), o)
 }
 
 // Add-ons represent add-ons that have been provisioned and attached to
@@ -456,9 +459,9 @@ type AddOnCreateResult struct {
 }
 
 // Create a new add-on.
-func (s *Service) AddOnCreate(appIdentity string, o AddOnCreateOpts) (*AddOnCreateResult, error) {
+func (s *Service) AddOnCreate(ctx context.Context, appIdentity string, o AddOnCreateOpts) (*AddOnCreateResult, error) {
 	var addOn AddOnCreateResult
-	return &addOn, s.Post(&addOn, fmt.Sprintf("/apps/%v/addons", appIdentity), o)
+	return &addOn, s.Post(ctx, &addOn, fmt.Sprintf("/apps/%v/addons", appIdentity), o)
 }
 
 type AddOnDeleteResult struct {
@@ -486,9 +489,9 @@ type AddOnDeleteResult struct {
 }
 
 // Delete an existing add-on.
-func (s *Service) AddOnDelete(appIdentity string, addOnIdentity string) (*AddOnDeleteResult, error) {
+func (s *Service) AddOnDelete(ctx context.Context, appIdentity string, addOnIdentity string) (*AddOnDeleteResult, error) {
 	var addOn AddOnDeleteResult
-	return &addOn, s.Delete(&addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity))
+	return &addOn, s.Delete(ctx, &addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity))
 }
 
 type AddOnInfoResult struct {
@@ -516,9 +519,9 @@ type AddOnInfoResult struct {
 }
 
 // Info for an existing add-on.
-func (s *Service) AddOnInfo(appIdentity string, addOnIdentity string) (*AddOnInfoResult, error) {
+func (s *Service) AddOnInfo(ctx context.Context, appIdentity string, addOnIdentity string) (*AddOnInfoResult, error) {
 	var addOn AddOnInfoResult
-	return &addOn, s.Get(&addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity), nil, nil)
+	return &addOn, s.Get(ctx, &addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity), nil, nil)
 }
 
 type AddOnListResult []struct {
@@ -546,9 +549,9 @@ type AddOnListResult []struct {
 }
 
 // List all existing add-ons.
-func (s *Service) AddOnList(lr *ListRange) (AddOnListResult, error) {
+func (s *Service) AddOnList(ctx context.Context, lr *ListRange) (AddOnListResult, error) {
 	var addOn AddOnListResult
-	return addOn, s.Get(&addOn, fmt.Sprintf("/addons"), nil, lr)
+	return addOn, s.Get(ctx, &addOn, fmt.Sprintf("/addons"), nil, lr)
 }
 
 type AddOnListByUserResult []struct {
@@ -576,9 +579,9 @@ type AddOnListByUserResult []struct {
 }
 
 // List all existing add-ons a user has access to
-func (s *Service) AddOnListByUser(accountIdentity string, lr *ListRange) (AddOnListByUserResult, error) {
+func (s *Service) AddOnListByUser(ctx context.Context, accountIdentity string, lr *ListRange) (AddOnListByUserResult, error) {
 	var addOn AddOnListByUserResult
-	return addOn, s.Get(&addOn, fmt.Sprintf("/users/%v/addons", accountIdentity), nil, lr)
+	return addOn, s.Get(ctx, &addOn, fmt.Sprintf("/users/%v/addons", accountIdentity), nil, lr)
 }
 
 type AddOnListByAppResult []struct {
@@ -606,9 +609,9 @@ type AddOnListByAppResult []struct {
 }
 
 // List existing add-ons for an app.
-func (s *Service) AddOnListByApp(appIdentity string, lr *ListRange) (AddOnListByAppResult, error) {
+func (s *Service) AddOnListByApp(ctx context.Context, appIdentity string, lr *ListRange) (AddOnListByAppResult, error) {
 	var addOn AddOnListByAppResult
-	return addOn, s.Get(&addOn, fmt.Sprintf("/apps/%v/addons", appIdentity), nil, lr)
+	return addOn, s.Get(ctx, &addOn, fmt.Sprintf("/apps/%v/addons", appIdentity), nil, lr)
 }
 
 type AddOnUpdateOpts struct {
@@ -617,9 +620,9 @@ type AddOnUpdateOpts struct {
 
 // Change add-on plan. Some add-ons may not support changing plans. In
 // that case, an error will be returned.
-func (s *Service) AddOnUpdate(appIdentity string, addOnIdentity string, o AddOnUpdateOpts) (*AddOn, error) {
+func (s *Service) AddOnUpdate(ctx context.Context, appIdentity string, addOnIdentity string, o AddOnUpdateOpts) (*AddOn, error) {
 	var addOn AddOn
-	return &addOn, s.Patch(&addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity), o)
+	return &addOn, s.Patch(ctx, &addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity), o)
 }
 
 // Add-on Actions are lifecycle operations for add-on provisioning and
@@ -652,9 +655,9 @@ type AddOnActionCreateProvisionResult struct {
 }
 
 // Mark an add-on as provisioned for use.
-func (s *Service) AddOnActionCreateProvision(addOnIdentity string) (*AddOnActionCreateProvisionResult, error) {
+func (s *Service) AddOnActionCreateProvision(ctx context.Context, addOnIdentity string) (*AddOnActionCreateProvisionResult, error) {
 	var addOnAction AddOnActionCreateProvisionResult
-	return &addOnAction, s.Post(&addOnAction, fmt.Sprintf("/addons/%v/actions/provision", addOnIdentity), nil)
+	return &addOnAction, s.Post(ctx, &addOnAction, fmt.Sprintf("/addons/%v/actions/provision", addOnIdentity), nil)
 }
 
 type AddOnActionCreateDeprovisionResult struct {
@@ -682,9 +685,9 @@ type AddOnActionCreateDeprovisionResult struct {
 }
 
 // Mark an add-on as deprovisioned.
-func (s *Service) AddOnActionCreateDeprovision(addOnIdentity string) (*AddOnActionCreateDeprovisionResult, error) {
+func (s *Service) AddOnActionCreateDeprovision(ctx context.Context, addOnIdentity string) (*AddOnActionCreateDeprovisionResult, error) {
 	var addOnAction AddOnActionCreateDeprovisionResult
-	return &addOnAction, s.Post(&addOnAction, fmt.Sprintf("/addons/%v/actions/deprovision", addOnIdentity), nil)
+	return &addOnAction, s.Post(ctx, &addOnAction, fmt.Sprintf("/addons/%v/actions/deprovision", addOnIdentity), nil)
 }
 
 // An add-on attachment represents a connection between an app and an
@@ -744,9 +747,9 @@ type AddOnAttachmentCreateResult struct {
 }
 
 // Create a new add-on attachment.
-func (s *Service) AddOnAttachmentCreate(o AddOnAttachmentCreateOpts) (*AddOnAttachmentCreateResult, error) {
+func (s *Service) AddOnAttachmentCreate(ctx context.Context, o AddOnAttachmentCreateOpts) (*AddOnAttachmentCreateResult, error) {
 	var addOnAttachment AddOnAttachmentCreateResult
-	return &addOnAttachment, s.Post(&addOnAttachment, fmt.Sprintf("/addon-attachments"), o)
+	return &addOnAttachment, s.Post(ctx, &addOnAttachment, fmt.Sprintf("/addon-attachments"), o)
 }
 
 type AddOnAttachmentDeleteResult struct {
@@ -774,9 +777,9 @@ type AddOnAttachmentDeleteResult struct {
 }
 
 // Delete an existing add-on attachment.
-func (s *Service) AddOnAttachmentDelete(addOnAttachmentIdentity string) (*AddOnAttachmentDeleteResult, error) {
+func (s *Service) AddOnAttachmentDelete(ctx context.Context, addOnAttachmentIdentity string) (*AddOnAttachmentDeleteResult, error) {
 	var addOnAttachment AddOnAttachmentDeleteResult
-	return &addOnAttachment, s.Delete(&addOnAttachment, fmt.Sprintf("/addon-attachments/%v", addOnAttachmentIdentity))
+	return &addOnAttachment, s.Delete(ctx, &addOnAttachment, fmt.Sprintf("/addon-attachments/%v", addOnAttachmentIdentity))
 }
 
 type AddOnAttachmentInfoResult struct {
@@ -804,9 +807,9 @@ type AddOnAttachmentInfoResult struct {
 }
 
 // Info for existing add-on attachment.
-func (s *Service) AddOnAttachmentInfo(addOnAttachmentIdentity string) (*AddOnAttachmentInfoResult, error) {
+func (s *Service) AddOnAttachmentInfo(ctx context.Context, addOnAttachmentIdentity string) (*AddOnAttachmentInfoResult, error) {
 	var addOnAttachment AddOnAttachmentInfoResult
-	return &addOnAttachment, s.Get(&addOnAttachment, fmt.Sprintf("/addon-attachments/%v", addOnAttachmentIdentity), nil, nil)
+	return &addOnAttachment, s.Get(ctx, &addOnAttachment, fmt.Sprintf("/addon-attachments/%v", addOnAttachmentIdentity), nil, nil)
 }
 
 type AddOnAttachmentListResult []struct {
@@ -834,9 +837,9 @@ type AddOnAttachmentListResult []struct {
 }
 
 // List existing add-on attachments.
-func (s *Service) AddOnAttachmentList(lr *ListRange) (AddOnAttachmentListResult, error) {
+func (s *Service) AddOnAttachmentList(ctx context.Context, lr *ListRange) (AddOnAttachmentListResult, error) {
 	var addOnAttachment AddOnAttachmentListResult
-	return addOnAttachment, s.Get(&addOnAttachment, fmt.Sprintf("/addon-attachments"), nil, lr)
+	return addOnAttachment, s.Get(ctx, &addOnAttachment, fmt.Sprintf("/addon-attachments"), nil, lr)
 }
 
 type AddOnAttachmentListByAddOnResult []struct {
@@ -864,9 +867,9 @@ type AddOnAttachmentListByAddOnResult []struct {
 }
 
 // List existing add-on attachments for an add-on.
-func (s *Service) AddOnAttachmentListByAddOn(addOnIdentity string, lr *ListRange) (AddOnAttachmentListByAddOnResult, error) {
+func (s *Service) AddOnAttachmentListByAddOn(ctx context.Context, addOnIdentity string, lr *ListRange) (AddOnAttachmentListByAddOnResult, error) {
 	var addOnAttachment AddOnAttachmentListByAddOnResult
-	return addOnAttachment, s.Get(&addOnAttachment, fmt.Sprintf("/addons/%v/addon-attachments", addOnIdentity), nil, lr)
+	return addOnAttachment, s.Get(ctx, &addOnAttachment, fmt.Sprintf("/addons/%v/addon-attachments", addOnIdentity), nil, lr)
 }
 
 type AddOnAttachmentListByAppResult []struct {
@@ -894,9 +897,9 @@ type AddOnAttachmentListByAppResult []struct {
 }
 
 // List existing add-on attachments for an app.
-func (s *Service) AddOnAttachmentListByApp(appIdentity string, lr *ListRange) (AddOnAttachmentListByAppResult, error) {
+func (s *Service) AddOnAttachmentListByApp(ctx context.Context, appIdentity string, lr *ListRange) (AddOnAttachmentListByAppResult, error) {
 	var addOnAttachment AddOnAttachmentListByAppResult
-	return addOnAttachment, s.Get(&addOnAttachment, fmt.Sprintf("/apps/%v/addon-attachments", appIdentity), nil, lr)
+	return addOnAttachment, s.Get(ctx, &addOnAttachment, fmt.Sprintf("/apps/%v/addon-attachments", appIdentity), nil, lr)
 }
 
 type AddOnAttachmentInfoByAppResult struct {
@@ -924,9 +927,9 @@ type AddOnAttachmentInfoByAppResult struct {
 }
 
 // Info for existing add-on attachment for an app.
-func (s *Service) AddOnAttachmentInfoByApp(appIdentity string, addOnAttachmentScopedIdentity string) (*AddOnAttachmentInfoByAppResult, error) {
+func (s *Service) AddOnAttachmentInfoByApp(ctx context.Context, appIdentity string, addOnAttachmentScopedIdentity string) (*AddOnAttachmentInfoByAppResult, error) {
 	var addOnAttachment AddOnAttachmentInfoByAppResult
-	return &addOnAttachment, s.Get(&addOnAttachment, fmt.Sprintf("/apps/%v/addon-attachments/%v", appIdentity, addOnAttachmentScopedIdentity), nil, nil)
+	return &addOnAttachment, s.Get(ctx, &addOnAttachment, fmt.Sprintf("/apps/%v/addon-attachments/%v", appIdentity, addOnAttachmentScopedIdentity), nil, nil)
 }
 
 // Configuration of an Add-on
@@ -941,9 +944,9 @@ type AddOnConfigListResult []struct {
 
 // Get an add-on's config. Accessible by customers with access and by
 // the add-on partner providing this add-on.
-func (s *Service) AddOnConfigList(addOnIdentity string, lr *ListRange) (AddOnConfigListResult, error) {
+func (s *Service) AddOnConfigList(ctx context.Context, addOnIdentity string, lr *ListRange) (AddOnConfigListResult, error) {
 	var addOnConfig AddOnConfigListResult
-	return addOnConfig, s.Get(&addOnConfig, fmt.Sprintf("/addons/%v/config", addOnIdentity), nil, lr)
+	return addOnConfig, s.Get(ctx, &addOnConfig, fmt.Sprintf("/addons/%v/config", addOnIdentity), nil, lr)
 }
 
 type AddOnConfigUpdateOpts struct {
@@ -959,9 +962,9 @@ type AddOnConfigUpdateResult []struct {
 
 // Update an add-on's config. Can only be accessed by the add-on partner
 // providing this add-on.
-func (s *Service) AddOnConfigUpdate(addOnIdentity string, o AddOnConfigUpdateOpts) (AddOnConfigUpdateResult, error) {
+func (s *Service) AddOnConfigUpdate(ctx context.Context, addOnIdentity string, o AddOnConfigUpdateOpts) (AddOnConfigUpdateResult, error) {
 	var addOnConfig AddOnConfigUpdateResult
-	return addOnConfig, s.Patch(&addOnConfig, fmt.Sprintf("/addons/%v/config", addOnIdentity), o)
+	return addOnConfig, s.Patch(ctx, &addOnConfig, fmt.Sprintf("/addons/%v/config", addOnIdentity), o)
 }
 
 // Add-on Plan Actions are Provider functionality for specific add-on
@@ -1047,9 +1050,9 @@ type AddOnRegionCapabilityListResult []struct {
 }
 
 // List all existing add-on region capabilities.
-func (s *Service) AddOnRegionCapabilityList(lr *ListRange) (AddOnRegionCapabilityListResult, error) {
+func (s *Service) AddOnRegionCapabilityList(ctx context.Context, lr *ListRange) (AddOnRegionCapabilityListResult, error) {
 	var addOnRegionCapability AddOnRegionCapabilityListResult
-	return addOnRegionCapability, s.Get(&addOnRegionCapability, fmt.Sprintf("/addon-region-capabilities"), nil, lr)
+	return addOnRegionCapability, s.Get(ctx, &addOnRegionCapability, fmt.Sprintf("/addon-region-capabilities"), nil, lr)
 }
 
 type AddOnRegionCapabilityListByAddOnServiceResult []struct {
@@ -1088,9 +1091,9 @@ type AddOnRegionCapabilityListByAddOnServiceResult []struct {
 }
 
 // List existing add-on region capabilities for an add-on-service
-func (s *Service) AddOnRegionCapabilityListByAddOnService(addOnServiceIdentity string, lr *ListRange) (AddOnRegionCapabilityListByAddOnServiceResult, error) {
+func (s *Service) AddOnRegionCapabilityListByAddOnService(ctx context.Context, addOnServiceIdentity string, lr *ListRange) (AddOnRegionCapabilityListByAddOnServiceResult, error) {
 	var addOnRegionCapability AddOnRegionCapabilityListByAddOnServiceResult
-	return addOnRegionCapability, s.Get(&addOnRegionCapability, fmt.Sprintf("/addon-services/%v/region-capabilities", addOnServiceIdentity), nil, lr)
+	return addOnRegionCapability, s.Get(ctx, &addOnRegionCapability, fmt.Sprintf("/addon-services/%v/region-capabilities", addOnServiceIdentity), nil, lr)
 }
 
 // Add-on services represent add-ons that may be provisioned for apps.
@@ -1124,9 +1127,9 @@ type AddOnServiceInfoResult struct {
 }
 
 // Info for existing add-on-service.
-func (s *Service) AddOnServiceInfo(addOnServiceIdentity string) (*AddOnServiceInfoResult, error) {
+func (s *Service) AddOnServiceInfo(ctx context.Context, addOnServiceIdentity string) (*AddOnServiceInfoResult, error) {
 	var addOnService AddOnServiceInfoResult
-	return &addOnService, s.Get(&addOnService, fmt.Sprintf("/addon-services/%v", addOnServiceIdentity), nil, nil)
+	return &addOnService, s.Get(ctx, &addOnService, fmt.Sprintf("/addon-services/%v", addOnServiceIdentity), nil, nil)
 }
 
 type AddOnServiceListResult []struct {
@@ -1144,9 +1147,9 @@ type AddOnServiceListResult []struct {
 }
 
 // List existing add-on-services.
-func (s *Service) AddOnServiceList(lr *ListRange) (AddOnServiceListResult, error) {
+func (s *Service) AddOnServiceList(ctx context.Context, lr *ListRange) (AddOnServiceListResult, error) {
 	var addOnService AddOnServiceListResult
-	return addOnService, s.Get(&addOnService, fmt.Sprintf("/addon-services"), nil, lr)
+	return addOnService, s.Get(ctx, &addOnService, fmt.Sprintf("/addon-services"), nil, lr)
 }
 
 // An app represents the program that you would like to deploy and run
@@ -1236,9 +1239,9 @@ type AppCreateResult struct {
 }
 
 // Create a new app.
-func (s *Service) AppCreate(o AppCreateOpts) (*AppCreateResult, error) {
+func (s *Service) AppCreate(ctx context.Context, o AppCreateOpts) (*AppCreateResult, error) {
 	var app AppCreateResult
-	return &app, s.Post(&app, fmt.Sprintf("/apps"), o)
+	return &app, s.Post(ctx, &app, fmt.Sprintf("/apps"), o)
 }
 
 type AppDeleteResult struct {
@@ -1282,9 +1285,9 @@ type AppDeleteResult struct {
 }
 
 // Delete an existing app.
-func (s *Service) AppDelete(appIdentity string) (*AppDeleteResult, error) {
+func (s *Service) AppDelete(ctx context.Context, appIdentity string) (*AppDeleteResult, error) {
 	var app AppDeleteResult
-	return &app, s.Delete(&app, fmt.Sprintf("/apps/%v", appIdentity))
+	return &app, s.Delete(ctx, &app, fmt.Sprintf("/apps/%v", appIdentity))
 }
 
 type AppInfoResult struct {
@@ -1328,9 +1331,9 @@ type AppInfoResult struct {
 }
 
 // Info for existing app.
-func (s *Service) AppInfo(appIdentity string) (*AppInfoResult, error) {
+func (s *Service) AppInfo(ctx context.Context, appIdentity string) (*AppInfoResult, error) {
 	var app AppInfoResult
-	return &app, s.Get(&app, fmt.Sprintf("/apps/%v", appIdentity), nil, nil)
+	return &app, s.Get(ctx, &app, fmt.Sprintf("/apps/%v", appIdentity), nil, nil)
 }
 
 type AppListResult []struct {
@@ -1374,9 +1377,9 @@ type AppListResult []struct {
 }
 
 // List existing apps.
-func (s *Service) AppList(lr *ListRange) (AppListResult, error) {
+func (s *Service) AppList(ctx context.Context, lr *ListRange) (AppListResult, error) {
 	var app AppListResult
-	return app, s.Get(&app, fmt.Sprintf("/apps"), nil, lr)
+	return app, s.Get(ctx, &app, fmt.Sprintf("/apps"), nil, lr)
 }
 
 type AppListOwnedAndCollaboratedResult []struct {
@@ -1420,9 +1423,9 @@ type AppListOwnedAndCollaboratedResult []struct {
 }
 
 // List owned and collaborated apps (excludes organization apps).
-func (s *Service) AppListOwnedAndCollaborated(accountIdentity string, lr *ListRange) (AppListOwnedAndCollaboratedResult, error) {
+func (s *Service) AppListOwnedAndCollaborated(ctx context.Context, accountIdentity string, lr *ListRange) (AppListOwnedAndCollaboratedResult, error) {
 	var app AppListOwnedAndCollaboratedResult
-	return app, s.Get(&app, fmt.Sprintf("/users/%v/apps", accountIdentity), nil, lr)
+	return app, s.Get(ctx, &app, fmt.Sprintf("/users/%v/apps", accountIdentity), nil, lr)
 }
 
 type AppUpdateOpts struct {
@@ -1471,9 +1474,9 @@ type AppUpdateResult struct {
 }
 
 // Update an existing app.
-func (s *Service) AppUpdate(appIdentity string, o AppUpdateOpts) (*AppUpdateResult, error) {
+func (s *Service) AppUpdate(ctx context.Context, appIdentity string, o AppUpdateOpts) (*AppUpdateResult, error) {
 	var app AppUpdateResult
-	return &app, s.Patch(&app, fmt.Sprintf("/apps/%v", appIdentity), o)
+	return &app, s.Patch(ctx, &app, fmt.Sprintf("/apps/%v", appIdentity), o)
 }
 
 // An app feature represents a Heroku labs capability that can be
@@ -1500,9 +1503,9 @@ type AppFeatureInfoResult struct {
 }
 
 // Info for an existing app feature.
-func (s *Service) AppFeatureInfo(appIdentity string, appFeatureIdentity string) (*AppFeatureInfoResult, error) {
+func (s *Service) AppFeatureInfo(ctx context.Context, appIdentity string, appFeatureIdentity string) (*AppFeatureInfoResult, error) {
 	var appFeature AppFeatureInfoResult
-	return &appFeature, s.Get(&appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), nil, nil)
+	return &appFeature, s.Get(ctx, &appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), nil, nil)
 }
 
 type AppFeatureListResult []struct {
@@ -1517,9 +1520,9 @@ type AppFeatureListResult []struct {
 }
 
 // List existing app features.
-func (s *Service) AppFeatureList(appIdentity string, lr *ListRange) (AppFeatureListResult, error) {
+func (s *Service) AppFeatureList(ctx context.Context, appIdentity string, lr *ListRange) (AppFeatureListResult, error) {
 	var appFeature AppFeatureListResult
-	return appFeature, s.Get(&appFeature, fmt.Sprintf("/apps/%v/features", appIdentity), nil, lr)
+	return appFeature, s.Get(ctx, &appFeature, fmt.Sprintf("/apps/%v/features", appIdentity), nil, lr)
 }
 
 type AppFeatureUpdateOpts struct {
@@ -1537,9 +1540,9 @@ type AppFeatureUpdateResult struct {
 }
 
 // Update an existing app feature.
-func (s *Service) AppFeatureUpdate(appIdentity string, appFeatureIdentity string, o AppFeatureUpdateOpts) (*AppFeatureUpdateResult, error) {
+func (s *Service) AppFeatureUpdate(ctx context.Context, appIdentity string, appFeatureIdentity string, o AppFeatureUpdateOpts) (*AppFeatureUpdateResult, error) {
 	var appFeature AppFeatureUpdateResult
-	return &appFeature, s.Patch(&appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), o)
+	return &appFeature, s.Patch(ctx, &appFeature, fmt.Sprintf("/apps/%v/features/%v", appIdentity, appFeatureIdentity), o)
 }
 
 // App formation set describes the combination of process types with
@@ -1637,9 +1640,9 @@ type AppSetupCreateResult struct {
 
 // Create a new app setup from a gzipped tar archive containing an
 // app.json manifest file.
-func (s *Service) AppSetupCreate(o AppSetupCreateOpts) (*AppSetupCreateResult, error) {
+func (s *Service) AppSetupCreate(ctx context.Context, o AppSetupCreateOpts) (*AppSetupCreateResult, error) {
 	var appSetup AppSetupCreateResult
-	return &appSetup, s.Post(&appSetup, fmt.Sprintf("/app-setups"), o)
+	return &appSetup, s.Post(ctx, &appSetup, fmt.Sprintf("/app-setups"), o)
 }
 
 type AppSetupInfoResult struct {
@@ -1670,9 +1673,9 @@ type AppSetupInfoResult struct {
 }
 
 // Get the status of an app setup.
-func (s *Service) AppSetupInfo(appSetupIdentity string) (*AppSetupInfoResult, error) {
+func (s *Service) AppSetupInfo(ctx context.Context, appSetupIdentity string) (*AppSetupInfoResult, error) {
 	var appSetup AppSetupInfoResult
-	return &appSetup, s.Get(&appSetup, fmt.Sprintf("/app-setups/%v", appSetupIdentity), nil, nil)
+	return &appSetup, s.Get(ctx, &appSetup, fmt.Sprintf("/app-setups/%v", appSetupIdentity), nil, nil)
 }
 
 // An app transfer represents a two party interaction for transferring
@@ -1720,9 +1723,9 @@ type AppTransferCreateResult struct {
 }
 
 // Create a new app transfer.
-func (s *Service) AppTransferCreate(o AppTransferCreateOpts) (*AppTransferCreateResult, error) {
+func (s *Service) AppTransferCreate(ctx context.Context, o AppTransferCreateOpts) (*AppTransferCreateResult, error) {
 	var appTransfer AppTransferCreateResult
-	return &appTransfer, s.Post(&appTransfer, fmt.Sprintf("/account/app-transfers"), o)
+	return &appTransfer, s.Post(ctx, &appTransfer, fmt.Sprintf("/account/app-transfers"), o)
 }
 
 type AppTransferDeleteResult struct {
@@ -1745,9 +1748,9 @@ type AppTransferDeleteResult struct {
 }
 
 // Delete an existing app transfer
-func (s *Service) AppTransferDelete(appTransferIdentity string) (*AppTransferDeleteResult, error) {
+func (s *Service) AppTransferDelete(ctx context.Context, appTransferIdentity string) (*AppTransferDeleteResult, error) {
 	var appTransfer AppTransferDeleteResult
-	return &appTransfer, s.Delete(&appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity))
+	return &appTransfer, s.Delete(ctx, &appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity))
 }
 
 type AppTransferInfoResult struct {
@@ -1770,9 +1773,9 @@ type AppTransferInfoResult struct {
 }
 
 // Info for existing app transfer.
-func (s *Service) AppTransferInfo(appTransferIdentity string) (*AppTransferInfoResult, error) {
+func (s *Service) AppTransferInfo(ctx context.Context, appTransferIdentity string) (*AppTransferInfoResult, error) {
 	var appTransfer AppTransferInfoResult
-	return &appTransfer, s.Get(&appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), nil, nil)
+	return &appTransfer, s.Get(ctx, &appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), nil, nil)
 }
 
 type AppTransferListResult []struct {
@@ -1795,9 +1798,9 @@ type AppTransferListResult []struct {
 }
 
 // List existing apps transfers.
-func (s *Service) AppTransferList(lr *ListRange) (AppTransferListResult, error) {
+func (s *Service) AppTransferList(ctx context.Context, lr *ListRange) (AppTransferListResult, error) {
 	var appTransfer AppTransferListResult
-	return appTransfer, s.Get(&appTransfer, fmt.Sprintf("/account/app-transfers"), nil, lr)
+	return appTransfer, s.Get(ctx, &appTransfer, fmt.Sprintf("/account/app-transfers"), nil, lr)
 }
 
 type AppTransferUpdateOpts struct {
@@ -1823,9 +1826,9 @@ type AppTransferUpdateResult struct {
 }
 
 // Update an existing app transfer.
-func (s *Service) AppTransferUpdate(appTransferIdentity string, o AppTransferUpdateOpts) (*AppTransferUpdateResult, error) {
+func (s *Service) AppTransferUpdate(ctx context.Context, appTransferIdentity string, o AppTransferUpdateOpts) (*AppTransferUpdateResult, error) {
 	var appTransfer AppTransferUpdateResult
-	return &appTransfer, s.Patch(&appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), o)
+	return &appTransfer, s.Patch(ctx, &appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), o)
 }
 
 // A build represents the process of transforming a code tarball into a
@@ -1915,9 +1918,9 @@ type BuildCreateResult struct {
 }
 
 // Create a new build.
-func (s *Service) BuildCreate(appIdentity string, o BuildCreateOpts) (*BuildCreateResult, error) {
+func (s *Service) BuildCreate(ctx context.Context, appIdentity string, o BuildCreateOpts) (*BuildCreateResult, error) {
 	var build BuildCreateResult
-	return &build, s.Post(&build, fmt.Sprintf("/apps/%v/builds", appIdentity), o)
+	return &build, s.Post(ctx, &build, fmt.Sprintf("/apps/%v/builds", appIdentity), o)
 }
 
 type BuildInfoResult struct {
@@ -1957,9 +1960,9 @@ type BuildInfoResult struct {
 }
 
 // Info for existing build.
-func (s *Service) BuildInfo(appIdentity string, buildIdentity string) (*BuildInfoResult, error) {
+func (s *Service) BuildInfo(ctx context.Context, appIdentity string, buildIdentity string) (*BuildInfoResult, error) {
 	var build BuildInfoResult
-	return &build, s.Get(&build, fmt.Sprintf("/apps/%v/builds/%v", appIdentity, buildIdentity), nil, nil)
+	return &build, s.Get(ctx, &build, fmt.Sprintf("/apps/%v/builds/%v", appIdentity, buildIdentity), nil, nil)
 }
 
 type BuildListResult []struct {
@@ -1999,9 +2002,9 @@ type BuildListResult []struct {
 }
 
 // List existing build.
-func (s *Service) BuildList(appIdentity string, lr *ListRange) (BuildListResult, error) {
+func (s *Service) BuildList(ctx context.Context, appIdentity string, lr *ListRange) (BuildListResult, error) {
 	var build BuildListResult
-	return build, s.Get(&build, fmt.Sprintf("/apps/%v/builds", appIdentity), nil, lr)
+	return build, s.Get(ctx, &build, fmt.Sprintf("/apps/%v/builds", appIdentity), nil, lr)
 }
 
 // A build result contains the output from a build.
@@ -2041,9 +2044,9 @@ type BuildResultInfoResult struct {
 }
 
 // Info for existing result.
-func (s *Service) BuildResultInfo(appIdentity string, buildIdentity string) (*BuildResultInfoResult, error) {
+func (s *Service) BuildResultInfo(ctx context.Context, appIdentity string, buildIdentity string) (*BuildResultInfoResult, error) {
 	var buildResult BuildResultInfoResult
-	return &buildResult, s.Get(&buildResult, fmt.Sprintf("/apps/%v/builds/%v/result", appIdentity, buildIdentity), nil, nil)
+	return &buildResult, s.Get(ctx, &buildResult, fmt.Sprintf("/apps/%v/builds/%v/result", appIdentity, buildIdentity), nil, nil)
 }
 
 // A buildpack installation represents a buildpack that will be run
@@ -2074,9 +2077,9 @@ type BuildpackInstallationUpdateResult []struct {
 }
 
 // Update an app's buildpack installations.
-func (s *Service) BuildpackInstallationUpdate(appIdentity string, o BuildpackInstallationUpdateOpts) (BuildpackInstallationUpdateResult, error) {
+func (s *Service) BuildpackInstallationUpdate(ctx context.Context, appIdentity string, o BuildpackInstallationUpdateOpts) (BuildpackInstallationUpdateResult, error) {
 	var buildpackInstallation BuildpackInstallationUpdateResult
-	return buildpackInstallation, s.Put(&buildpackInstallation, fmt.Sprintf("/apps/%v/buildpack-installations", appIdentity), o)
+	return buildpackInstallation, s.Put(ctx, &buildpackInstallation, fmt.Sprintf("/apps/%v/buildpack-installations", appIdentity), o)
 }
 
 type BuildpackInstallationListResult []struct {
@@ -2090,9 +2093,9 @@ type BuildpackInstallationListResult []struct {
 }
 
 // List an app's existing buildpack installations.
-func (s *Service) BuildpackInstallationList(appIdentity string, lr *ListRange) (BuildpackInstallationListResult, error) {
+func (s *Service) BuildpackInstallationList(ctx context.Context, appIdentity string, lr *ListRange) (BuildpackInstallationListResult, error) {
 	var buildpackInstallation BuildpackInstallationListResult
-	return buildpackInstallation, s.Get(&buildpackInstallation, fmt.Sprintf("/apps/%v/buildpack-installations", appIdentity), nil, lr)
+	return buildpackInstallation, s.Get(ctx, &buildpackInstallation, fmt.Sprintf("/apps/%v/buildpack-installations", appIdentity), nil, lr)
 }
 
 // A collaborator represents an account that has been given access to an
@@ -2141,9 +2144,9 @@ type CollaboratorCreateResult struct {
 }
 
 // Create a new collaborator.
-func (s *Service) CollaboratorCreate(appIdentity string, o CollaboratorCreateOpts) (*CollaboratorCreateResult, error) {
+func (s *Service) CollaboratorCreate(ctx context.Context, appIdentity string, o CollaboratorCreateOpts) (*CollaboratorCreateResult, error) {
 	var collaborator CollaboratorCreateResult
-	return &collaborator, s.Post(&collaborator, fmt.Sprintf("/apps/%v/collaborators", appIdentity), o)
+	return &collaborator, s.Post(ctx, &collaborator, fmt.Sprintf("/apps/%v/collaborators", appIdentity), o)
 }
 
 type CollaboratorDeleteResult struct {
@@ -2167,9 +2170,9 @@ type CollaboratorDeleteResult struct {
 }
 
 // Delete an existing collaborator.
-func (s *Service) CollaboratorDelete(appIdentity string, collaboratorIdentity string) (*CollaboratorDeleteResult, error) {
+func (s *Service) CollaboratorDelete(ctx context.Context, appIdentity string, collaboratorIdentity string) (*CollaboratorDeleteResult, error) {
 	var collaborator CollaboratorDeleteResult
-	return &collaborator, s.Delete(&collaborator, fmt.Sprintf("/apps/%v/collaborators/%v", appIdentity, collaboratorIdentity))
+	return &collaborator, s.Delete(ctx, &collaborator, fmt.Sprintf("/apps/%v/collaborators/%v", appIdentity, collaboratorIdentity))
 }
 
 type CollaboratorInfoResult struct {
@@ -2193,9 +2196,9 @@ type CollaboratorInfoResult struct {
 }
 
 // Info for existing collaborator.
-func (s *Service) CollaboratorInfo(appIdentity string, collaboratorIdentity string) (*CollaboratorInfoResult, error) {
+func (s *Service) CollaboratorInfo(ctx context.Context, appIdentity string, collaboratorIdentity string) (*CollaboratorInfoResult, error) {
 	var collaborator CollaboratorInfoResult
-	return &collaborator, s.Get(&collaborator, fmt.Sprintf("/apps/%v/collaborators/%v", appIdentity, collaboratorIdentity), nil, nil)
+	return &collaborator, s.Get(ctx, &collaborator, fmt.Sprintf("/apps/%v/collaborators/%v", appIdentity, collaboratorIdentity), nil, nil)
 }
 
 type CollaboratorListResult []struct {
@@ -2219,9 +2222,9 @@ type CollaboratorListResult []struct {
 }
 
 // List existing collaborators.
-func (s *Service) CollaboratorList(appIdentity string, lr *ListRange) (CollaboratorListResult, error) {
+func (s *Service) CollaboratorList(ctx context.Context, appIdentity string, lr *ListRange) (CollaboratorListResult, error) {
 	var collaborator CollaboratorListResult
-	return collaborator, s.Get(&collaborator, fmt.Sprintf("/apps/%v/collaborators", appIdentity), nil, lr)
+	return collaborator, s.Get(ctx, &collaborator, fmt.Sprintf("/apps/%v/collaborators", appIdentity), nil, lr)
 }
 
 // Config Vars allow you to manage the configuration information
@@ -2230,26 +2233,26 @@ type ConfigVar map[string]string
 type ConfigVarInfoForAppResult map[string]*string
 
 // Get config-vars for app.
-func (s *Service) ConfigVarInfoForApp(appIdentity string) (ConfigVarInfoForAppResult, error) {
+func (s *Service) ConfigVarInfoForApp(ctx context.Context, appIdentity string) (ConfigVarInfoForAppResult, error) {
 	var configVar ConfigVarInfoForAppResult
-	return configVar, s.Get(&configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), nil, nil)
+	return configVar, s.Get(ctx, &configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), nil, nil)
 }
 
 type ConfigVarInfoForAppReleaseResult map[string]*string
 
 // Get config-vars for a release.
-func (s *Service) ConfigVarInfoForAppRelease(appIdentity string, releaseIdentity string) (ConfigVarInfoForAppReleaseResult, error) {
+func (s *Service) ConfigVarInfoForAppRelease(ctx context.Context, appIdentity string, releaseIdentity string) (ConfigVarInfoForAppReleaseResult, error) {
 	var configVar ConfigVarInfoForAppReleaseResult
-	return configVar, s.Get(&configVar, fmt.Sprintf("/apps/%v/releases/%v/config-vars", appIdentity, releaseIdentity), nil, nil)
+	return configVar, s.Get(ctx, &configVar, fmt.Sprintf("/apps/%v/releases/%v/config-vars", appIdentity, releaseIdentity), nil, nil)
 }
 
 type ConfigVarUpdateResult map[string]*string
 
 // Update config-vars for app. You can update existing config-vars by
 // setting them again, and remove by setting it to `null`.
-func (s *Service) ConfigVarUpdate(appIdentity string, o map[string]*string) (ConfigVarUpdateResult, error) {
+func (s *Service) ConfigVarUpdate(ctx context.Context, appIdentity string, o map[string]*string) (ConfigVarUpdateResult, error) {
 	var configVar ConfigVarUpdateResult
-	return configVar, s.Patch(&configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), o)
+	return configVar, s.Patch(ctx, &configVar, fmt.Sprintf("/apps/%v/config-vars", appIdentity), o)
 }
 
 // A credit represents value that will be used up before further charges
@@ -2278,9 +2281,9 @@ type CreditCreateResult struct {
 }
 
 // Create a new credit.
-func (s *Service) CreditCreate(o CreditCreateOpts) (*CreditCreateResult, error) {
+func (s *Service) CreditCreate(ctx context.Context, o CreditCreateOpts) (*CreditCreateResult, error) {
 	var credit CreditCreateResult
-	return &credit, s.Post(&credit, fmt.Sprintf("/account/credits"), o)
+	return &credit, s.Post(ctx, &credit, fmt.Sprintf("/account/credits"), o)
 }
 
 type CreditInfoResult struct {
@@ -2294,9 +2297,9 @@ type CreditInfoResult struct {
 }
 
 // Info for existing credit.
-func (s *Service) CreditInfo(creditIdentity string) (*CreditInfoResult, error) {
+func (s *Service) CreditInfo(ctx context.Context, creditIdentity string) (*CreditInfoResult, error) {
 	var credit CreditInfoResult
-	return &credit, s.Get(&credit, fmt.Sprintf("/account/credits/%v", creditIdentity), nil, nil)
+	return &credit, s.Get(ctx, &credit, fmt.Sprintf("/account/credits/%v", creditIdentity), nil, nil)
 }
 
 type CreditListResult []struct {
@@ -2310,9 +2313,9 @@ type CreditListResult []struct {
 }
 
 // List existing credits.
-func (s *Service) CreditList(lr *ListRange) (CreditListResult, error) {
+func (s *Service) CreditList(ctx context.Context, lr *ListRange) (CreditListResult, error) {
 	var credit CreditListResult
-	return credit, s.Get(&credit, fmt.Sprintf("/account/credits"), nil, lr)
+	return credit, s.Get(ctx, &credit, fmt.Sprintf("/account/credits"), nil, lr)
 }
 
 // Domains define what web routes should be routed to an app on Heroku.
@@ -2347,9 +2350,9 @@ type DomainCreateResult struct {
 }
 
 // Create a new domain.
-func (s *Service) DomainCreate(appIdentity string, o DomainCreateOpts) (*DomainCreateResult, error) {
+func (s *Service) DomainCreate(ctx context.Context, appIdentity string, o DomainCreateOpts) (*DomainCreateResult, error) {
 	var domain DomainCreateResult
-	return &domain, s.Post(&domain, fmt.Sprintf("/apps/%v/domains", appIdentity), o)
+	return &domain, s.Post(ctx, &domain, fmt.Sprintf("/apps/%v/domains", appIdentity), o)
 }
 
 type DomainDeleteResult struct {
@@ -2367,9 +2370,9 @@ type DomainDeleteResult struct {
 }
 
 // Delete an existing domain
-func (s *Service) DomainDelete(appIdentity string, domainIdentity string) (*DomainDeleteResult, error) {
+func (s *Service) DomainDelete(ctx context.Context, appIdentity string, domainIdentity string) (*DomainDeleteResult, error) {
 	var domain DomainDeleteResult
-	return &domain, s.Delete(&domain, fmt.Sprintf("/apps/%v/domains/%v", appIdentity, domainIdentity))
+	return &domain, s.Delete(ctx, &domain, fmt.Sprintf("/apps/%v/domains/%v", appIdentity, domainIdentity))
 }
 
 type DomainInfoResult struct {
@@ -2387,9 +2390,9 @@ type DomainInfoResult struct {
 }
 
 // Info for existing domain.
-func (s *Service) DomainInfo(appIdentity string, domainIdentity string) (*DomainInfoResult, error) {
+func (s *Service) DomainInfo(ctx context.Context, appIdentity string, domainIdentity string) (*DomainInfoResult, error) {
 	var domain DomainInfoResult
-	return &domain, s.Get(&domain, fmt.Sprintf("/apps/%v/domains/%v", appIdentity, domainIdentity), nil, nil)
+	return &domain, s.Get(ctx, &domain, fmt.Sprintf("/apps/%v/domains/%v", appIdentity, domainIdentity), nil, nil)
 }
 
 type DomainListResult []struct {
@@ -2407,9 +2410,9 @@ type DomainListResult []struct {
 }
 
 // List existing domains.
-func (s *Service) DomainList(appIdentity string, lr *ListRange) (DomainListResult, error) {
+func (s *Service) DomainList(ctx context.Context, appIdentity string, lr *ListRange) (DomainListResult, error) {
 	var domain DomainListResult
-	return domain, s.Get(&domain, fmt.Sprintf("/apps/%v/domains", appIdentity), nil, lr)
+	return domain, s.Get(ctx, &domain, fmt.Sprintf("/apps/%v/domains", appIdentity), nil, lr)
 }
 
 // Dynos encapsulate running processes of an app on Heroku. Detailed
@@ -2469,33 +2472,33 @@ type DynoCreateResult struct {
 }
 
 // Create a new dyno.
-func (s *Service) DynoCreate(appIdentity string, o DynoCreateOpts) (*DynoCreateResult, error) {
+func (s *Service) DynoCreate(ctx context.Context, appIdentity string, o DynoCreateOpts) (*DynoCreateResult, error) {
 	var dyno DynoCreateResult
-	return &dyno, s.Post(&dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity), o)
+	return &dyno, s.Post(ctx, &dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity), o)
 }
 
 type DynoRestartResult struct{}
 
 // Restart dyno.
-func (s *Service) DynoRestart(appIdentity string, dynoIdentity string) (DynoRestartResult, error) {
+func (s *Service) DynoRestart(ctx context.Context, appIdentity string, dynoIdentity string) (DynoRestartResult, error) {
 	var dyno DynoRestartResult
-	return dyno, s.Delete(&dyno, fmt.Sprintf("/apps/%v/dynos/%v", appIdentity, dynoIdentity))
+	return dyno, s.Delete(ctx, &dyno, fmt.Sprintf("/apps/%v/dynos/%v", appIdentity, dynoIdentity))
 }
 
 type DynoRestartAllResult struct{}
 
 // Restart all dynos.
-func (s *Service) DynoRestartAll(appIdentity string) (DynoRestartAllResult, error) {
+func (s *Service) DynoRestartAll(ctx context.Context, appIdentity string) (DynoRestartAllResult, error) {
 	var dyno DynoRestartAllResult
-	return dyno, s.Delete(&dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity))
+	return dyno, s.Delete(ctx, &dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity))
 }
 
 type DynoStopResult struct{}
 
 // Stop dyno.
-func (s *Service) DynoStop(appIdentity string, dynoIdentity string) (DynoStopResult, error) {
+func (s *Service) DynoStop(ctx context.Context, appIdentity string, dynoIdentity string) (DynoStopResult, error) {
 	var dyno DynoStopResult
-	return dyno, s.Post(&dyno, fmt.Sprintf("/apps/%v/dynos/%v/actions/stop", appIdentity, dynoIdentity), nil)
+	return dyno, s.Post(ctx, &dyno, fmt.Sprintf("/apps/%v/dynos/%v/actions/stop", appIdentity, dynoIdentity), nil)
 }
 
 type DynoInfoResult struct {
@@ -2521,9 +2524,9 @@ type DynoInfoResult struct {
 }
 
 // Info for existing dyno.
-func (s *Service) DynoInfo(appIdentity string, dynoIdentity string) (*DynoInfoResult, error) {
+func (s *Service) DynoInfo(ctx context.Context, appIdentity string, dynoIdentity string) (*DynoInfoResult, error) {
 	var dyno DynoInfoResult
-	return &dyno, s.Get(&dyno, fmt.Sprintf("/apps/%v/dynos/%v", appIdentity, dynoIdentity), nil, nil)
+	return &dyno, s.Get(ctx, &dyno, fmt.Sprintf("/apps/%v/dynos/%v", appIdentity, dynoIdentity), nil, nil)
 }
 
 type DynoListResult []struct {
@@ -2549,9 +2552,9 @@ type DynoListResult []struct {
 }
 
 // List existing dynos.
-func (s *Service) DynoList(appIdentity string, lr *ListRange) (DynoListResult, error) {
+func (s *Service) DynoList(ctx context.Context, appIdentity string, lr *ListRange) (DynoListResult, error) {
 	var dyno DynoListResult
-	return dyno, s.Get(&dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity), nil, lr)
+	return dyno, s.Get(ctx, &dyno, fmt.Sprintf("/apps/%v/dynos", appIdentity), nil, lr)
 }
 
 // Dyno sizes are the values and details of sizes that can be assigned
@@ -2580,9 +2583,9 @@ type DynoSizeInfoResult struct {
 }
 
 // Info for existing dyno size.
-func (s *Service) DynoSizeInfo(dynoSizeIdentity string) (*DynoSizeInfoResult, error) {
+func (s *Service) DynoSizeInfo(ctx context.Context, dynoSizeIdentity string) (*DynoSizeInfoResult, error) {
 	var dynoSize DynoSizeInfoResult
-	return &dynoSize, s.Get(&dynoSize, fmt.Sprintf("/dyno-sizes/%v", dynoSizeIdentity), nil, nil)
+	return &dynoSize, s.Get(ctx, &dynoSize, fmt.Sprintf("/dyno-sizes/%v", dynoSizeIdentity), nil, nil)
 }
 
 type DynoSizeListResult []struct {
@@ -2597,9 +2600,9 @@ type DynoSizeListResult []struct {
 }
 
 // List existing dyno sizes.
-func (s *Service) DynoSizeList(lr *ListRange) (DynoSizeListResult, error) {
+func (s *Service) DynoSizeList(ctx context.Context, lr *ListRange) (DynoSizeListResult, error) {
 	var dynoSize DynoSizeListResult
-	return dynoSize, s.Get(&dynoSize, fmt.Sprintf("/dyno-sizes"), nil, lr)
+	return dynoSize, s.Get(ctx, &dynoSize, fmt.Sprintf("/dyno-sizes"), nil, lr)
 }
 
 // An event represents an action performed on another API resource.
@@ -2711,9 +2714,9 @@ type FilterAppsAppsResult []struct {
 }
 
 // Request an apps list filtered by app id.
-func (s *Service) FilterAppsApps(o FilterAppsAppsOpts) (FilterAppsAppsResult, error) {
+func (s *Service) FilterAppsApps(ctx context.Context, o FilterAppsAppsOpts) (FilterAppsAppsResult, error) {
 	var filterApps FilterAppsAppsResult
-	return filterApps, s.Post(&filterApps, fmt.Sprintf("/filters/apps"), o)
+	return filterApps, s.Post(ctx, &filterApps, fmt.Sprintf("/filters/apps"), o)
 }
 
 // The formation of processes that should be maintained for an app.
@@ -2749,9 +2752,9 @@ type FormationInfoResult struct {
 }
 
 // Info for a process type
-func (s *Service) FormationInfo(appIdentity string, formationIdentity string) (*FormationInfoResult, error) {
+func (s *Service) FormationInfo(ctx context.Context, appIdentity string, formationIdentity string) (*FormationInfoResult, error) {
 	var formation FormationInfoResult
-	return &formation, s.Get(&formation, fmt.Sprintf("/apps/%v/formation/%v", appIdentity, formationIdentity), nil, nil)
+	return &formation, s.Get(ctx, &formation, fmt.Sprintf("/apps/%v/formation/%v", appIdentity, formationIdentity), nil, nil)
 }
 
 type FormationListResult []struct {
@@ -2769,9 +2772,9 @@ type FormationListResult []struct {
 }
 
 // List process type formation
-func (s *Service) FormationList(appIdentity string, lr *ListRange) (FormationListResult, error) {
+func (s *Service) FormationList(ctx context.Context, appIdentity string, lr *ListRange) (FormationListResult, error) {
 	var formation FormationListResult
-	return formation, s.Get(&formation, fmt.Sprintf("/apps/%v/formation", appIdentity), nil, lr)
+	return formation, s.Get(ctx, &formation, fmt.Sprintf("/apps/%v/formation", appIdentity), nil, lr)
 }
 
 type FormationBatchUpdateOpts struct {
@@ -2798,9 +2801,9 @@ type FormationBatchUpdateResult []struct {
 }
 
 // Batch update process types
-func (s *Service) FormationBatchUpdate(appIdentity string, o FormationBatchUpdateOpts) (FormationBatchUpdateResult, error) {
+func (s *Service) FormationBatchUpdate(ctx context.Context, appIdentity string, o FormationBatchUpdateOpts) (FormationBatchUpdateResult, error) {
 	var formation FormationBatchUpdateResult
-	return formation, s.Patch(&formation, fmt.Sprintf("/apps/%v/formation", appIdentity), o)
+	return formation, s.Patch(ctx, &formation, fmt.Sprintf("/apps/%v/formation", appIdentity), o)
 }
 
 type FormationUpdateOpts struct {
@@ -2822,9 +2825,9 @@ type FormationUpdateResult struct {
 }
 
 // Update process type
-func (s *Service) FormationUpdate(appIdentity string, formationIdentity string, o FormationUpdateOpts) (*FormationUpdateResult, error) {
+func (s *Service) FormationUpdate(ctx context.Context, appIdentity string, formationIdentity string, o FormationUpdateOpts) (*FormationUpdateResult, error) {
 	var formation FormationUpdateResult
-	return &formation, s.Patch(&formation, fmt.Sprintf("/apps/%v/formation/%v", appIdentity, formationIdentity), o)
+	return &formation, s.Patch(ctx, &formation, fmt.Sprintf("/apps/%v/formation/%v", appIdentity, formationIdentity), o)
 }
 
 // Identity Providers represent the SAML configuration of an
@@ -2855,9 +2858,9 @@ type IdentityProviderListResult []struct {
 }
 
 // Get a list of an organization's Identity Providers
-func (s *Service) IdentityProviderList(organizationName string, lr *ListRange) (IdentityProviderListResult, error) {
+func (s *Service) IdentityProviderList(ctx context.Context, organizationName string, lr *ListRange) (IdentityProviderListResult, error) {
 	var identityProvider IdentityProviderListResult
-	return identityProvider, s.Get(&identityProvider, fmt.Sprintf("/organizations/%v/identity-providers", organizationName), nil, lr)
+	return identityProvider, s.Get(ctx, &identityProvider, fmt.Sprintf("/organizations/%v/identity-providers", organizationName), nil, lr)
 }
 
 type IdentityProviderCreateOpts struct {
@@ -2880,9 +2883,9 @@ type IdentityProviderCreateResult struct {
 }
 
 // Create an Identity Provider for an organization
-func (s *Service) IdentityProviderCreate(organizationName string, o IdentityProviderCreateOpts) (*IdentityProviderCreateResult, error) {
+func (s *Service) IdentityProviderCreate(ctx context.Context, organizationName string, o IdentityProviderCreateOpts) (*IdentityProviderCreateResult, error) {
 	var identityProvider IdentityProviderCreateResult
-	return &identityProvider, s.Post(&identityProvider, fmt.Sprintf("/organizations/%v/identity-providers", organizationName), o)
+	return &identityProvider, s.Post(ctx, &identityProvider, fmt.Sprintf("/organizations/%v/identity-providers", organizationName), o)
 }
 
 type IdentityProviderUpdateOpts struct {
@@ -2905,9 +2908,9 @@ type IdentityProviderUpdateResult struct {
 }
 
 // Update an organization's Identity Provider
-func (s *Service) IdentityProviderUpdate(organizationName string, identityProviderID string, o IdentityProviderUpdateOpts) (*IdentityProviderUpdateResult, error) {
+func (s *Service) IdentityProviderUpdate(ctx context.Context, organizationName string, identityProviderID string, o IdentityProviderUpdateOpts) (*IdentityProviderUpdateResult, error) {
 	var identityProvider IdentityProviderUpdateResult
-	return &identityProvider, s.Patch(&identityProvider, fmt.Sprintf("/organizations/%v/identity-providers/%v", organizationName, identityProviderID), o)
+	return &identityProvider, s.Patch(ctx, &identityProvider, fmt.Sprintf("/organizations/%v/identity-providers/%v", organizationName, identityProviderID), o)
 }
 
 type IdentityProviderDeleteResult struct {
@@ -2924,9 +2927,9 @@ type IdentityProviderDeleteResult struct {
 }
 
 // Delete an organization's Identity Provider
-func (s *Service) IdentityProviderDelete(organizationName string, identityProviderID string) (*IdentityProviderDeleteResult, error) {
+func (s *Service) IdentityProviderDelete(ctx context.Context, organizationName string, identityProviderID string) (*IdentityProviderDeleteResult, error) {
 	var identityProvider IdentityProviderDeleteResult
-	return &identityProvider, s.Delete(&identityProvider, fmt.Sprintf("/organizations/%v/identity-providers/%v", organizationName, identityProviderID))
+	return &identityProvider, s.Delete(ctx, &identityProvider, fmt.Sprintf("/organizations/%v/identity-providers/%v", organizationName, identityProviderID))
 }
 
 // An inbound-ruleset is a collection of rules that specify what hosts
@@ -2951,9 +2954,9 @@ type InboundRulesetInfoResult struct {
 }
 
 // Current inbound ruleset for a space
-func (s *Service) InboundRulesetInfo(spaceIdentity string) (*InboundRulesetInfoResult, error) {
+func (s *Service) InboundRulesetInfo(ctx context.Context, spaceIdentity string) (*InboundRulesetInfoResult, error) {
 	var inboundRuleset InboundRulesetInfoResult
-	return &inboundRuleset, s.Get(&inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-ruleset", spaceIdentity), nil, nil)
+	return &inboundRuleset, s.Get(ctx, &inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-ruleset", spaceIdentity), nil, nil)
 }
 
 type InboundRulesetListResult []struct {
@@ -2967,9 +2970,9 @@ type InboundRulesetListResult []struct {
 }
 
 // List all inbound rulesets for a space
-func (s *Service) InboundRulesetList(spaceIdentity string, lr *ListRange) (InboundRulesetListResult, error) {
+func (s *Service) InboundRulesetList(ctx context.Context, spaceIdentity string, lr *ListRange) (InboundRulesetListResult, error) {
 	var inboundRuleset InboundRulesetListResult
-	return inboundRuleset, s.Get(&inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-rulesets", spaceIdentity), nil, lr)
+	return inboundRuleset, s.Get(ctx, &inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-rulesets", spaceIdentity), nil, lr)
 }
 
 type InboundRulesetCreateOpts struct {
@@ -2980,9 +2983,9 @@ type InboundRulesetCreateOpts struct {
 }
 
 // Create a new inbound ruleset
-func (s *Service) InboundRulesetCreate(spaceIdentity string, o InboundRulesetCreateOpts) (*InboundRuleset, error) {
+func (s *Service) InboundRulesetCreate(ctx context.Context, spaceIdentity string, o InboundRulesetCreateOpts) (*InboundRuleset, error) {
 	var inboundRuleset InboundRuleset
-	return &inboundRuleset, s.Put(&inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-ruleset", spaceIdentity), o)
+	return &inboundRuleset, s.Put(ctx, &inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-ruleset", spaceIdentity), o)
 }
 
 // An invitation represents an invite sent to a user to use the Heroku
@@ -2997,9 +3000,9 @@ type Invitation struct {
 }
 
 // Info for invitation.
-func (s *Service) InvitationInfo(invitationIdentity string) (*Invitation, error) {
+func (s *Service) InvitationInfo(ctx context.Context, invitationIdentity string) (*Invitation, error) {
 	var invitation Invitation
-	return &invitation, s.Get(&invitation, fmt.Sprintf("/invitations/%v", invitationIdentity), nil, nil)
+	return &invitation, s.Get(ctx, &invitation, fmt.Sprintf("/invitations/%v", invitationIdentity), nil, nil)
 }
 
 type InvitationCreateOpts struct {
@@ -3008,9 +3011,9 @@ type InvitationCreateOpts struct {
 }
 
 // Invite a user.
-func (s *Service) InvitationCreate(o InvitationCreateOpts) (*Invitation, error) {
+func (s *Service) InvitationCreate(ctx context.Context, o InvitationCreateOpts) (*Invitation, error) {
 	var invitation Invitation
-	return &invitation, s.Post(&invitation, fmt.Sprintf("/invitations"), o)
+	return &invitation, s.Post(ctx, &invitation, fmt.Sprintf("/invitations"), o)
 }
 
 type InvitationSendVerificationCodeOpts struct {
@@ -3019,9 +3022,9 @@ type InvitationSendVerificationCodeOpts struct {
 }
 
 // Send a verification code for an invitation via SMS/phone call.
-func (s *Service) InvitationSendVerificationCode(invitationIdentity string, o InvitationSendVerificationCodeOpts) (*Invitation, error) {
+func (s *Service) InvitationSendVerificationCode(ctx context.Context, invitationIdentity string, o InvitationSendVerificationCodeOpts) (*Invitation, error) {
 	var invitation Invitation
-	return &invitation, s.Post(&invitation, fmt.Sprintf("/invitations/%v/actions/send-verification", invitationIdentity), o)
+	return &invitation, s.Post(ctx, &invitation, fmt.Sprintf("/invitations/%v/actions/send-verification", invitationIdentity), o)
 }
 
 type InvitationVerifyOpts struct {
@@ -3029,9 +3032,9 @@ type InvitationVerifyOpts struct {
 }
 
 // Verify an invitation using a verification code.
-func (s *Service) InvitationVerify(invitationIdentity string, o InvitationVerifyOpts) (*Invitation, error) {
+func (s *Service) InvitationVerify(ctx context.Context, invitationIdentity string, o InvitationVerifyOpts) (*Invitation, error) {
 	var invitation Invitation
-	return &invitation, s.Post(&invitation, fmt.Sprintf("/invitations/%v/actions/verify", invitationIdentity), o)
+	return &invitation, s.Post(ctx, &invitation, fmt.Sprintf("/invitations/%v/actions/verify", invitationIdentity), o)
 }
 
 type InvitationFinalizeOpts struct {
@@ -3041,9 +3044,9 @@ type InvitationFinalizeOpts struct {
 }
 
 // Finalize Invitation and Create Account.
-func (s *Service) InvitationFinalize(invitationIdentity string, o InvitationFinalizeOpts) (*Invitation, error) {
+func (s *Service) InvitationFinalize(ctx context.Context, invitationIdentity string, o InvitationFinalizeOpts) (*Invitation, error) {
 	var invitation Invitation
-	return &invitation, s.Patch(&invitation, fmt.Sprintf("/invitations/%v", invitationIdentity), o)
+	return &invitation, s.Patch(ctx, &invitation, fmt.Sprintf("/invitations/%v", invitationIdentity), o)
 }
 
 // An invoice is an itemized bill of goods for an account which includes
@@ -3074,9 +3077,9 @@ type InvoiceInfoResult struct {
 }
 
 // Info for existing invoice.
-func (s *Service) InvoiceInfo(invoiceIdentity int) (*InvoiceInfoResult, error) {
+func (s *Service) InvoiceInfo(ctx context.Context, invoiceIdentity int) (*InvoiceInfoResult, error) {
 	var invoice InvoiceInfoResult
-	return &invoice, s.Get(&invoice, fmt.Sprintf("/account/invoices/%v", invoiceIdentity), nil, nil)
+	return &invoice, s.Get(ctx, &invoice, fmt.Sprintf("/account/invoices/%v", invoiceIdentity), nil, nil)
 }
 
 type InvoiceListResult []struct {
@@ -3093,9 +3096,9 @@ type InvoiceListResult []struct {
 }
 
 // List existing invoices.
-func (s *Service) InvoiceList(lr *ListRange) (InvoiceListResult, error) {
+func (s *Service) InvoiceList(ctx context.Context, lr *ListRange) (InvoiceListResult, error) {
 	var invoice InvoiceListResult
-	return invoice, s.Get(&invoice, fmt.Sprintf("/account/invoices"), nil, lr)
+	return invoice, s.Get(ctx, &invoice, fmt.Sprintf("/account/invoices"), nil, lr)
 }
 
 // An invoice address represents the address that should be listed on an
@@ -3113,9 +3116,9 @@ type InvoiceAddress struct {
 }
 
 // Retrieve existing invoice address.
-func (s *Service) InvoiceAddressInfo() (*InvoiceAddress, error) {
+func (s *Service) InvoiceAddressInfo(ctx context.Context) (*InvoiceAddress, error) {
 	var invoiceAddress InvoiceAddress
-	return &invoiceAddress, s.Get(&invoiceAddress, fmt.Sprintf("/account/invoice-address"), nil, nil)
+	return &invoiceAddress, s.Get(ctx, &invoiceAddress, fmt.Sprintf("/account/invoice-address"), nil, nil)
 }
 
 type InvoiceAddressUpdateOpts struct {
@@ -3130,9 +3133,9 @@ type InvoiceAddressUpdateOpts struct {
 }
 
 // Update invoice address for an account.
-func (s *Service) InvoiceAddressUpdate(o InvoiceAddressUpdateOpts) (*InvoiceAddress, error) {
+func (s *Service) InvoiceAddressUpdate(ctx context.Context, o InvoiceAddressUpdateOpts) (*InvoiceAddress, error) {
 	var invoiceAddress InvoiceAddress
-	return &invoiceAddress, s.Put(&invoiceAddress, fmt.Sprintf("/account/invoice-address"), o)
+	return &invoiceAddress, s.Put(ctx, &invoiceAddress, fmt.Sprintf("/account/invoice-address"), o)
 }
 
 // Keys represent public SSH keys associated with an account and are
@@ -3157,9 +3160,9 @@ type KeyInfoResult struct {
 }
 
 // Info for existing key.
-func (s *Service) KeyInfo(keyIdentity string) (*KeyInfoResult, error) {
+func (s *Service) KeyInfo(ctx context.Context, keyIdentity string) (*KeyInfoResult, error) {
 	var key KeyInfoResult
-	return &key, s.Get(&key, fmt.Sprintf("/account/keys/%v", keyIdentity), nil, nil)
+	return &key, s.Get(ctx, &key, fmt.Sprintf("/account/keys/%v", keyIdentity), nil, nil)
 }
 
 type KeyListResult []struct {
@@ -3173,9 +3176,9 @@ type KeyListResult []struct {
 }
 
 // List existing keys.
-func (s *Service) KeyList(lr *ListRange) (KeyListResult, error) {
+func (s *Service) KeyList(ctx context.Context, lr *ListRange) (KeyListResult, error) {
 	var key KeyListResult
-	return key, s.Get(&key, fmt.Sprintf("/account/keys"), nil, lr)
+	return key, s.Get(ctx, &key, fmt.Sprintf("/account/keys"), nil, lr)
 }
 
 // [Log drains](https://devcenter.heroku.com/articles/log-drains)
@@ -3212,9 +3215,9 @@ type LogDrainCreateResult struct {
 }
 
 // Create a new log drain.
-func (s *Service) LogDrainCreate(appIdentity string, o LogDrainCreateOpts) (*LogDrainCreateResult, error) {
+func (s *Service) LogDrainCreate(ctx context.Context, appIdentity string, o LogDrainCreateOpts) (*LogDrainCreateResult, error) {
 	var logDrain LogDrainCreateResult
-	return &logDrain, s.Post(&logDrain, fmt.Sprintf("/apps/%v/log-drains", appIdentity), o)
+	return &logDrain, s.Post(ctx, &logDrain, fmt.Sprintf("/apps/%v/log-drains", appIdentity), o)
 }
 
 type LogDrainDeleteResult struct {
@@ -3231,9 +3234,9 @@ type LogDrainDeleteResult struct {
 
 // Delete an existing log drain. Log drains added by add-ons can only be
 // removed by removing the add-on.
-func (s *Service) LogDrainDelete(appIdentity string, logDrainQueryIdentity string) (*LogDrainDeleteResult, error) {
+func (s *Service) LogDrainDelete(ctx context.Context, appIdentity string, logDrainQueryIdentity string) (*LogDrainDeleteResult, error) {
 	var logDrain LogDrainDeleteResult
-	return &logDrain, s.Delete(&logDrain, fmt.Sprintf("/apps/%v/log-drains/%v", appIdentity, logDrainQueryIdentity))
+	return &logDrain, s.Delete(ctx, &logDrain, fmt.Sprintf("/apps/%v/log-drains/%v", appIdentity, logDrainQueryIdentity))
 }
 
 type LogDrainInfoResult struct {
@@ -3249,9 +3252,9 @@ type LogDrainInfoResult struct {
 }
 
 // Info for existing log drain.
-func (s *Service) LogDrainInfo(appIdentity string, logDrainQueryIdentity string) (*LogDrainInfoResult, error) {
+func (s *Service) LogDrainInfo(ctx context.Context, appIdentity string, logDrainQueryIdentity string) (*LogDrainInfoResult, error) {
 	var logDrain LogDrainInfoResult
-	return &logDrain, s.Get(&logDrain, fmt.Sprintf("/apps/%v/log-drains/%v", appIdentity, logDrainQueryIdentity), nil, nil)
+	return &logDrain, s.Get(ctx, &logDrain, fmt.Sprintf("/apps/%v/log-drains/%v", appIdentity, logDrainQueryIdentity), nil, nil)
 }
 
 type LogDrainListResult []struct {
@@ -3267,9 +3270,9 @@ type LogDrainListResult []struct {
 }
 
 // List existing log drains.
-func (s *Service) LogDrainList(appIdentity string, lr *ListRange) (LogDrainListResult, error) {
+func (s *Service) LogDrainList(ctx context.Context, appIdentity string, lr *ListRange) (LogDrainListResult, error) {
 	var logDrain LogDrainListResult
-	return logDrain, s.Get(&logDrain, fmt.Sprintf("/apps/%v/log-drains", appIdentity), nil, lr)
+	return logDrain, s.Get(ctx, &logDrain, fmt.Sprintf("/apps/%v/log-drains", appIdentity), nil, lr)
 }
 
 // A log session is a reference to the http based log stream for an app.
@@ -3293,9 +3296,9 @@ type LogSessionCreateResult struct {
 }
 
 // Create a new log session.
-func (s *Service) LogSessionCreate(appIdentity string, o LogSessionCreateOpts) (*LogSessionCreateResult, error) {
+func (s *Service) LogSessionCreate(ctx context.Context, appIdentity string, o LogSessionCreateOpts) (*LogSessionCreateResult, error) {
 	var logSession LogSessionCreateResult
-	return &logSession, s.Post(&logSession, fmt.Sprintf("/apps/%v/log-sessions", appIdentity), o)
+	return &logSession, s.Post(ctx, &logSession, fmt.Sprintf("/apps/%v/log-sessions", appIdentity), o)
 }
 
 // OAuth authorizations represent clients that a Heroku user has
@@ -3377,9 +3380,9 @@ type OAuthAuthorizationCreateResult struct {
 }
 
 // Create a new OAuth authorization.
-func (s *Service) OAuthAuthorizationCreate(o OAuthAuthorizationCreateOpts) (*OAuthAuthorizationCreateResult, error) {
+func (s *Service) OAuthAuthorizationCreate(ctx context.Context, o OAuthAuthorizationCreateOpts) (*OAuthAuthorizationCreateResult, error) {
 	var oauthAuthorization OAuthAuthorizationCreateResult
-	return &oauthAuthorization, s.Post(&oauthAuthorization, fmt.Sprintf("/oauth/authorizations"), o)
+	return &oauthAuthorization, s.Post(ctx, &oauthAuthorization, fmt.Sprintf("/oauth/authorizations"), o)
 }
 
 type OAuthAuthorizationDeleteResult struct {
@@ -3417,9 +3420,9 @@ type OAuthAuthorizationDeleteResult struct {
 }
 
 // Delete OAuth authorization.
-func (s *Service) OAuthAuthorizationDelete(oauthAuthorizationIdentity string) (*OAuthAuthorizationDeleteResult, error) {
+func (s *Service) OAuthAuthorizationDelete(ctx context.Context, oauthAuthorizationIdentity string) (*OAuthAuthorizationDeleteResult, error) {
 	var oauthAuthorization OAuthAuthorizationDeleteResult
-	return &oauthAuthorization, s.Delete(&oauthAuthorization, fmt.Sprintf("/oauth/authorizations/%v", oauthAuthorizationIdentity))
+	return &oauthAuthorization, s.Delete(ctx, &oauthAuthorization, fmt.Sprintf("/oauth/authorizations/%v", oauthAuthorizationIdentity))
 }
 
 type OAuthAuthorizationInfoResult struct {
@@ -3457,9 +3460,9 @@ type OAuthAuthorizationInfoResult struct {
 }
 
 // Info for an OAuth authorization.
-func (s *Service) OAuthAuthorizationInfo(oauthAuthorizationIdentity string) (*OAuthAuthorizationInfoResult, error) {
+func (s *Service) OAuthAuthorizationInfo(ctx context.Context, oauthAuthorizationIdentity string) (*OAuthAuthorizationInfoResult, error) {
 	var oauthAuthorization OAuthAuthorizationInfoResult
-	return &oauthAuthorization, s.Get(&oauthAuthorization, fmt.Sprintf("/oauth/authorizations/%v", oauthAuthorizationIdentity), nil, nil)
+	return &oauthAuthorization, s.Get(ctx, &oauthAuthorization, fmt.Sprintf("/oauth/authorizations/%v", oauthAuthorizationIdentity), nil, nil)
 }
 
 type OAuthAuthorizationListResult []struct {
@@ -3497,9 +3500,9 @@ type OAuthAuthorizationListResult []struct {
 }
 
 // List OAuth authorizations.
-func (s *Service) OAuthAuthorizationList(lr *ListRange) (OAuthAuthorizationListResult, error) {
+func (s *Service) OAuthAuthorizationList(ctx context.Context, lr *ListRange) (OAuthAuthorizationListResult, error) {
 	var oauthAuthorization OAuthAuthorizationListResult
-	return oauthAuthorization, s.Get(&oauthAuthorization, fmt.Sprintf("/oauth/authorizations"), nil, lr)
+	return oauthAuthorization, s.Get(ctx, &oauthAuthorization, fmt.Sprintf("/oauth/authorizations"), nil, lr)
 }
 
 type OAuthAuthorizationRegenerateResult struct {
@@ -3538,9 +3541,9 @@ type OAuthAuthorizationRegenerateResult struct {
 
 // Regenerate OAuth tokens. This endpoint is only available to direct
 // authorizations or privileged OAuth clients.
-func (s *Service) OAuthAuthorizationRegenerate(oauthAuthorizationIdentity string) (*OAuthAuthorizationRegenerateResult, error) {
+func (s *Service) OAuthAuthorizationRegenerate(ctx context.Context, oauthAuthorizationIdentity string) (*OAuthAuthorizationRegenerateResult, error) {
 	var oauthAuthorization OAuthAuthorizationRegenerateResult
-	return &oauthAuthorization, s.Post(&oauthAuthorization, fmt.Sprintf("/oauth/authorizations/%v/actions/regenerate-tokens", oauthAuthorizationIdentity), nil)
+	return &oauthAuthorization, s.Post(ctx, &oauthAuthorization, fmt.Sprintf("/oauth/authorizations/%v/actions/regenerate-tokens", oauthAuthorizationIdentity), nil)
 }
 
 // OAuth clients are applications that Heroku users can authorize to
@@ -3571,9 +3574,9 @@ type OAuthClientCreateResult struct {
 }
 
 // Create a new OAuth client.
-func (s *Service) OAuthClientCreate(o OAuthClientCreateOpts) (*OAuthClientCreateResult, error) {
+func (s *Service) OAuthClientCreate(ctx context.Context, o OAuthClientCreateOpts) (*OAuthClientCreateResult, error) {
 	var oauthClient OAuthClientCreateResult
-	return &oauthClient, s.Post(&oauthClient, fmt.Sprintf("/oauth/clients"), o)
+	return &oauthClient, s.Post(ctx, &oauthClient, fmt.Sprintf("/oauth/clients"), o)
 }
 
 type OAuthClientDeleteResult struct {
@@ -3587,15 +3590,15 @@ type OAuthClientDeleteResult struct {
 }
 
 // Delete OAuth client.
-func (s *Service) OAuthClientDelete(oauthClientIdentity string) (*OAuthClientDeleteResult, error) {
+func (s *Service) OAuthClientDelete(ctx context.Context, oauthClientIdentity string) (*OAuthClientDeleteResult, error) {
 	var oauthClient OAuthClientDeleteResult
-	return &oauthClient, s.Delete(&oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity))
+	return &oauthClient, s.Delete(ctx, &oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity))
 }
 
 // Info for an OAuth client
-func (s *Service) OAuthClientInfo(oauthClientIdentity string) (*OAuthClient, error) {
+func (s *Service) OAuthClientInfo(ctx context.Context, oauthClientIdentity string) (*OAuthClient, error) {
 	var oauthClient OAuthClient
-	return &oauthClient, s.Get(&oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity), nil, nil)
+	return &oauthClient, s.Get(ctx, &oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity), nil, nil)
 }
 
 type OAuthClientListResult []struct {
@@ -3609,9 +3612,9 @@ type OAuthClientListResult []struct {
 }
 
 // List OAuth clients
-func (s *Service) OAuthClientList(lr *ListRange) (OAuthClientListResult, error) {
+func (s *Service) OAuthClientList(ctx context.Context, lr *ListRange) (OAuthClientListResult, error) {
 	var oauthClient OAuthClientListResult
-	return oauthClient, s.Get(&oauthClient, fmt.Sprintf("/oauth/clients"), nil, lr)
+	return oauthClient, s.Get(ctx, &oauthClient, fmt.Sprintf("/oauth/clients"), nil, lr)
 }
 
 type OAuthClientUpdateOpts struct {
@@ -3629,9 +3632,9 @@ type OAuthClientUpdateResult struct {
 }
 
 // Update OAuth client
-func (s *Service) OAuthClientUpdate(oauthClientIdentity string, o OAuthClientUpdateOpts) (*OAuthClientUpdateResult, error) {
+func (s *Service) OAuthClientUpdate(ctx context.Context, oauthClientIdentity string, o OAuthClientUpdateOpts) (*OAuthClientUpdateResult, error) {
 	var oauthClient OAuthClientUpdateResult
-	return &oauthClient, s.Patch(&oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity), o)
+	return &oauthClient, s.Patch(ctx, &oauthClient, fmt.Sprintf("/oauth/clients/%v", oauthClientIdentity), o)
 }
 
 type OAuthClientRotateCredentialsResult struct {
@@ -3645,9 +3648,9 @@ type OAuthClientRotateCredentialsResult struct {
 }
 
 // Rotate credentials for an OAuth client
-func (s *Service) OAuthClientRotateCredentials(oauthClientIdentity string) (*OAuthClientRotateCredentialsResult, error) {
+func (s *Service) OAuthClientRotateCredentials(ctx context.Context, oauthClientIdentity string) (*OAuthClientRotateCredentialsResult, error) {
 	var oauthClient OAuthClientRotateCredentialsResult
-	return &oauthClient, s.Post(&oauthClient, fmt.Sprintf("/oauth/clients/%v/actions/rotate-credentials", oauthClientIdentity), nil)
+	return &oauthClient, s.Post(ctx, &oauthClient, fmt.Sprintf("/oauth/clients/%v/actions/rotate-credentials", oauthClientIdentity), nil)
 }
 
 // OAuth grants are used to obtain authorizations on behalf of a user.
@@ -3742,9 +3745,9 @@ type OAuthTokenCreateResult struct {
 }
 
 // Create a new OAuth token.
-func (s *Service) OAuthTokenCreate(o OAuthTokenCreateOpts) (*OAuthTokenCreateResult, error) {
+func (s *Service) OAuthTokenCreate(ctx context.Context, o OAuthTokenCreateOpts) (*OAuthTokenCreateResult, error) {
 	var oauthToken OAuthTokenCreateResult
-	return &oauthToken, s.Post(&oauthToken, fmt.Sprintf("/oauth/tokens"), o)
+	return &oauthToken, s.Post(ctx, &oauthToken, fmt.Sprintf("/oauth/tokens"), o)
 }
 
 type OAuthTokenDeleteResult struct {
@@ -3783,9 +3786,9 @@ type OAuthTokenDeleteResult struct {
 }
 
 // Revoke OAuth access token.
-func (s *Service) OAuthTokenDelete(oauthTokenIdentity string) (*OAuthTokenDeleteResult, error) {
+func (s *Service) OAuthTokenDelete(ctx context.Context, oauthTokenIdentity string) (*OAuthTokenDeleteResult, error) {
 	var oauthToken OAuthTokenDeleteResult
-	return &oauthToken, s.Delete(&oauthToken, fmt.Sprintf("/oauth/tokens/%v", oauthTokenIdentity))
+	return &oauthToken, s.Delete(ctx, &oauthToken, fmt.Sprintf("/oauth/tokens/%v", oauthTokenIdentity))
 }
 
 // Organizations allow you to manage access to a shared group of
@@ -3816,15 +3819,15 @@ type OrganizationListResult []struct {
 }
 
 // List organizations in which you are a member.
-func (s *Service) OrganizationList(lr *ListRange) (OrganizationListResult, error) {
+func (s *Service) OrganizationList(ctx context.Context, lr *ListRange) (OrganizationListResult, error) {
 	var organization OrganizationListResult
-	return organization, s.Get(&organization, fmt.Sprintf("/organizations"), nil, lr)
+	return organization, s.Get(ctx, &organization, fmt.Sprintf("/organizations"), nil, lr)
 }
 
 // Info for an organization.
-func (s *Service) OrganizationInfo(organizationIdentity string) (*Organization, error) {
+func (s *Service) OrganizationInfo(ctx context.Context, organizationIdentity string) (*Organization, error) {
 	var organization Organization
-	return &organization, s.Get(&organization, fmt.Sprintf("/organizations/%v", organizationIdentity), nil, nil)
+	return &organization, s.Get(ctx, &organization, fmt.Sprintf("/organizations/%v", organizationIdentity), nil, nil)
 }
 
 type OrganizationUpdateOpts struct {
@@ -3845,9 +3848,9 @@ type OrganizationUpdateResult struct {
 }
 
 // Update organization properties.
-func (s *Service) OrganizationUpdate(organizationIdentity string, o OrganizationUpdateOpts) (*OrganizationUpdateResult, error) {
+func (s *Service) OrganizationUpdate(ctx context.Context, organizationIdentity string, o OrganizationUpdateOpts) (*OrganizationUpdateResult, error) {
 	var organization OrganizationUpdateResult
-	return &organization, s.Patch(&organization, fmt.Sprintf("/organizations/%v", organizationIdentity), o)
+	return &organization, s.Patch(ctx, &organization, fmt.Sprintf("/organizations/%v", organizationIdentity), o)
 }
 
 type OrganizationCreateOpts struct {
@@ -3880,9 +3883,9 @@ type OrganizationCreateResult struct {
 }
 
 // Create a new organization.
-func (s *Service) OrganizationCreate(o OrganizationCreateOpts) (*OrganizationCreateResult, error) {
+func (s *Service) OrganizationCreate(ctx context.Context, o OrganizationCreateOpts) (*OrganizationCreateResult, error) {
 	var organization OrganizationCreateResult
-	return &organization, s.Post(&organization, fmt.Sprintf("/organizations"), o)
+	return &organization, s.Post(ctx, &organization, fmt.Sprintf("/organizations"), o)
 }
 
 type OrganizationDeleteResult struct {
@@ -3899,9 +3902,9 @@ type OrganizationDeleteResult struct {
 }
 
 // Delete an existing organization.
-func (s *Service) OrganizationDelete(organizationIdentity string) (*OrganizationDeleteResult, error) {
+func (s *Service) OrganizationDelete(ctx context.Context, organizationIdentity string) (*OrganizationDeleteResult, error) {
 	var organization OrganizationDeleteResult
-	return &organization, s.Delete(&organization, fmt.Sprintf("/organizations/%v", organizationIdentity))
+	return &organization, s.Delete(ctx, &organization, fmt.Sprintf("/organizations/%v", organizationIdentity))
 }
 
 // A list of add-ons the Organization uses across all apps
@@ -3931,9 +3934,9 @@ type OrganizationAddOnListForOrganizationResult []struct {
 }
 
 // List add-ons used across all Organization apps
-func (s *Service) OrganizationAddOnListForOrganization(organizationIdentity string, lr *ListRange) (OrganizationAddOnListForOrganizationResult, error) {
+func (s *Service) OrganizationAddOnListForOrganization(ctx context.Context, organizationIdentity string, lr *ListRange) (OrganizationAddOnListForOrganizationResult, error) {
 	var organizationAddOn OrganizationAddOnListForOrganizationResult
-	return organizationAddOn, s.Get(&organizationAddOn, fmt.Sprintf("/organizations/%v/addons", organizationIdentity), nil, lr)
+	return organizationAddOn, s.Get(ctx, &organizationAddOn, fmt.Sprintf("/organizations/%v/addons", organizationIdentity), nil, lr)
 }
 
 // An organization app encapsulates the organization specific
@@ -3987,9 +3990,9 @@ type OrganizationAppCreateOpts struct {
 // Create a new app in the specified organization, in the default
 // organization if unspecified,  or in personal account, if default
 // organization is not set.
-func (s *Service) OrganizationAppCreate(o OrganizationAppCreateOpts) (*OrganizationApp, error) {
+func (s *Service) OrganizationAppCreate(ctx context.Context, o OrganizationAppCreateOpts) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Post(&organizationApp, fmt.Sprintf("/organizations/apps"), o)
+	return &organizationApp, s.Post(ctx, &organizationApp, fmt.Sprintf("/organizations/apps"), o)
 }
 
 type OrganizationAppListResult []struct {
@@ -4030,9 +4033,9 @@ type OrganizationAppListResult []struct {
 
 // List apps in the default organization, or in personal account, if
 // default organization is not set.
-func (s *Service) OrganizationAppList(lr *ListRange) (OrganizationAppListResult, error) {
+func (s *Service) OrganizationAppList(ctx context.Context, lr *ListRange) (OrganizationAppListResult, error) {
 	var organizationApp OrganizationAppListResult
-	return organizationApp, s.Get(&organizationApp, fmt.Sprintf("/organizations/apps"), nil, lr)
+	return organizationApp, s.Get(ctx, &organizationApp, fmt.Sprintf("/organizations/apps"), nil, lr)
 }
 
 type OrganizationAppListForOrganizationResult []struct {
@@ -4072,15 +4075,15 @@ type OrganizationAppListForOrganizationResult []struct {
 }
 
 // List organization apps.
-func (s *Service) OrganizationAppListForOrganization(organizationIdentity string, lr *ListRange) (OrganizationAppListForOrganizationResult, error) {
+func (s *Service) OrganizationAppListForOrganization(ctx context.Context, organizationIdentity string, lr *ListRange) (OrganizationAppListForOrganizationResult, error) {
 	var organizationApp OrganizationAppListForOrganizationResult
-	return organizationApp, s.Get(&organizationApp, fmt.Sprintf("/organizations/%v/apps", organizationIdentity), nil, lr)
+	return organizationApp, s.Get(ctx, &organizationApp, fmt.Sprintf("/organizations/%v/apps", organizationIdentity), nil, lr)
 }
 
 // Info for an organization app.
-func (s *Service) OrganizationAppInfo(organizationAppIdentity string) (*OrganizationApp, error) {
+func (s *Service) OrganizationAppInfo(ctx context.Context, organizationAppIdentity string) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Get(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), nil, nil)
+	return &organizationApp, s.Get(ctx, &organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), nil, nil)
 }
 
 type OrganizationAppUpdateLockedOpts struct {
@@ -4123,9 +4126,9 @@ type OrganizationAppUpdateLockedResult struct {
 }
 
 // Lock or unlock an organization app.
-func (s *Service) OrganizationAppUpdateLocked(organizationAppIdentity string, o OrganizationAppUpdateLockedOpts) (*OrganizationAppUpdateLockedResult, error) {
+func (s *Service) OrganizationAppUpdateLocked(ctx context.Context, organizationAppIdentity string, o OrganizationAppUpdateLockedOpts) (*OrganizationAppUpdateLockedResult, error) {
 	var organizationApp OrganizationAppUpdateLockedResult
-	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
+	return &organizationApp, s.Patch(ctx, &organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
 }
 
 type OrganizationAppTransferToAccountOpts struct {
@@ -4133,9 +4136,9 @@ type OrganizationAppTransferToAccountOpts struct {
 }
 
 // Transfer an existing organization app to another Heroku account.
-func (s *Service) OrganizationAppTransferToAccount(organizationAppIdentity string, o OrganizationAppTransferToAccountOpts) (*OrganizationApp, error) {
+func (s *Service) OrganizationAppTransferToAccount(ctx context.Context, organizationAppIdentity string, o OrganizationAppTransferToAccountOpts) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
-	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
+	return &organizationApp, s.Patch(ctx, &organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
 }
 
 type OrganizationAppTransferToOrganizationOpts struct {
@@ -4178,9 +4181,9 @@ type OrganizationAppTransferToOrganizationResult struct {
 }
 
 // Transfer an existing organization app to another organization.
-func (s *Service) OrganizationAppTransferToOrganization(organizationAppIdentity string, o OrganizationAppTransferToOrganizationOpts) (*OrganizationAppTransferToOrganizationResult, error) {
+func (s *Service) OrganizationAppTransferToOrganization(ctx context.Context, organizationAppIdentity string, o OrganizationAppTransferToOrganizationOpts) (*OrganizationAppTransferToOrganizationResult, error) {
 	var organizationApp OrganizationAppTransferToOrganizationResult
-	return &organizationApp, s.Patch(&organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
+	return &organizationApp, s.Patch(ctx, &organizationApp, fmt.Sprintf("/organizations/apps/%v", organizationAppIdentity), o)
 }
 
 // An organization collaborator represents an account that has been
@@ -4225,9 +4228,9 @@ type OrganizationAppCollaboratorCreateResult struct {
 // you want the collaborator to be granted [permissions]
 // (https://devcenter.heroku.com/articles/org-users-access#roles-and-app-
 // permissions) according to their role in the organization.
-func (s *Service) OrganizationAppCollaboratorCreate(appIdentity string, o OrganizationAppCollaboratorCreateOpts) (*OrganizationAppCollaboratorCreateResult, error) {
+func (s *Service) OrganizationAppCollaboratorCreate(ctx context.Context, appIdentity string, o OrganizationAppCollaboratorCreateOpts) (*OrganizationAppCollaboratorCreateResult, error) {
 	var organizationAppCollaborator OrganizationAppCollaboratorCreateResult
-	return &organizationAppCollaborator, s.Post(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators", appIdentity), o)
+	return &organizationAppCollaborator, s.Post(ctx, &organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators", appIdentity), o)
 }
 
 type OrganizationAppCollaboratorDeleteResult struct {
@@ -4247,9 +4250,9 @@ type OrganizationAppCollaboratorDeleteResult struct {
 }
 
 // Delete an existing collaborator from an organization app.
-func (s *Service) OrganizationAppCollaboratorDelete(organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaboratorDeleteResult, error) {
+func (s *Service) OrganizationAppCollaboratorDelete(ctx context.Context, organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaboratorDeleteResult, error) {
 	var organizationAppCollaborator OrganizationAppCollaboratorDeleteResult
-	return &organizationAppCollaborator, s.Delete(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity))
+	return &organizationAppCollaborator, s.Delete(ctx, &organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity))
 }
 
 type OrganizationAppCollaboratorInfoResult struct {
@@ -4269,9 +4272,9 @@ type OrganizationAppCollaboratorInfoResult struct {
 }
 
 // Info for a collaborator on an organization app.
-func (s *Service) OrganizationAppCollaboratorInfo(organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaboratorInfoResult, error) {
+func (s *Service) OrganizationAppCollaboratorInfo(ctx context.Context, organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaboratorInfoResult, error) {
 	var organizationAppCollaborator OrganizationAppCollaboratorInfoResult
-	return &organizationAppCollaborator, s.Get(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity), nil, nil)
+	return &organizationAppCollaborator, s.Get(ctx, &organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity), nil, nil)
 }
 
 type OrganizationAppCollaboratorUpdateResult struct {
@@ -4291,9 +4294,9 @@ type OrganizationAppCollaboratorUpdateResult struct {
 }
 
 // Update an existing collaborator from an organization app.
-func (s *Service) OrganizationAppCollaboratorUpdate(organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaboratorUpdateResult, error) {
+func (s *Service) OrganizationAppCollaboratorUpdate(ctx context.Context, organizationAppIdentity string, organizationAppCollaboratorIdentity string) (*OrganizationAppCollaboratorUpdateResult, error) {
 	var organizationAppCollaborator OrganizationAppCollaboratorUpdateResult
-	return &organizationAppCollaborator, s.Patch(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity), nil)
+	return &organizationAppCollaborator, s.Patch(ctx, &organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators/%v", organizationAppIdentity, organizationAppCollaboratorIdentity), nil)
 }
 
 type OrganizationAppCollaboratorListResult []struct {
@@ -4313,9 +4316,9 @@ type OrganizationAppCollaboratorListResult []struct {
 }
 
 // List collaborators on an organization app.
-func (s *Service) OrganizationAppCollaboratorList(organizationAppIdentity string, lr *ListRange) (OrganizationAppCollaboratorListResult, error) {
+func (s *Service) OrganizationAppCollaboratorList(ctx context.Context, organizationAppIdentity string, lr *ListRange) (OrganizationAppCollaboratorListResult, error) {
 	var organizationAppCollaborator OrganizationAppCollaboratorListResult
-	return organizationAppCollaborator, s.Get(&organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators", organizationAppIdentity), nil, lr)
+	return organizationAppCollaborator, s.Get(ctx, &organizationAppCollaborator, fmt.Sprintf("/organizations/apps/%v/collaborators", organizationAppIdentity), nil, lr)
 }
 
 // An organization app permission is a behavior that is assigned to a
@@ -4330,9 +4333,9 @@ type OrganizationAppPermissionListResult []struct {
 }
 
 // Lists permissions available to organizations.
-func (s *Service) OrganizationAppPermissionList(lr *ListRange) (OrganizationAppPermissionListResult, error) {
+func (s *Service) OrganizationAppPermissionList(ctx context.Context, lr *ListRange) (OrganizationAppPermissionListResult, error) {
 	var organizationAppPermission OrganizationAppPermissionListResult
-	return organizationAppPermission, s.Get(&organizationAppPermission, fmt.Sprintf("/organizations/permissions"), nil, lr)
+	return organizationAppPermission, s.Get(ctx, &organizationAppPermission, fmt.Sprintf("/organizations/permissions"), nil, lr)
 }
 
 // An organization feature represents a feature enabled on an
@@ -4359,9 +4362,9 @@ type OrganizationFeatureInfoResult struct {
 }
 
 // Info for an existing account feature.
-func (s *Service) OrganizationFeatureInfo(organizationIdentity string, organizationFeatureIdentity string) (*OrganizationFeatureInfoResult, error) {
+func (s *Service) OrganizationFeatureInfo(ctx context.Context, organizationIdentity string, organizationFeatureIdentity string) (*OrganizationFeatureInfoResult, error) {
 	var organizationFeature OrganizationFeatureInfoResult
-	return &organizationFeature, s.Get(&organizationFeature, fmt.Sprintf("/organizations/%v/features/%v", organizationIdentity, organizationFeatureIdentity), nil, nil)
+	return &organizationFeature, s.Get(ctx, &organizationFeature, fmt.Sprintf("/organizations/%v/features/%v", organizationIdentity, organizationFeatureIdentity), nil, nil)
 }
 
 type OrganizationFeatureListResult []struct {
@@ -4376,9 +4379,9 @@ type OrganizationFeatureListResult []struct {
 }
 
 // List existing organization features.
-func (s *Service) OrganizationFeatureList(organizationIdentity string, lr *ListRange) (OrganizationFeatureListResult, error) {
+func (s *Service) OrganizationFeatureList(ctx context.Context, organizationIdentity string, lr *ListRange) (OrganizationFeatureListResult, error) {
 	var organizationFeature OrganizationFeatureListResult
-	return organizationFeature, s.Get(&organizationFeature, fmt.Sprintf("/organizations/%v/features", organizationIdentity), nil, lr)
+	return organizationFeature, s.Get(ctx, &organizationFeature, fmt.Sprintf("/organizations/%v/features", organizationIdentity), nil, lr)
 }
 
 // An organization invitation represents an invite to an organization.
@@ -4424,9 +4427,9 @@ type OrganizationInvitationListResult []struct {
 }
 
 // Get a list of an organization's Identity Providers
-func (s *Service) OrganizationInvitationList(organizationName string, lr *ListRange) (OrganizationInvitationListResult, error) {
+func (s *Service) OrganizationInvitationList(ctx context.Context, organizationName string, lr *ListRange) (OrganizationInvitationListResult, error) {
 	var organizationInvitation OrganizationInvitationListResult
-	return organizationInvitation, s.Get(&organizationInvitation, fmt.Sprintf("/organizations/%v/invitations", organizationName), nil, lr)
+	return organizationInvitation, s.Get(ctx, &organizationInvitation, fmt.Sprintf("/organizations/%v/invitations", organizationName), nil, lr)
 }
 
 type OrganizationInvitationCreateOpts struct {
@@ -4435,15 +4438,15 @@ type OrganizationInvitationCreateOpts struct {
 }
 
 // Create Organization Invitation
-func (s *Service) OrganizationInvitationCreate(organizationIdentity string, o OrganizationInvitationCreateOpts) (*OrganizationInvitation, error) {
+func (s *Service) OrganizationInvitationCreate(ctx context.Context, organizationIdentity string, o OrganizationInvitationCreateOpts) (*OrganizationInvitation, error) {
 	var organizationInvitation OrganizationInvitation
-	return &organizationInvitation, s.Put(&organizationInvitation, fmt.Sprintf("/organizations/%v/invitations", organizationIdentity), o)
+	return &organizationInvitation, s.Put(ctx, &organizationInvitation, fmt.Sprintf("/organizations/%v/invitations", organizationIdentity), o)
 }
 
 // Revoke an organization invitation.
-func (s *Service) OrganizationInvitationRevoke(organizationIdentity string, organizationInvitationIdentity string) (*OrganizationInvitation, error) {
+func (s *Service) OrganizationInvitationRevoke(ctx context.Context, organizationIdentity string, organizationInvitationIdentity string) (*OrganizationInvitation, error) {
 	var organizationInvitation OrganizationInvitation
-	return &organizationInvitation, s.Delete(&organizationInvitation, fmt.Sprintf("/organizations/%v/invitations/%v", organizationIdentity, organizationInvitationIdentity))
+	return &organizationInvitation, s.Delete(ctx, &organizationInvitation, fmt.Sprintf("/organizations/%v/invitations/%v", organizationIdentity, organizationInvitationIdentity))
 }
 
 type OrganizationInvitationGetResult struct {
@@ -4468,9 +4471,9 @@ type OrganizationInvitationGetResult struct {
 }
 
 // Get an invitation by its token
-func (s *Service) OrganizationInvitationGet(organizationInvitationToken string, lr *ListRange) (*OrganizationInvitationGetResult, error) {
+func (s *Service) OrganizationInvitationGet(ctx context.Context, organizationInvitationToken string, lr *ListRange) (*OrganizationInvitationGetResult, error) {
 	var organizationInvitation OrganizationInvitationGetResult
-	return &organizationInvitation, s.Get(&organizationInvitation, fmt.Sprintf("/organizations/invitations/%v", organizationInvitationToken), nil, lr)
+	return &organizationInvitation, s.Get(ctx, &organizationInvitation, fmt.Sprintf("/organizations/invitations/%v", organizationInvitationToken), nil, lr)
 }
 
 type OrganizationInvitationAcceptResult struct {
@@ -4490,9 +4493,9 @@ type OrganizationInvitationAcceptResult struct {
 }
 
 // Accept Organization Invitation
-func (s *Service) OrganizationInvitationAccept(organizationInvitationToken string) (*OrganizationInvitationAcceptResult, error) {
+func (s *Service) OrganizationInvitationAccept(ctx context.Context, organizationInvitationToken string) (*OrganizationInvitationAcceptResult, error) {
 	var organizationInvitation OrganizationInvitationAcceptResult
-	return &organizationInvitation, s.Post(&organizationInvitation, fmt.Sprintf("/organizations/invitations/%v/accept", organizationInvitationToken), nil)
+	return &organizationInvitation, s.Post(ctx, &organizationInvitation, fmt.Sprintf("/organizations/invitations/%v/accept", organizationInvitationToken), nil)
 }
 
 // An organization invoice is an itemized bill of goods for an
@@ -4535,9 +4538,9 @@ type OrganizationInvoiceInfoResult struct {
 }
 
 // Info for existing invoice.
-func (s *Service) OrganizationInvoiceInfo(organizationIdentity string, organizationInvoiceIdentity int) (*OrganizationInvoiceInfoResult, error) {
+func (s *Service) OrganizationInvoiceInfo(ctx context.Context, organizationIdentity string, organizationInvoiceIdentity int) (*OrganizationInvoiceInfoResult, error) {
 	var organizationInvoice OrganizationInvoiceInfoResult
-	return &organizationInvoice, s.Get(&organizationInvoice, fmt.Sprintf("/organizations/%v/invoices/%v", organizationIdentity, organizationInvoiceIdentity), nil, nil)
+	return &organizationInvoice, s.Get(ctx, &organizationInvoice, fmt.Sprintf("/organizations/%v/invoices/%v", organizationIdentity, organizationInvoiceIdentity), nil, nil)
 }
 
 type OrganizationInvoiceListResult []struct {
@@ -4560,9 +4563,9 @@ type OrganizationInvoiceListResult []struct {
 }
 
 // List existing invoices.
-func (s *Service) OrganizationInvoiceList(organizationIdentity string, lr *ListRange) (OrganizationInvoiceListResult, error) {
+func (s *Service) OrganizationInvoiceList(ctx context.Context, organizationIdentity string, lr *ListRange) (OrganizationInvoiceListResult, error) {
 	var organizationInvoice OrganizationInvoiceListResult
-	return organizationInvoice, s.Get(&organizationInvoice, fmt.Sprintf("/organizations/%v/invoices", organizationIdentity), nil, lr)
+	return organizationInvoice, s.Get(ctx, &organizationInvoice, fmt.Sprintf("/organizations/%v/invoices", organizationIdentity), nil, lr)
 }
 
 // An organization member is an individual with access to an
@@ -4604,9 +4607,9 @@ type OrganizationMemberCreateOrUpdateResult struct {
 }
 
 // Create a new organization member, or update their role.
-func (s *Service) OrganizationMemberCreateOrUpdate(organizationIdentity string, o OrganizationMemberCreateOrUpdateOpts) (*OrganizationMemberCreateOrUpdateResult, error) {
+func (s *Service) OrganizationMemberCreateOrUpdate(ctx context.Context, organizationIdentity string, o OrganizationMemberCreateOrUpdateOpts) (*OrganizationMemberCreateOrUpdateResult, error) {
 	var organizationMember OrganizationMemberCreateOrUpdateResult
-	return &organizationMember, s.Put(&organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
+	return &organizationMember, s.Put(ctx, &organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
 }
 
 type OrganizationMemberCreateOpts struct {
@@ -4631,9 +4634,9 @@ type OrganizationMemberCreateResult struct {
 }
 
 // Create a new organization member.
-func (s *Service) OrganizationMemberCreate(organizationIdentity string, o OrganizationMemberCreateOpts) (*OrganizationMemberCreateResult, error) {
+func (s *Service) OrganizationMemberCreate(ctx context.Context, organizationIdentity string, o OrganizationMemberCreateOpts) (*OrganizationMemberCreateResult, error) {
 	var organizationMember OrganizationMemberCreateResult
-	return &organizationMember, s.Post(&organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
+	return &organizationMember, s.Post(ctx, &organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
 }
 
 type OrganizationMemberUpdateOpts struct {
@@ -4658,9 +4661,9 @@ type OrganizationMemberUpdateResult struct {
 }
 
 // Update an organization member.
-func (s *Service) OrganizationMemberUpdate(organizationIdentity string, o OrganizationMemberUpdateOpts) (*OrganizationMemberUpdateResult, error) {
+func (s *Service) OrganizationMemberUpdate(ctx context.Context, organizationIdentity string, o OrganizationMemberUpdateOpts) (*OrganizationMemberUpdateResult, error) {
 	var organizationMember OrganizationMemberUpdateResult
-	return &organizationMember, s.Patch(&organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
+	return &organizationMember, s.Patch(ctx, &organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), o)
 }
 
 type OrganizationMemberDeleteResult struct {
@@ -4680,9 +4683,9 @@ type OrganizationMemberDeleteResult struct {
 }
 
 // Remove a member from the organization.
-func (s *Service) OrganizationMemberDelete(organizationIdentity string, organizationMemberIdentity string) (*OrganizationMemberDeleteResult, error) {
+func (s *Service) OrganizationMemberDelete(ctx context.Context, organizationIdentity string, organizationMemberIdentity string) (*OrganizationMemberDeleteResult, error) {
 	var organizationMember OrganizationMemberDeleteResult
-	return &organizationMember, s.Delete(&organizationMember, fmt.Sprintf("/organizations/%v/members/%v", organizationIdentity, organizationMemberIdentity))
+	return &organizationMember, s.Delete(ctx, &organizationMember, fmt.Sprintf("/organizations/%v/members/%v", organizationIdentity, organizationMemberIdentity))
 }
 
 type OrganizationMemberListResult []struct {
@@ -4702,9 +4705,9 @@ type OrganizationMemberListResult []struct {
 }
 
 // List members of the organization.
-func (s *Service) OrganizationMemberList(organizationIdentity string, lr *ListRange) (OrganizationMemberListResult, error) {
+func (s *Service) OrganizationMemberList(ctx context.Context, organizationIdentity string, lr *ListRange) (OrganizationMemberListResult, error) {
 	var organizationMember OrganizationMemberListResult
-	return organizationMember, s.Get(&organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), nil, lr)
+	return organizationMember, s.Get(ctx, &organizationMember, fmt.Sprintf("/organizations/%v/members", organizationIdentity), nil, lr)
 }
 
 // Tracks an organization's preferences
@@ -4720,9 +4723,9 @@ type OrganizationPreferencesListResult struct {
 }
 
 // Retrieve Organization Preferences
-func (s *Service) OrganizationPreferencesList(organizationPreferencesIdentity string) (*OrganizationPreferencesListResult, error) {
+func (s *Service) OrganizationPreferencesList(ctx context.Context, organizationPreferencesIdentity string) (*OrganizationPreferencesListResult, error) {
 	var organizationPreferences OrganizationPreferencesListResult
-	return &organizationPreferences, s.Get(&organizationPreferences, fmt.Sprintf("/organizations/%v/preferences", organizationPreferencesIdentity), nil, nil)
+	return &organizationPreferences, s.Get(ctx, &organizationPreferences, fmt.Sprintf("/organizations/%v/preferences", organizationPreferencesIdentity), nil, nil)
 }
 
 type OrganizationPreferencesUpdateOpts struct {
@@ -4735,9 +4738,9 @@ type OrganizationPreferencesUpdateResult struct {
 }
 
 // Update Organization Preferences
-func (s *Service) OrganizationPreferencesUpdate(organizationPreferencesIdentity string, o OrganizationPreferencesUpdateOpts) (*OrganizationPreferencesUpdateResult, error) {
+func (s *Service) OrganizationPreferencesUpdate(ctx context.Context, organizationPreferencesIdentity string, o OrganizationPreferencesUpdateOpts) (*OrganizationPreferencesUpdateResult, error) {
 	var organizationPreferences OrganizationPreferencesUpdateResult
-	return &organizationPreferences, s.Patch(&organizationPreferences, fmt.Sprintf("/organizations/%v/preferences", organizationPreferencesIdentity), o)
+	return &organizationPreferences, s.Patch(ctx, &organizationPreferences, fmt.Sprintf("/organizations/%v/preferences", organizationPreferencesIdentity), o)
 }
 
 // An outbound-ruleset is a collection of rules that specify what hosts
@@ -4770,9 +4773,9 @@ type OutboundRulesetInfoResult struct {
 }
 
 // Current outbound ruleset for a space
-func (s *Service) OutboundRulesetInfo(spaceIdentity string) (*OutboundRulesetInfoResult, error) {
+func (s *Service) OutboundRulesetInfo(ctx context.Context, spaceIdentity string) (*OutboundRulesetInfoResult, error) {
 	var outboundRuleset OutboundRulesetInfoResult
-	return &outboundRuleset, s.Get(&outboundRuleset, fmt.Sprintf("/spaces/%v/outbound-ruleset", spaceIdentity), nil, nil)
+	return &outboundRuleset, s.Get(ctx, &outboundRuleset, fmt.Sprintf("/spaces/%v/outbound-ruleset", spaceIdentity), nil, nil)
 }
 
 type OutboundRulesetListResult []struct {
@@ -4790,9 +4793,9 @@ type OutboundRulesetListResult []struct {
 }
 
 // List all Outbound Rulesets for a space
-func (s *Service) OutboundRulesetList(spaceIdentity string, lr *ListRange) (OutboundRulesetListResult, error) {
+func (s *Service) OutboundRulesetList(ctx context.Context, spaceIdentity string, lr *ListRange) (OutboundRulesetListResult, error) {
 	var outboundRuleset OutboundRulesetListResult
-	return outboundRuleset, s.Get(&outboundRuleset, fmt.Sprintf("/spaces/%v/outbound-rulesets", spaceIdentity), nil, lr)
+	return outboundRuleset, s.Get(ctx, &outboundRuleset, fmt.Sprintf("/spaces/%v/outbound-rulesets", spaceIdentity), nil, lr)
 }
 
 type OutboundRulesetCreateOpts struct {
@@ -4807,9 +4810,9 @@ type OutboundRulesetCreateOpts struct {
 }
 
 // Create a new outbound ruleset
-func (s *Service) OutboundRulesetCreate(spaceIdentity string, o OutboundRulesetCreateOpts) (*OutboundRuleset, error) {
+func (s *Service) OutboundRulesetCreate(ctx context.Context, spaceIdentity string, o OutboundRulesetCreateOpts) (*OutboundRuleset, error) {
 	var outboundRuleset OutboundRuleset
-	return &outboundRuleset, s.Put(&outboundRuleset, fmt.Sprintf("/spaces/%v/outbound-ruleset", spaceIdentity), o)
+	return &outboundRuleset, s.Put(ctx, &outboundRuleset, fmt.Sprintf("/spaces/%v/outbound-ruleset", spaceIdentity), o)
 }
 
 // A password reset represents a in-process password reset attempt.
@@ -4826,9 +4829,9 @@ type PasswordResetResetPasswordOpts struct {
 
 // Reset account's password. This will send a reset password link to the
 // user's email address.
-func (s *Service) PasswordResetResetPassword(o PasswordResetResetPasswordOpts) (*PasswordReset, error) {
+func (s *Service) PasswordResetResetPassword(ctx context.Context, o PasswordResetResetPasswordOpts) (*PasswordReset, error) {
 	var passwordReset PasswordReset
-	return &passwordReset, s.Post(&passwordReset, fmt.Sprintf("/password-resets"), o)
+	return &passwordReset, s.Post(ctx, &passwordReset, fmt.Sprintf("/password-resets"), o)
 }
 
 type PasswordResetCompleteResetPasswordOpts struct {
@@ -4837,9 +4840,9 @@ type PasswordResetCompleteResetPasswordOpts struct {
 }
 
 // Complete password reset.
-func (s *Service) PasswordResetCompleteResetPassword(passwordResetResetPasswordToken string, o PasswordResetCompleteResetPasswordOpts) (*PasswordReset, error) {
+func (s *Service) PasswordResetCompleteResetPassword(ctx context.Context, passwordResetResetPasswordToken string, o PasswordResetCompleteResetPasswordOpts) (*PasswordReset, error) {
 	var passwordReset PasswordReset
-	return &passwordReset, s.Post(&passwordReset, fmt.Sprintf("/password-resets/%v/actions/finalize", passwordResetResetPasswordToken), o)
+	return &passwordReset, s.Post(ctx, &passwordReset, fmt.Sprintf("/password-resets/%v/actions/finalize", passwordResetResetPasswordToken), o)
 }
 
 // A pipeline allows grouping of apps into different stages.
@@ -4860,9 +4863,9 @@ type PipelineCreateResult struct {
 }
 
 // Create a new pipeline.
-func (s *Service) PipelineCreate(o PipelineCreateOpts) (*PipelineCreateResult, error) {
+func (s *Service) PipelineCreate(ctx context.Context, o PipelineCreateOpts) (*PipelineCreateResult, error) {
 	var pipeline PipelineCreateResult
-	return &pipeline, s.Post(&pipeline, fmt.Sprintf("/pipelines"), o)
+	return &pipeline, s.Post(ctx, &pipeline, fmt.Sprintf("/pipelines"), o)
 }
 
 type PipelineInfoResult struct {
@@ -4873,9 +4876,9 @@ type PipelineInfoResult struct {
 }
 
 // Info for existing pipeline.
-func (s *Service) PipelineInfo(pipelineIdentity string) (*PipelineInfoResult, error) {
+func (s *Service) PipelineInfo(ctx context.Context, pipelineIdentity string) (*PipelineInfoResult, error) {
 	var pipeline PipelineInfoResult
-	return &pipeline, s.Get(&pipeline, fmt.Sprintf("/pipelines/%v", pipelineIdentity), nil, nil)
+	return &pipeline, s.Get(ctx, &pipeline, fmt.Sprintf("/pipelines/%v", pipelineIdentity), nil, nil)
 }
 
 type PipelineDeleteResult struct {
@@ -4886,9 +4889,9 @@ type PipelineDeleteResult struct {
 }
 
 // Delete an existing pipeline.
-func (s *Service) PipelineDelete(pipelineID string) (*PipelineDeleteResult, error) {
+func (s *Service) PipelineDelete(ctx context.Context, pipelineID string) (*PipelineDeleteResult, error) {
 	var pipeline PipelineDeleteResult
-	return &pipeline, s.Delete(&pipeline, fmt.Sprintf("/pipelines/%v", pipelineID))
+	return &pipeline, s.Delete(ctx, &pipeline, fmt.Sprintf("/pipelines/%v", pipelineID))
 }
 
 type PipelineUpdateOpts struct {
@@ -4902,9 +4905,9 @@ type PipelineUpdateResult struct {
 }
 
 // Update an existing pipeline.
-func (s *Service) PipelineUpdate(pipelineID string, o PipelineUpdateOpts) (*PipelineUpdateResult, error) {
+func (s *Service) PipelineUpdate(ctx context.Context, pipelineID string, o PipelineUpdateOpts) (*PipelineUpdateResult, error) {
 	var pipeline PipelineUpdateResult
-	return &pipeline, s.Patch(&pipeline, fmt.Sprintf("/pipelines/%v", pipelineID), o)
+	return &pipeline, s.Patch(ctx, &pipeline, fmt.Sprintf("/pipelines/%v", pipelineID), o)
 }
 
 type PipelineListResult []struct {
@@ -4915,9 +4918,9 @@ type PipelineListResult []struct {
 }
 
 // List existing pipelines.
-func (s *Service) PipelineList(lr *ListRange) (PipelineListResult, error) {
+func (s *Service) PipelineList(ctx context.Context, lr *ListRange) (PipelineListResult, error) {
 	var pipeline PipelineListResult
-	return pipeline, s.Get(&pipeline, fmt.Sprintf("/pipelines"), nil, lr)
+	return pipeline, s.Get(ctx, &pipeline, fmt.Sprintf("/pipelines"), nil, lr)
 }
 
 // Information about an app's coupling to a pipeline
@@ -4947,9 +4950,9 @@ type PipelineCouplingListResult []struct {
 }
 
 // List couplings for a pipeline
-func (s *Service) PipelineCouplingList(pipelineID string, lr *ListRange) (PipelineCouplingListResult, error) {
+func (s *Service) PipelineCouplingList(ctx context.Context, pipelineID string, lr *ListRange) (PipelineCouplingListResult, error) {
 	var pipelineCoupling PipelineCouplingListResult
-	return pipelineCoupling, s.Get(&pipelineCoupling, fmt.Sprintf("/pipelines/%v/pipeline-couplings", pipelineID), nil, lr)
+	return pipelineCoupling, s.Get(ctx, &pipelineCoupling, fmt.Sprintf("/pipelines/%v/pipeline-couplings", pipelineID), nil, lr)
 }
 
 type PipelineCouplingCreateOpts struct {
@@ -4971,9 +4974,9 @@ type PipelineCouplingCreateResult struct {
 }
 
 // Create a new pipeline coupling.
-func (s *Service) PipelineCouplingCreate(o PipelineCouplingCreateOpts) (*PipelineCouplingCreateResult, error) {
+func (s *Service) PipelineCouplingCreate(ctx context.Context, o PipelineCouplingCreateOpts) (*PipelineCouplingCreateResult, error) {
 	var pipelineCoupling PipelineCouplingCreateResult
-	return &pipelineCoupling, s.Post(&pipelineCoupling, fmt.Sprintf("/pipeline-couplings"), o)
+	return &pipelineCoupling, s.Post(ctx, &pipelineCoupling, fmt.Sprintf("/pipeline-couplings"), o)
 }
 
 type PipelineCouplingInfoResult struct {
@@ -4990,9 +4993,9 @@ type PipelineCouplingInfoResult struct {
 }
 
 // Info for an existing pipeline coupling.
-func (s *Service) PipelineCouplingInfo(pipelineCouplingIdentity string) (*PipelineCouplingInfoResult, error) {
+func (s *Service) PipelineCouplingInfo(ctx context.Context, pipelineCouplingIdentity string) (*PipelineCouplingInfoResult, error) {
 	var pipelineCoupling PipelineCouplingInfoResult
-	return &pipelineCoupling, s.Get(&pipelineCoupling, fmt.Sprintf("/pipeline-couplings/%v", pipelineCouplingIdentity), nil, nil)
+	return &pipelineCoupling, s.Get(ctx, &pipelineCoupling, fmt.Sprintf("/pipeline-couplings/%v", pipelineCouplingIdentity), nil, nil)
 }
 
 type PipelineCouplingDeleteResult struct {
@@ -5009,9 +5012,9 @@ type PipelineCouplingDeleteResult struct {
 }
 
 // Delete an existing pipeline coupling.
-func (s *Service) PipelineCouplingDelete(pipelineCouplingIdentity string) (*PipelineCouplingDeleteResult, error) {
+func (s *Service) PipelineCouplingDelete(ctx context.Context, pipelineCouplingIdentity string) (*PipelineCouplingDeleteResult, error) {
 	var pipelineCoupling PipelineCouplingDeleteResult
-	return &pipelineCoupling, s.Delete(&pipelineCoupling, fmt.Sprintf("/pipeline-couplings/%v", pipelineCouplingIdentity))
+	return &pipelineCoupling, s.Delete(ctx, &pipelineCoupling, fmt.Sprintf("/pipeline-couplings/%v", pipelineCouplingIdentity))
 }
 
 type PipelineCouplingUpdateOpts struct {
@@ -5031,9 +5034,9 @@ type PipelineCouplingUpdateResult struct {
 }
 
 // Update an existing pipeline coupling.
-func (s *Service) PipelineCouplingUpdate(pipelineCouplingIdentity string, o PipelineCouplingUpdateOpts) (*PipelineCouplingUpdateResult, error) {
+func (s *Service) PipelineCouplingUpdate(ctx context.Context, pipelineCouplingIdentity string, o PipelineCouplingUpdateOpts) (*PipelineCouplingUpdateResult, error) {
 	var pipelineCoupling PipelineCouplingUpdateResult
-	return &pipelineCoupling, s.Patch(&pipelineCoupling, fmt.Sprintf("/pipeline-couplings/%v", pipelineCouplingIdentity), o)
+	return &pipelineCoupling, s.Patch(ctx, &pipelineCoupling, fmt.Sprintf("/pipeline-couplings/%v", pipelineCouplingIdentity), o)
 }
 
 // Promotions allow you to move code from an app in a pipeline to all
@@ -5072,9 +5075,9 @@ type PipelinePromotionCreateOpts struct {
 }
 
 // Create a new promotion.
-func (s *Service) PipelinePromotionCreate(o PipelinePromotionCreateOpts) (*PipelinePromotion, error) {
+func (s *Service) PipelinePromotionCreate(ctx context.Context, o PipelinePromotionCreateOpts) (*PipelinePromotion, error) {
 	var pipelinePromotion PipelinePromotion
-	return &pipelinePromotion, s.Post(&pipelinePromotion, fmt.Sprintf("/pipeline-promotions"), o)
+	return &pipelinePromotion, s.Post(ctx, &pipelinePromotion, fmt.Sprintf("/pipeline-promotions"), o)
 }
 
 type PipelinePromotionInfoResult struct {
@@ -5096,9 +5099,9 @@ type PipelinePromotionInfoResult struct {
 }
 
 // Info for existing pipeline promotion.
-func (s *Service) PipelinePromotionInfo(pipelinePromotionIdentity string) (*PipelinePromotionInfoResult, error) {
+func (s *Service) PipelinePromotionInfo(ctx context.Context, pipelinePromotionIdentity string) (*PipelinePromotionInfoResult, error) {
 	var pipelinePromotion PipelinePromotionInfoResult
-	return &pipelinePromotion, s.Get(&pipelinePromotion, fmt.Sprintf("/pipeline-promotions/%v", pipelinePromotionIdentity), nil, nil)
+	return &pipelinePromotion, s.Get(ctx, &pipelinePromotion, fmt.Sprintf("/pipeline-promotions/%v", pipelinePromotionIdentity), nil, nil)
 }
 
 // Promotion targets represent an individual app being promoted to
@@ -5132,9 +5135,9 @@ type PipelinePromotionTargetListResult []struct {
 }
 
 // List promotion targets belonging to an existing promotion.
-func (s *Service) PipelinePromotionTargetList(pipelinePromotionID string, lr *ListRange) (PipelinePromotionTargetListResult, error) {
+func (s *Service) PipelinePromotionTargetList(ctx context.Context, pipelinePromotionID string, lr *ListRange) (PipelinePromotionTargetListResult, error) {
 	var pipelinePromotionTarget PipelinePromotionTargetListResult
-	return pipelinePromotionTarget, s.Get(&pipelinePromotionTarget, fmt.Sprintf("/pipeline-promotions/%v/promotion-targets", pipelinePromotionID), nil, lr)
+	return pipelinePromotionTarget, s.Get(ctx, &pipelinePromotionTarget, fmt.Sprintf("/pipeline-promotions/%v/promotion-targets", pipelinePromotionID), nil, lr)
 }
 
 // Plans represent different configurations of add-ons that may be added
@@ -5188,9 +5191,9 @@ type PlanInfoResult struct {
 }
 
 // Info for existing plan.
-func (s *Service) PlanInfo(addOnServiceIdentity string, planIdentity string) (*PlanInfoResult, error) {
+func (s *Service) PlanInfo(ctx context.Context, addOnServiceIdentity string, planIdentity string) (*PlanInfoResult, error) {
 	var plan PlanInfoResult
-	return &plan, s.Get(&plan, fmt.Sprintf("/addon-services/%v/plans/%v", addOnServiceIdentity, planIdentity), nil, nil)
+	return &plan, s.Get(ctx, &plan, fmt.Sprintf("/addon-services/%v/plans/%v", addOnServiceIdentity, planIdentity), nil, nil)
 }
 
 type PlanListResult []struct {
@@ -5218,9 +5221,9 @@ type PlanListResult []struct {
 }
 
 // List existing plans.
-func (s *Service) PlanList(addOnServiceIdentity string, lr *ListRange) (PlanListResult, error) {
+func (s *Service) PlanList(ctx context.Context, addOnServiceIdentity string, lr *ListRange) (PlanListResult, error) {
 	var plan PlanListResult
-	return plan, s.Get(&plan, fmt.Sprintf("/addon-services/%v/plans", addOnServiceIdentity), nil, lr)
+	return plan, s.Get(ctx, &plan, fmt.Sprintf("/addon-services/%v/plans", addOnServiceIdentity), nil, lr)
 }
 
 // Rate Limit represents the number of request tokens each account
@@ -5233,9 +5236,9 @@ type RateLimitInfoResult struct {
 }
 
 // Info for rate limits.
-func (s *Service) RateLimitInfo() (*RateLimitInfoResult, error) {
+func (s *Service) RateLimitInfo(ctx context.Context) (*RateLimitInfoResult, error) {
 	var rateLimit RateLimitInfoResult
-	return &rateLimit, s.Get(&rateLimit, fmt.Sprintf("/account/rate-limits"), nil, nil)
+	return &rateLimit, s.Get(ctx, &rateLimit, fmt.Sprintf("/account/rate-limits"), nil, nil)
 }
 
 // A region represents a geographic location in which your application
@@ -5270,9 +5273,9 @@ type RegionInfoResult struct {
 }
 
 // Info for existing region.
-func (s *Service) RegionInfo(regionIdentity string) (*RegionInfoResult, error) {
+func (s *Service) RegionInfo(ctx context.Context, regionIdentity string) (*RegionInfoResult, error) {
 	var region RegionInfoResult
-	return &region, s.Get(&region, fmt.Sprintf("/regions/%v", regionIdentity), nil, nil)
+	return &region, s.Get(ctx, &region, fmt.Sprintf("/regions/%v", regionIdentity), nil, nil)
 }
 
 type RegionListResult []struct {
@@ -5291,9 +5294,9 @@ type RegionListResult []struct {
 }
 
 // List existing regions.
-func (s *Service) RegionList(lr *ListRange) (RegionListResult, error) {
+func (s *Service) RegionList(ctx context.Context, lr *ListRange) (RegionListResult, error) {
 	var region RegionListResult
-	return region, s.Get(&region, fmt.Sprintf("/regions"), nil, lr)
+	return region, s.Get(ctx, &region, fmt.Sprintf("/regions"), nil, lr)
 }
 
 // A release represents a combination of code, config vars and add-ons
@@ -5342,9 +5345,9 @@ type ReleaseInfoResult struct {
 }
 
 // Info for existing release.
-func (s *Service) ReleaseInfo(appIdentity string, releaseIdentity string) (*ReleaseInfoResult, error) {
+func (s *Service) ReleaseInfo(ctx context.Context, appIdentity string, releaseIdentity string) (*ReleaseInfoResult, error) {
 	var release ReleaseInfoResult
-	return &release, s.Get(&release, fmt.Sprintf("/apps/%v/releases/%v", appIdentity, releaseIdentity), nil, nil)
+	return &release, s.Get(ctx, &release, fmt.Sprintf("/apps/%v/releases/%v", appIdentity, releaseIdentity), nil, nil)
 }
 
 type ReleaseListResult []struct {
@@ -5370,9 +5373,9 @@ type ReleaseListResult []struct {
 }
 
 // List existing releases.
-func (s *Service) ReleaseList(appIdentity string, lr *ListRange) (ReleaseListResult, error) {
+func (s *Service) ReleaseList(ctx context.Context, appIdentity string, lr *ListRange) (ReleaseListResult, error) {
 	var release ReleaseListResult
-	return release, s.Get(&release, fmt.Sprintf("/apps/%v/releases", appIdentity), nil, lr)
+	return release, s.Get(ctx, &release, fmt.Sprintf("/apps/%v/releases", appIdentity), nil, lr)
 }
 
 type ReleaseCreateOpts struct {
@@ -5402,9 +5405,9 @@ type ReleaseCreateResult struct {
 }
 
 // Create new release.
-func (s *Service) ReleaseCreate(appIdentity string, o ReleaseCreateOpts) (*ReleaseCreateResult, error) {
+func (s *Service) ReleaseCreate(ctx context.Context, appIdentity string, o ReleaseCreateOpts) (*ReleaseCreateResult, error) {
 	var release ReleaseCreateResult
-	return &release, s.Post(&release, fmt.Sprintf("/apps/%v/releases", appIdentity), o)
+	return &release, s.Post(ctx, &release, fmt.Sprintf("/apps/%v/releases", appIdentity), o)
 }
 
 type ReleaseRollbackOpts struct {
@@ -5433,9 +5436,9 @@ type ReleaseRollbackResult struct {
 }
 
 // Rollback to an existing release.
-func (s *Service) ReleaseRollback(appIdentity string, o ReleaseRollbackOpts) (*ReleaseRollbackResult, error) {
+func (s *Service) ReleaseRollback(ctx context.Context, appIdentity string, o ReleaseRollbackOpts) (*ReleaseRollbackResult, error) {
 	var release ReleaseRollbackResult
-	return &release, s.Post(&release, fmt.Sprintf("/apps/%v/releases", appIdentity), o)
+	return &release, s.Post(ctx, &release, fmt.Sprintf("/apps/%v/releases", appIdentity), o)
 }
 
 // A slug is a snapshot of your application code that is ready to run on
@@ -5484,9 +5487,9 @@ type SlugInfoResult struct {
 }
 
 // Info for existing slug.
-func (s *Service) SlugInfo(appIdentity string, slugIdentity string) (*SlugInfoResult, error) {
+func (s *Service) SlugInfo(ctx context.Context, appIdentity string, slugIdentity string) (*SlugInfoResult, error) {
 	var slug SlugInfoResult
-	return &slug, s.Get(&slug, fmt.Sprintf("/apps/%v/slugs/%v", appIdentity, slugIdentity), nil, nil)
+	return &slug, s.Get(ctx, &slug, fmt.Sprintf("/apps/%v/slugs/%v", appIdentity, slugIdentity), nil, nil)
 }
 
 type SlugCreateOpts struct {
@@ -5524,9 +5527,9 @@ type SlugCreateResult struct {
 // Slugs using the Platform
 // API](https://devcenter.heroku.com/articles/platform-api-deploying-slug
 // s).
-func (s *Service) SlugCreate(appIdentity string, o SlugCreateOpts) (*SlugCreateResult, error) {
+func (s *Service) SlugCreate(ctx context.Context, appIdentity string, o SlugCreateOpts) (*SlugCreateResult, error) {
 	var slug SlugCreateResult
-	return &slug, s.Post(&slug, fmt.Sprintf("/apps/%v/slugs", appIdentity), o)
+	return &slug, s.Post(ctx, &slug, fmt.Sprintf("/apps/%v/slugs", appIdentity), o)
 }
 
 // SMS numbers are used for recovery on accounts with two-factor
@@ -5539,9 +5542,9 @@ type SmsNumberSMSNumberResult struct {
 }
 
 // Recover an account using an SMS recovery code
-func (s *Service) SmsNumberSMSNumber(accountIdentity string) (*SmsNumberSMSNumberResult, error) {
+func (s *Service) SmsNumberSMSNumber(ctx context.Context, accountIdentity string) (*SmsNumberSMSNumberResult, error) {
 	var smsNumber SmsNumberSMSNumberResult
-	return &smsNumber, s.Get(&smsNumber, fmt.Sprintf("/users/%v/sms-number", accountIdentity), nil, nil)
+	return &smsNumber, s.Get(ctx, &smsNumber, fmt.Sprintf("/users/%v/sms-number", accountIdentity), nil, nil)
 }
 
 type SmsNumberRecoverResult struct {
@@ -5549,9 +5552,9 @@ type SmsNumberRecoverResult struct {
 }
 
 // Recover an account using an SMS recovery code
-func (s *Service) SmsNumberRecover(accountIdentity string) (*SmsNumberRecoverResult, error) {
+func (s *Service) SmsNumberRecover(ctx context.Context, accountIdentity string) (*SmsNumberRecoverResult, error) {
 	var smsNumber SmsNumberRecoverResult
-	return &smsNumber, s.Post(&smsNumber, fmt.Sprintf("/users/%v/sms-number/actions/recover", accountIdentity), nil)
+	return &smsNumber, s.Post(ctx, &smsNumber, fmt.Sprintf("/users/%v/sms-number/actions/recover", accountIdentity), nil)
 }
 
 type SmsNumberConfirmResult struct {
@@ -5559,9 +5562,9 @@ type SmsNumberConfirmResult struct {
 }
 
 // Confirm an SMS number change with a confirmation code
-func (s *Service) SmsNumberConfirm(accountIdentity string) (*SmsNumberConfirmResult, error) {
+func (s *Service) SmsNumberConfirm(ctx context.Context, accountIdentity string) (*SmsNumberConfirmResult, error) {
 	var smsNumber SmsNumberConfirmResult
-	return &smsNumber, s.Post(&smsNumber, fmt.Sprintf("/users/%v/sms-number/actions/confirm", accountIdentity), nil)
+	return &smsNumber, s.Post(ctx, &smsNumber, fmt.Sprintf("/users/%v/sms-number/actions/confirm", accountIdentity), nil)
 }
 
 // SNI Endpoint is a public address serving a custom SSL cert for HTTPS
@@ -5590,9 +5593,9 @@ type SniEndpointCreateResult struct {
 }
 
 // Create a new SNI endpoint.
-func (s *Service) SniEndpointCreate(appIdentity string, o SniEndpointCreateOpts) (*SniEndpointCreateResult, error) {
+func (s *Service) SniEndpointCreate(ctx context.Context, appIdentity string, o SniEndpointCreateOpts) (*SniEndpointCreateResult, error) {
 	var sniEndpoint SniEndpointCreateResult
-	return &sniEndpoint, s.Post(&sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints", appIdentity), o)
+	return &sniEndpoint, s.Post(ctx, &sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints", appIdentity), o)
 }
 
 type SniEndpointDeleteResult struct {
@@ -5606,9 +5609,9 @@ type SniEndpointDeleteResult struct {
 }
 
 // Delete existing SNI endpoint.
-func (s *Service) SniEndpointDelete(appIdentity string, sniEndpointIdentity string) (*SniEndpointDeleteResult, error) {
+func (s *Service) SniEndpointDelete(ctx context.Context, appIdentity string, sniEndpointIdentity string) (*SniEndpointDeleteResult, error) {
 	var sniEndpoint SniEndpointDeleteResult
-	return &sniEndpoint, s.Delete(&sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints/%v", appIdentity, sniEndpointIdentity))
+	return &sniEndpoint, s.Delete(ctx, &sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints/%v", appIdentity, sniEndpointIdentity))
 }
 
 type SniEndpointInfoResult struct {
@@ -5622,9 +5625,9 @@ type SniEndpointInfoResult struct {
 }
 
 // Info for existing SNI endpoint.
-func (s *Service) SniEndpointInfo(appIdentity string, sniEndpointIdentity string) (*SniEndpointInfoResult, error) {
+func (s *Service) SniEndpointInfo(ctx context.Context, appIdentity string, sniEndpointIdentity string) (*SniEndpointInfoResult, error) {
 	var sniEndpoint SniEndpointInfoResult
-	return &sniEndpoint, s.Get(&sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints/%v", appIdentity, sniEndpointIdentity), nil, nil)
+	return &sniEndpoint, s.Get(ctx, &sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints/%v", appIdentity, sniEndpointIdentity), nil, nil)
 }
 
 type SniEndpointListResult []struct {
@@ -5638,9 +5641,9 @@ type SniEndpointListResult []struct {
 }
 
 // List existing SNI endpoints.
-func (s *Service) SniEndpointList(appIdentity string, lr *ListRange) (SniEndpointListResult, error) {
+func (s *Service) SniEndpointList(ctx context.Context, appIdentity string, lr *ListRange) (SniEndpointListResult, error) {
 	var sniEndpoint SniEndpointListResult
-	return sniEndpoint, s.Get(&sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints", appIdentity), nil, lr)
+	return sniEndpoint, s.Get(ctx, &sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints", appIdentity), nil, lr)
 }
 
 type SniEndpointUpdateOpts struct {
@@ -5658,9 +5661,9 @@ type SniEndpointUpdateResult struct {
 }
 
 // Update an existing SNI endpoint.
-func (s *Service) SniEndpointUpdate(appIdentity string, sniEndpointIdentity string, o SniEndpointUpdateOpts) (*SniEndpointUpdateResult, error) {
+func (s *Service) SniEndpointUpdate(ctx context.Context, appIdentity string, sniEndpointIdentity string, o SniEndpointUpdateOpts) (*SniEndpointUpdateResult, error) {
 	var sniEndpoint SniEndpointUpdateResult
-	return &sniEndpoint, s.Patch(&sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints/%v", appIdentity, sniEndpointIdentity), o)
+	return &sniEndpoint, s.Patch(ctx, &sniEndpoint, fmt.Sprintf("/apps/%v/sni-endpoints/%v", appIdentity, sniEndpointIdentity), o)
 }
 
 // A source is a location for uploading and downloading an application's
@@ -5679,9 +5682,9 @@ type SourceCreateResult struct {
 }
 
 // Create URLs for uploading and downloading source.
-func (s *Service) SourceCreate() (*SourceCreateResult, error) {
+func (s *Service) SourceCreate(ctx context.Context) (*SourceCreateResult, error) {
 	var source SourceCreateResult
-	return &source, s.Post(&source, fmt.Sprintf("/sources"), nil)
+	return &source, s.Post(ctx, &source, fmt.Sprintf("/sources"), nil)
 }
 
 type SourceCreateDeprecatedResult struct {
@@ -5693,9 +5696,9 @@ type SourceCreateDeprecatedResult struct {
 
 // Create URLs for uploading and downloading source. Deprecated in favor
 // of `POST /sources`
-func (s *Service) SourceCreateDeprecated(appIdentity string) (*SourceCreateDeprecatedResult, error) {
+func (s *Service) SourceCreateDeprecated(ctx context.Context, appIdentity string) (*SourceCreateDeprecatedResult, error) {
 	var source SourceCreateDeprecatedResult
-	return &source, s.Post(&source, fmt.Sprintf("/apps/%v/sources", appIdentity), nil)
+	return &source, s.Post(ctx, &source, fmt.Sprintf("/apps/%v/sources", appIdentity), nil)
 }
 
 // A space is an isolated, highly available, secure app execution
@@ -5732,9 +5735,9 @@ type SpaceListResult []struct {
 }
 
 // List existing spaces.
-func (s *Service) SpaceList(lr *ListRange) (SpaceListResult, error) {
+func (s *Service) SpaceList(ctx context.Context, lr *ListRange) (SpaceListResult, error) {
 	var space SpaceListResult
-	return space, s.Get(&space, fmt.Sprintf("/spaces"), nil, lr)
+	return space, s.Get(ctx, &space, fmt.Sprintf("/spaces"), nil, lr)
 }
 
 type SpaceInfoResult struct {
@@ -5754,9 +5757,9 @@ type SpaceInfoResult struct {
 }
 
 // Info for existing space.
-func (s *Service) SpaceInfo(spaceIdentity string) (*SpaceInfoResult, error) {
+func (s *Service) SpaceInfo(ctx context.Context, spaceIdentity string) (*SpaceInfoResult, error) {
 	var space SpaceInfoResult
-	return &space, s.Get(&space, fmt.Sprintf("/spaces/%v", spaceIdentity), nil, nil)
+	return &space, s.Get(ctx, &space, fmt.Sprintf("/spaces/%v", spaceIdentity), nil, nil)
 }
 
 type SpaceUpdateOpts struct {
@@ -5779,9 +5782,9 @@ type SpaceUpdateResult struct {
 }
 
 // Update an existing space.
-func (s *Service) SpaceUpdate(spaceIdentity string, o SpaceUpdateOpts) (*SpaceUpdateResult, error) {
+func (s *Service) SpaceUpdate(ctx context.Context, spaceIdentity string, o SpaceUpdateOpts) (*SpaceUpdateResult, error) {
 	var space SpaceUpdateResult
-	return &space, s.Patch(&space, fmt.Sprintf("/spaces/%v", spaceIdentity), o)
+	return &space, s.Patch(ctx, &space, fmt.Sprintf("/spaces/%v", spaceIdentity), o)
 }
 
 type SpaceDeleteResult struct {
@@ -5801,9 +5804,9 @@ type SpaceDeleteResult struct {
 }
 
 // Delete an existing space.
-func (s *Service) SpaceDelete(spaceIdentity string) (*SpaceDeleteResult, error) {
+func (s *Service) SpaceDelete(ctx context.Context, spaceIdentity string) (*SpaceDeleteResult, error) {
 	var space SpaceDeleteResult
-	return &space, s.Delete(&space, fmt.Sprintf("/spaces/%v", spaceIdentity))
+	return &space, s.Delete(ctx, &space, fmt.Sprintf("/spaces/%v", spaceIdentity))
 }
 
 type SpaceCreateOpts struct {
@@ -5829,9 +5832,9 @@ type SpaceCreateResult struct {
 }
 
 // Create a new space.
-func (s *Service) SpaceCreate(o SpaceCreateOpts) (*SpaceCreateResult, error) {
+func (s *Service) SpaceCreate(ctx context.Context, o SpaceCreateOpts) (*SpaceCreateResult, error) {
 	var space SpaceCreateResult
-	return &space, s.Post(&space, fmt.Sprintf("/spaces"), o)
+	return &space, s.Post(ctx, &space, fmt.Sprintf("/spaces"), o)
 }
 
 // Space access represents the permissions a particular user has on a
@@ -5872,9 +5875,9 @@ type SpaceAppAccessInfoResult struct {
 }
 
 // List permissions for a given user on a given space.
-func (s *Service) SpaceAppAccessInfo(spaceIdentity string, accountIdentity string) (*SpaceAppAccessInfoResult, error) {
+func (s *Service) SpaceAppAccessInfo(ctx context.Context, spaceIdentity string, accountIdentity string) (*SpaceAppAccessInfoResult, error) {
 	var spaceAppAccess SpaceAppAccessInfoResult
-	return &spaceAppAccess, s.Get(&spaceAppAccess, fmt.Sprintf("/spaces/%v/members/%v", spaceIdentity, accountIdentity), nil, nil)
+	return &spaceAppAccess, s.Get(ctx, &spaceAppAccess, fmt.Sprintf("/spaces/%v/members/%v", spaceIdentity, accountIdentity), nil, nil)
 }
 
 type SpaceAppAccessUpdateOpts struct {
@@ -5901,9 +5904,9 @@ type SpaceAppAccessUpdateResult struct {
 }
 
 // Update an existing user's set of permissions on a space.
-func (s *Service) SpaceAppAccessUpdate(spaceIdentity string, accountIdentity string, o SpaceAppAccessUpdateOpts) (*SpaceAppAccessUpdateResult, error) {
+func (s *Service) SpaceAppAccessUpdate(ctx context.Context, spaceIdentity string, accountIdentity string, o SpaceAppAccessUpdateOpts) (*SpaceAppAccessUpdateResult, error) {
 	var spaceAppAccess SpaceAppAccessUpdateResult
-	return &spaceAppAccess, s.Patch(&spaceAppAccess, fmt.Sprintf("/spaces/%v/members/%v", spaceIdentity, accountIdentity), o)
+	return &spaceAppAccess, s.Patch(ctx, &spaceAppAccess, fmt.Sprintf("/spaces/%v/members/%v", spaceIdentity, accountIdentity), o)
 }
 
 type SpaceAppAccessListResult []struct {
@@ -5925,9 +5928,9 @@ type SpaceAppAccessListResult []struct {
 }
 
 // List all users and their permissions on a space.
-func (s *Service) SpaceAppAccessList(spaceIdentity string, lr *ListRange) (SpaceAppAccessListResult, error) {
+func (s *Service) SpaceAppAccessList(ctx context.Context, spaceIdentity string, lr *ListRange) (SpaceAppAccessListResult, error) {
 	var spaceAppAccess SpaceAppAccessListResult
-	return spaceAppAccess, s.Get(&spaceAppAccess, fmt.Sprintf("/spaces/%v/members", spaceIdentity), nil, lr)
+	return spaceAppAccess, s.Get(ctx, &spaceAppAccess, fmt.Sprintf("/spaces/%v/members", spaceIdentity), nil, lr)
 }
 
 // Network address translation (NAT) for stable outbound IP addresses
@@ -5946,9 +5949,9 @@ type SpaceNatInfoResult struct {
 }
 
 // Current state of network address translation for a space.
-func (s *Service) SpaceNatInfo(spaceIdentity string) (*SpaceNatInfoResult, error) {
+func (s *Service) SpaceNatInfo(ctx context.Context, spaceIdentity string) (*SpaceNatInfoResult, error) {
 	var spaceNat SpaceNatInfoResult
-	return &spaceNat, s.Get(&spaceNat, fmt.Sprintf("/spaces/%v/nat", spaceIdentity), nil, nil)
+	return &spaceNat, s.Get(ctx, &spaceNat, fmt.Sprintf("/spaces/%v/nat", spaceIdentity), nil, nil)
 }
 
 // [SSL Endpoint](https://devcenter.heroku.com/articles/ssl-endpoint) is
@@ -5988,9 +5991,9 @@ type SSLEndpointCreateResult struct {
 }
 
 // Create a new SSL endpoint.
-func (s *Service) SSLEndpointCreate(appIdentity string, o SSLEndpointCreateOpts) (*SSLEndpointCreateResult, error) {
+func (s *Service) SSLEndpointCreate(ctx context.Context, appIdentity string, o SSLEndpointCreateOpts) (*SSLEndpointCreateResult, error) {
 	var sslEndpoint SSLEndpointCreateResult
-	return &sslEndpoint, s.Post(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), o)
+	return &sslEndpoint, s.Post(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), o)
 }
 
 type SSLEndpointDeleteResult struct {
@@ -6007,9 +6010,9 @@ type SSLEndpointDeleteResult struct {
 }
 
 // Delete existing SSL endpoint.
-func (s *Service) SSLEndpointDelete(appIdentity string, sslEndpointIdentity string) (*SSLEndpointDeleteResult, error) {
+func (s *Service) SSLEndpointDelete(ctx context.Context, appIdentity string, sslEndpointIdentity string) (*SSLEndpointDeleteResult, error) {
 	var sslEndpoint SSLEndpointDeleteResult
-	return &sslEndpoint, s.Delete(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity))
+	return &sslEndpoint, s.Delete(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity))
 }
 
 type SSLEndpointInfoResult struct {
@@ -6026,9 +6029,9 @@ type SSLEndpointInfoResult struct {
 }
 
 // Info for existing SSL endpoint.
-func (s *Service) SSLEndpointInfo(appIdentity string, sslEndpointIdentity string) (*SSLEndpointInfoResult, error) {
+func (s *Service) SSLEndpointInfo(ctx context.Context, appIdentity string, sslEndpointIdentity string) (*SSLEndpointInfoResult, error) {
 	var sslEndpoint SSLEndpointInfoResult
-	return &sslEndpoint, s.Get(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), nil, nil)
+	return &sslEndpoint, s.Get(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), nil, nil)
 }
 
 type SSLEndpointListResult []struct {
@@ -6045,9 +6048,9 @@ type SSLEndpointListResult []struct {
 }
 
 // List existing SSL endpoints.
-func (s *Service) SSLEndpointList(appIdentity string, lr *ListRange) (SSLEndpointListResult, error) {
+func (s *Service) SSLEndpointList(ctx context.Context, appIdentity string, lr *ListRange) (SSLEndpointListResult, error) {
 	var sslEndpoint SSLEndpointListResult
-	return sslEndpoint, s.Get(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), nil, lr)
+	return sslEndpoint, s.Get(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), nil, lr)
 }
 
 type SSLEndpointUpdateOpts struct {
@@ -6072,9 +6075,9 @@ type SSLEndpointUpdateResult struct {
 }
 
 // Update an existing SSL endpoint.
-func (s *Service) SSLEndpointUpdate(appIdentity string, sslEndpointIdentity string, o SSLEndpointUpdateOpts) (*SSLEndpointUpdateResult, error) {
+func (s *Service) SSLEndpointUpdate(ctx context.Context, appIdentity string, sslEndpointIdentity string, o SSLEndpointUpdateOpts) (*SSLEndpointUpdateResult, error) {
 	var sslEndpoint SSLEndpointUpdateResult
-	return &sslEndpoint, s.Patch(&sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), o)
+	return &sslEndpoint, s.Patch(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), o)
 }
 
 // Stacks are the different application execution environments available
@@ -6095,9 +6098,9 @@ type StackInfoResult struct {
 }
 
 // Stack info.
-func (s *Service) StackInfo(stackIdentity string) (*StackInfoResult, error) {
+func (s *Service) StackInfo(ctx context.Context, stackIdentity string) (*StackInfoResult, error) {
 	var stack StackInfoResult
-	return &stack, s.Get(&stack, fmt.Sprintf("/stacks/%v", stackIdentity), nil, nil)
+	return &stack, s.Get(ctx, &stack, fmt.Sprintf("/stacks/%v", stackIdentity), nil, nil)
 }
 
 type StackListResult []struct {
@@ -6109,9 +6112,9 @@ type StackListResult []struct {
 }
 
 // List available stacks.
-func (s *Service) StackList(lr *ListRange) (StackListResult, error) {
+func (s *Service) StackList(ctx context.Context, lr *ListRange) (StackListResult, error) {
 	var stack StackListResult
-	return stack, s.Get(&stack, fmt.Sprintf("/stacks"), nil, lr)
+	return stack, s.Get(ctx, &stack, fmt.Sprintf("/stacks"), nil, lr)
 }
 
 // Tracks a user's preferences and message dismissals
@@ -6145,9 +6148,9 @@ type UserPreferencesListResult struct {
 }
 
 // Retrieve User Preferences
-func (s *Service) UserPreferencesList(userPreferencesIdentity string) (*UserPreferencesListResult, error) {
+func (s *Service) UserPreferencesList(ctx context.Context, userPreferencesIdentity string) (*UserPreferencesListResult, error) {
 	var userPreferences UserPreferencesListResult
-	return &userPreferences, s.Get(&userPreferences, fmt.Sprintf("/users/%v/preferences", userPreferencesIdentity), nil, nil)
+	return &userPreferences, s.Get(ctx, &userPreferences, fmt.Sprintf("/users/%v/preferences", userPreferencesIdentity), nil, nil)
 }
 
 type UserPreferencesUpdateOpts struct {
@@ -6180,9 +6183,9 @@ type UserPreferencesUpdateResult struct {
 }
 
 // Update User Preferences
-func (s *Service) UserPreferencesUpdate(userPreferencesIdentity string, o UserPreferencesUpdateOpts) (*UserPreferencesUpdateResult, error) {
+func (s *Service) UserPreferencesUpdate(ctx context.Context, userPreferencesIdentity string, o UserPreferencesUpdateOpts) (*UserPreferencesUpdateResult, error) {
 	var userPreferences UserPreferencesUpdateResult
-	return &userPreferences, s.Patch(&userPreferences, fmt.Sprintf("/users/%v/preferences", userPreferencesIdentity), o)
+	return &userPreferences, s.Patch(ctx, &userPreferences, fmt.Sprintf("/users/%v/preferences", userPreferencesIdentity), o)
 }
 
 // Entities that have been whitelisted to be used by an Organization
@@ -6214,9 +6217,9 @@ type WhitelistedAddOnServiceListResult []struct {
 }
 
 // List all whitelisted Add-on Services for an Organization
-func (s *Service) WhitelistedAddOnServiceList(organizationIdentity string, lr *ListRange) (WhitelistedAddOnServiceListResult, error) {
+func (s *Service) WhitelistedAddOnServiceList(ctx context.Context, organizationIdentity string, lr *ListRange) (WhitelistedAddOnServiceListResult, error) {
 	var whitelistedAddOnService WhitelistedAddOnServiceListResult
-	return whitelistedAddOnService, s.Get(&whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services", organizationIdentity), nil, lr)
+	return whitelistedAddOnService, s.Get(ctx, &whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services", organizationIdentity), nil, lr)
 }
 
 type WhitelistedAddOnServiceCreateOpts struct {
@@ -6237,9 +6240,9 @@ type WhitelistedAddOnServiceCreateResult []struct {
 }
 
 // Whitelist an Add-on Service
-func (s *Service) WhitelistedAddOnServiceCreate(organizationIdentity string, o WhitelistedAddOnServiceCreateOpts) (WhitelistedAddOnServiceCreateResult, error) {
+func (s *Service) WhitelistedAddOnServiceCreate(ctx context.Context, organizationIdentity string, o WhitelistedAddOnServiceCreateOpts) (WhitelistedAddOnServiceCreateResult, error) {
 	var whitelistedAddOnService WhitelistedAddOnServiceCreateResult
-	return whitelistedAddOnService, s.Post(&whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services", organizationIdentity), o)
+	return whitelistedAddOnService, s.Post(ctx, &whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services", organizationIdentity), o)
 }
 
 type WhitelistedAddOnServiceDeleteResult struct {
@@ -6257,8 +6260,7 @@ type WhitelistedAddOnServiceDeleteResult struct {
 }
 
 // Remove a whitelisted entity
-func (s *Service) WhitelistedAddOnServiceDelete(organizationIdentity string, whitelistedAddOnServiceIdentity string) (*WhitelistedAddOnServiceDeleteResult, error) {
+func (s *Service) WhitelistedAddOnServiceDelete(ctx context.Context, organizationIdentity string, whitelistedAddOnServiceIdentity string) (*WhitelistedAddOnServiceDeleteResult, error) {
 	var whitelistedAddOnService WhitelistedAddOnServiceDeleteResult
-	return &whitelistedAddOnService, s.Delete(&whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services/%v", organizationIdentity, whitelistedAddOnServiceIdentity))
+	return &whitelistedAddOnService, s.Delete(ctx, &whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services/%v", organizationIdentity, whitelistedAddOnServiceIdentity))
 }
-
