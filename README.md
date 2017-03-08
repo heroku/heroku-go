@@ -45,3 +45,16 @@ func main() {
   }
 }
 ```
+
+## OAuth
+
+```go
+func main() {
+  t := &oauth.Transport{
+    Token:     &oauth.Token{AccessToken: token},
+    Transport: heroku.DefaultTransport,
+  }
+
+  h := heroku.NewService(t.Client())
+}
+```
