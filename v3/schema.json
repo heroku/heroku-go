@@ -7129,6 +7129,15 @@
           "rel": "create",
           "schema": {
             "properties": {
+              "permissions": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "$ref": "#/definitions/organization-app-permission/definitions/name"
+                },
+                "description": "An array of permissions to give to the collaborator."
+              },
               "silent": {
                 "$ref": "#/definitions/collaborator/definitions/silent"
               },
@@ -7173,6 +7182,25 @@
           "href": "/organizations/apps/{(%23%2Fdefinitions%2Forganization-app%2Fdefinitions%2Fidentity)}/collaborators/{(%23%2Fdefinitions%2Forganization-app-collaborator%2Fdefinitions%2Fidentity)}",
           "method": "PATCH",
           "rel": "update",
+          "schema": {
+            "properties": {
+              "permissions": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "$ref": "#/definitions/organization-app-permission/definitions/name"
+                },
+                "description": "An array of permissions to give to the collaborator."
+              }
+            },
+            "required": [
+              "permissions"
+            ],
+            "type": [
+              "object"
+            ]
+          },
           "targetSchema": {
             "$ref": "#/definitions/organization-app-collaborator"
           },
@@ -9965,6 +9993,16 @@
         {
           "description": "Info for existing plan.",
           "href": "/addon-services/{(%23%2Fdefinitions%2Fadd-on-service%2Fdefinitions%2Fidentity)}/plans/{(%23%2Fdefinitions%2Fplan%2Fdefinitions%2Fidentity)}",
+          "method": "GET",
+          "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/plan"
+          },
+          "title": "Info"
+        },
+        {
+          "description": "Info for existing plan.",
+          "href": "/plans/{(%23%2Fdefinitions%2Fplan%2Fdefinitions%2Fidentity)}",
           "method": "GET",
           "rel": "self",
           "targetSchema": {
