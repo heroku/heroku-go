@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -164,14 +165,15 @@ func (lr *ListRange) SetHeader(req *http.Request) {
 		hdrval += lr.Field + " "
 	}
 	hdrval += lr.FirstID + ".." + lr.LastID
+	params := make([]string, 0, 2)
 	if lr.Max != 0 {
-		hdrval += fmt.Sprintf("; max=%d", lr.Max)
-		if lr.Descending {
-			hdrval += "; "
-		}
+		params = append(params, fmt.Sprintf("max=%d", lr.Max))
 	}
 	if lr.Descending {
-		hdrval += "order=desc"
+		params = append(params, "order=desc")
+	}
+	if len(params) > 0 {
+		hdrval += fmt.Sprintf("; %s", strings.Join(params, ","))
 	}
 	req.Header.Set("Range", hdrval)
 	return
