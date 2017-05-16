@@ -343,7 +343,16 @@ func (s *Service) AddOnDelete(ctx context.Context, appIdentity string, addOnIden
 // Info for an existing add-on.
 func (s *Service) AddOnInfo(ctx context.Context, appIdentity string, addOnIdentity string) (*AddOn, error) {
 	var addOn AddOn
-	return &addOn, s.Get(ctx, &addOn, fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity), nil, nil)
+
+	// Use the /apps/:app_id/addons/:addon_id endpoint by default
+	endpoint := fmt.Sprintf("/apps/%v/addons/%v", appIdentity, addOnIdentity)
+
+	// If the appIdentity is not set, use the /addons/:addon_id endpoint instead.
+	if appIdentity == "" {
+		endpoint = fmt.Sprintf("/addons/%v", addOnIdentity)
+	}
+
+	return &addOn, s.Get(ctx, &addOn, endpoint, nil, nil)
 }
 
 type AddOnListResult []AddOn
@@ -3360,4 +3369,3 @@ func (s *Service) WhitelistedAddOnServiceDelete(ctx context.Context, organizatio
 	var whitelistedAddOnService WhitelistedAddOnService
 	return &whitelistedAddOnService, s.Delete(ctx, &whitelistedAddOnService, fmt.Sprintf("/organizations/%v/whitelisted-addon-services/%v", organizationIdentity, whitelistedAddOnServiceIdentity))
 }
-
