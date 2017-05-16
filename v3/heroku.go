@@ -15,17 +15,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
 
 const (
-	Version          = ""
+	Version          = "v3"
 	DefaultUserAgent = "heroku/" + Version + " (" + runtime.GOOS + "; " + runtime.GOARCH + ")"
 	DefaultURL       = "https://api.heroku.com"
 )
