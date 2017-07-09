@@ -15,14 +15,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
 	"time"
-
-	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -704,6 +703,7 @@ func (s *Service) AddOnServiceList(ctx context.Context, lr *ListRange) (AddOnSer
 // An app represents the program that you would like to deploy and run
 // on Heroku.
 type App struct {
+	Acm        bool       `json:"acm" url:"acm,key"`                 // ACM status of this app
 	ArchivedAt *time.Time `json:"archived_at" url:"archived_at,key"` // when app was archived
 	BuildStack struct {
 		ID   string `json:"id" url:"id,key"`     // unique identifier of stack
@@ -796,6 +796,24 @@ type AppUpdateOpts struct {
 func (s *Service) AppUpdate(ctx context.Context, appIdentity string, o AppUpdateOpts) (*App, error) {
 	var app App
 	return &app, s.Patch(ctx, &app, fmt.Sprintf("/apps/%v", appIdentity), o)
+}
+
+// Enable ACM flag for an app
+func (s *Service) AppEnableACM(ctx context.Context, appIdentity string) (*App, error) {
+	var app App
+	return &app, s.Post(ctx, &app, fmt.Sprintf("/apps/%v/acm", appIdentity), nil)
+}
+
+// Disable ACM flag for an app
+func (s *Service) AppDisableACM(ctx context.Context, appIdentity string) (*App, error) {
+	var app App
+	return &app, s.Delete(ctx, &app, fmt.Sprintf("/apps/%v/acm", appIdentity))
+}
+
+// Refresh ACM for an app
+func (s *Service) AppRefreshACM(ctx context.Context, appIdentity string) (*App, error) {
+	var app App
+	return &app, s.Patch(ctx, &app, fmt.Sprintf("/apps/%v/acm", appIdentity), nil)
 }
 
 // An app feature represents a Heroku labs capability that can be
@@ -1226,7 +1244,8 @@ func (s *Service) CreditList(ctx context.Context, lr *ListRange) (CreditListResu
 
 // Domains define what web routes should be routed to an app on Heroku.
 type Domain struct {
-	App struct {
+	AcmStatus *string `json:"acm_status" url:"acm_status,key"` // status of this record's ACM
+	App       struct {
 		ID   string `json:"id" url:"id,key"`     // unique identifier of app
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // app that owns the domain
@@ -1882,6 +1901,14 @@ func (s *Service) LogDrainDelete(ctx context.Context, appIdentity string, logDra
 func (s *Service) LogDrainInfo(ctx context.Context, appIdentity string, logDrainQueryIdentity string) (*LogDrain, error) {
 	var logDrain LogDrain
 	return &logDrain, s.Get(ctx, &logDrain, fmt.Sprintf("/apps/%v/log-drains/%v", appIdentity, logDrainQueryIdentity), nil, nil)
+}
+
+type LogDrainListByAddOnResult []LogDrain
+
+// List existing log drains for an add-on.
+func (s *Service) LogDrainListByAddOn(ctx context.Context, addOnIdentity string, lr *ListRange) (LogDrainListByAddOnResult, error) {
+	var logDrain LogDrainListByAddOnResult
+	return logDrain, s.Get(ctx, &logDrain, fmt.Sprintf("/addons/%v/log-drains", addOnIdentity), nil, lr)
 }
 
 type LogDrainListResult []LogDrain
@@ -3054,11 +3081,16 @@ type Release struct {
 		ID   string `json:"id" url:"id,key"`     // unique identifier of app
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // app involved in the release
-	CreatedAt   time.Time `json:"created_at" url:"created_at,key"`   // when release was created
-	Current     bool      `json:"current" url:"current,key"`         // indicates this release as being the current one for the app
-	Description string    `json:"description" url:"description,key"` // description of changes in this release
-	ID          string    `json:"id" url:"id,key"`                   // unique identifier of release
-	Slug        *struct {
+	CreatedAt       time.Time `json:"created_at" url:"created_at,key"`               // when release was created
+	Current         bool      `json:"current" url:"current,key"`                     // indicates this release as being the current one for the app
+	Description     string    `json:"description" url:"description,key"`             // description of changes in this release
+	ID              string    `json:"id" url:"id,key"`                               // unique identifier of release
+	OutputStreamURL *string   `json:"output_stream_url" url:"output_stream_url,key"` // Release command output will be available from this URL as a stream.
+	// The stream is available as either `text/plain` or
+	// `text/event-stream`. Clients should be prepared to handle disconnects
+	// and can resume the stream by sending a `Range` header (for
+	// `text/plain`) or a `Last-Event-Id` header (for `text/event-stream`).
+	Slug *struct {
 		ID string `json:"id" url:"id,key"` // unique identifier of slug
 	} `json:"slug" url:"slug,key"` // slug running in this release
 	Status    string    `json:"status" url:"status,key"`         // current status of the release
@@ -3305,10 +3337,10 @@ func (s *Service) SpaceDelete(ctx context.Context, spaceIdentity string) (*Space
 }
 
 type SpaceCreateOpts struct {
-	Name         string  `json:"name" url:"name,key"`                         // unique name of space
-	Organization string  `json:"organization" url:"organization,key"`         // unique name of organization
-	Region       *string `json:"region,omitempty" url:"region,omitempty,key"` // unique identifier of region
-	Shield       *bool   `json:"shield,omitempty" url:"shield,omitempty,key"` // true if this space has shield enabled
+	Name   string  `json:"name" url:"name,key"`                         // unique name of space
+	Region *string `json:"region,omitempty" url:"region,omitempty,key"` // unique identifier of region
+	Shield *bool   `json:"shield,omitempty" url:"shield,omitempty,key"` // true if this space has shield enabled
+	Team   string  `json:"team" url:"team,key"`                         // unique name of team
 }
 
 // Create a new space.

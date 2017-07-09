@@ -2715,9 +2715,42 @@
             "$ref": "#/definitions/app"
           },
           "title": "Update"
+        },
+        {
+          "description": "Enable ACM flag for an app",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/acm",
+          "method": "POST",
+          "rel": "update",
+          "targetSchema": {
+            "$ref": "#/definitions/app"
+          },
+          "title": "Enable ACM"
+        },
+        {
+          "description": "Disable ACM flag for an app",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/acm",
+          "method": "DELETE",
+          "rel": "delete",
+          "targetSchema": {
+            "$ref": "#/definitions/app"
+          },
+          "title": "Disable ACM"
+        },
+        {
+          "description": "Refresh ACM for an app",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/acm",
+          "method": "PATCH",
+          "rel": "update",
+          "targetSchema": {
+            "$ref": "#/definitions/app"
+          },
+          "title": "Refresh ACM"
         }
       ],
       "properties": {
+        "acm": {
+          "$ref": "#/definitions/app/definitions/acm"
+        },
         "archived_at": {
           "$ref": "#/definitions/app/definitions/archived_at"
         },
@@ -3817,6 +3850,15 @@
         "object"
       ],
       "definitions": {
+        "acm_status": {
+          "description": "status of this record's ACM",
+          "example": "pending",
+          "readOnly": true,
+          "type": [
+            "null",
+            "string"
+          ]
+        },
         "created_at": {
           "description": "when domain was created",
           "example": "2012-01-01T12:00:00Z",
@@ -3954,6 +3996,9 @@
         }
       ],
       "properties": {
+        "acm_status": {
+          "$ref": "#/definitions/domain/definitions/acm_status"
+        },
         "app": {
           "description": "app that owns the domain",
           "properties": {
@@ -6343,6 +6388,21 @@
             "$ref": "#/definitions/log-drain"
           },
           "title": "Info"
+        },
+        {
+          "description": "List existing log drains for an add-on.",
+          "href": "/addons/{(%23%2Fdefinitions%2Fadd-on%2Fdefinitions%2Fidentity)}/log-drains",
+          "method": "GET",
+          "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/log-drain"
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "title": "List By Add-on"
         },
         {
           "description": "List existing log drains.",
@@ -10626,6 +10686,15 @@
           "type": [
             "boolean"
           ]
+        },
+        "output_stream_url": {
+          "description": "Release command output will be available from this URL as a stream. The stream is available as either `text/plain` or `text/event-stream`. Clients should be prepared to handle disconnects and can resume the stream by sending a `Range` header (for `text/plain`) or a `Last-Event-Id` header (for `text/event-stream`).",
+          "example": "https://release-output.heroku.com/streams/01234567-89ab-cdef-0123-456789abcdef",
+          "readOnly": true,
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "links": [
@@ -10776,6 +10845,9 @@
         },
         "current": {
           "$ref": "#/definitions/release/definitions/current"
+        },
+        "output_stream_url": {
+          "$ref": "#/definitions/release/definitions/output_stream_url"
         }
       }
     },
@@ -11731,8 +11803,8 @@
               "name": {
                 "$ref": "#/definitions/space/definitions/name"
               },
-              "organization": {
-                "$ref": "#/definitions/organization/definitions/name"
+              "team": {
+                "$ref": "#/definitions/team/definitions/name"
               },
               "region": {
                 "$ref": "#/definitions/region/definitions/identity"
@@ -11743,7 +11815,7 @@
             },
             "required": [
               "name",
-              "organization"
+              "team"
             ],
             "type": [
               "object"
