@@ -1,0 +1,4 @@
+language: go
+before_script:
+  - go get github.com/google/go-querystring/query
+  - go get github.com/pborman/uuid
