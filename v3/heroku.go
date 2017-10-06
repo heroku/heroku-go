@@ -700,6 +700,274 @@ func (s *Service) AddOnServiceList(ctx context.Context, lr *ListRange) (AddOnSer
 	return addOnService, s.Get(ctx, &addOnService, fmt.Sprintf("/addon-services"), nil, lr)
 }
 
+// Represents the details of a webhook subscription
+type AddOnWebhook struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+type AddOnWebhookCreateOpts struct {
+	Authorization *string `json:"authorization,omitempty" url:"authorization,omitempty,key"` // a custom `Authorization` header that Heroku will include with all
+	// webhook notifications
+	Include []string `json:"include" url:"include,key"` // the entities that the subscription provides notifications for
+	Level   string   `json:"level" url:"level,key"`     // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	Secret *string `json:"secret,omitempty" url:"secret,omitempty,key"` // a value that Heroku will use to sign all webhook notification
+	// requests (the signature is included in the request’s
+	// `Heroku-Webhook-Hmac-SHA256` header)
+	URL string `json:"url" url:"url,key"` // the URL where the webhook's notification requests are sent
+}
+type AddOnWebhookCreateResult struct {
+	Addon struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of add-on
+		Name string `json:"name" url:"name,key"` // globally unique name of the add-on
+	} `json:"addon" url:"addon,key"` // identity of add-on. Only used for add-on partner webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Create an add-on webhook subscription.  Can only be accessed by the
+// add-on partner providing this add-on.
+func (s *Service) AddOnWebhookCreate(ctx context.Context, addOnIdentity string, o AddOnWebhookCreateOpts) (*AddOnWebhookCreateResult, error) {
+	var addOnWebhook AddOnWebhookCreateResult
+	return &addOnWebhook, s.Post(ctx, &addOnWebhook, fmt.Sprintf("/addons/%v/webhooks", addOnIdentity), o)
+}
+
+type AddOnWebhookDeleteResult struct {
+	Addon struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of add-on
+		Name string `json:"name" url:"name,key"` // globally unique name of the add-on
+	} `json:"addon" url:"addon,key"` // identity of add-on. Only used for add-on partner webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Removes an add-on webhook subscription.  Can only be accessed by the
+// add-on partner providing this add-on.
+func (s *Service) AddOnWebhookDelete(ctx context.Context, addOnIdentity string, appWebhookIdentity string) (*AddOnWebhookDeleteResult, error) {
+	var addOnWebhook AddOnWebhookDeleteResult
+	return &addOnWebhook, s.Delete(ctx, &addOnWebhook, fmt.Sprintf("/addons/%v/webhooks/%v", addOnIdentity, appWebhookIdentity))
+}
+
+type AddOnWebhookInfoResult struct {
+	Addon struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of add-on
+		Name string `json:"name" url:"name,key"` // globally unique name of the add-on
+	} `json:"addon" url:"addon,key"` // identity of add-on. Only used for add-on partner webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Returns the info for an add-on webhook subscription.  Can only be
+// accessed by the add-on partner providing this add-on.
+func (s *Service) AddOnWebhookInfo(ctx context.Context, addOnIdentity string, appWebhookIdentity string) (*AddOnWebhookInfoResult, error) {
+	var addOnWebhook AddOnWebhookInfoResult
+	return &addOnWebhook, s.Get(ctx, &addOnWebhook, fmt.Sprintf("/addons/%v/webhooks/%v", addOnIdentity, appWebhookIdentity), nil, nil)
+}
+
+type AddOnWebhookListResult []struct {
+	Addon struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of add-on
+		Name string `json:"name" url:"name,key"` // globally unique name of the add-on
+	} `json:"addon" url:"addon,key"` // identity of add-on. Only used for add-on partner webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// List all webhook subscriptions for a particular add-on.  Can only be
+// accessed by the add-on partner providing this add-on.
+func (s *Service) AddOnWebhookList(ctx context.Context, addOnIdentity string, lr *ListRange) (AddOnWebhookListResult, error) {
+	var addOnWebhook AddOnWebhookListResult
+	return addOnWebhook, s.Get(ctx, &addOnWebhook, fmt.Sprintf("/addons/%v/webhooks", addOnIdentity), nil, lr)
+}
+
+type AddOnWebhookUpdateOpts struct {
+	Authorization *string `json:"authorization,omitempty" url:"authorization,omitempty,key"` // a custom `Authorization` header that Heroku will include with all
+	// webhook notifications
+	Include *[]*string `json:"include,omitempty" url:"include,omitempty,key"` // the entities that the subscription provides notifications for
+	Level   *string    `json:"level,omitempty" url:"level,omitempty,key"`     // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	Secret *string `json:"secret,omitempty" url:"secret,omitempty,key"` // a value that Heroku will use to sign all webhook notification
+	// requests (the signature is included in the request’s
+	// `Heroku-Webhook-Hmac-SHA256` header)
+	URL *string `json:"url,omitempty" url:"url,omitempty,key"` // the URL where the webhook's notification requests are sent
+}
+type AddOnWebhookUpdateResult struct {
+	Addon struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of add-on
+		Name string `json:"name" url:"name,key"` // globally unique name of the add-on
+	} `json:"addon" url:"addon,key"` // identity of add-on. Only used for add-on partner webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Updates the details of an add-on webhook subscription.  Can only be
+// accessed by the add-on partner providing this add-on.
+func (s *Service) AddOnWebhookUpdate(ctx context.Context, addOnIdentity string, appWebhookIdentity string, o AddOnWebhookUpdateOpts) (*AddOnWebhookUpdateResult, error) {
+	var addOnWebhook AddOnWebhookUpdateResult
+	return &addOnWebhook, s.Patch(ctx, &addOnWebhook, fmt.Sprintf("/addons/%v/webhooks/%v", addOnIdentity, appWebhookIdentity), o)
+}
+
+// Represents the delivery of a webhook notification, including its
+// current status.
+type AddOnWebhookDelivery struct{}
+type AddOnWebhookDeliveryInfoResult struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the delivery was created
+	Event     struct {
+		ID      string `json:"id" url:"id,key"`           // the event's unique identifier
+		Include string `json:"include" url:"include,key"` // the type of entity that the event is related to
+	} `json:"event" url:"event,key"` // identity of event
+	ID          string `json:"id" url:"id,key"` // the delivery's unique identifier
+	LastAttempt *struct {
+		Code       *int      `json:"code" url:"code,key"`               // http response code received during attempt
+		CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when attempt was created
+		ErrorClass *string   `json:"error_class" url:"error_class,key"` // error class encountered during attempt
+		ID         string    `json:"id" url:"id,key"`                   // unique identifier of attempt
+		Status     string    `json:"status" url:"status,key"`           // status of an attempt
+		UpdatedAt  time.Time `json:"updated_at" url:"updated_at,key"`   // when attempt was updated
+	} `json:"last_attempt" url:"last_attempt,key"` // last attempt of a delivery
+	NextAttemptAt *time.Time `json:"next_attempt_at" url:"next_attempt_at,key"` // when delivery will be attempted again
+	NumAttempts   int        `json:"num_attempts" url:"num_attempts,key"`       // number of times a delivery has been attempted
+	Status        string     `json:"status" url:"status,key"`                   // the delivery's status
+	UpdatedAt     time.Time  `json:"updated_at" url:"updated_at,key"`           // when the delivery was last updated
+	Webhook       struct {
+		ID    string `json:"id" url:"id,key"`       // the webhook's unique identifier
+		Level string `json:"level" url:"level,key"` // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+		// If `sync`, Heroku attempts multiple deliveries until the request is
+		// successful or a limit is reached
+	} `json:"webhook" url:"webhook,key"` // identity of webhook
+}
+
+// Returns the info for an existing delivery.  Can only be accessed by
+// the add-on partner providing this add-on.
+func (s *Service) AddOnWebhookDeliveryInfo(ctx context.Context, addOnIdentity string, appWebhookDeliveryIdentity string) (*AddOnWebhookDeliveryInfoResult, error) {
+	var addOnWebhookDelivery AddOnWebhookDeliveryInfoResult
+	return &addOnWebhookDelivery, s.Get(ctx, &addOnWebhookDelivery, fmt.Sprintf("/addons/%v/webhook-deliveries/%v", addOnIdentity, appWebhookDeliveryIdentity), nil, nil)
+}
+
+type AddOnWebhookDeliveryListResult []struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the delivery was created
+	Event     struct {
+		ID      string `json:"id" url:"id,key"`           // the event's unique identifier
+		Include string `json:"include" url:"include,key"` // the type of entity that the event is related to
+	} `json:"event" url:"event,key"` // identity of event
+	ID          string `json:"id" url:"id,key"` // the delivery's unique identifier
+	LastAttempt *struct {
+		Code       *int      `json:"code" url:"code,key"`               // http response code received during attempt
+		CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when attempt was created
+		ErrorClass *string   `json:"error_class" url:"error_class,key"` // error class encountered during attempt
+		ID         string    `json:"id" url:"id,key"`                   // unique identifier of attempt
+		Status     string    `json:"status" url:"status,key"`           // status of an attempt
+		UpdatedAt  time.Time `json:"updated_at" url:"updated_at,key"`   // when attempt was updated
+	} `json:"last_attempt" url:"last_attempt,key"` // last attempt of a delivery
+	NextAttemptAt *time.Time `json:"next_attempt_at" url:"next_attempt_at,key"` // when delivery will be attempted again
+	NumAttempts   int        `json:"num_attempts" url:"num_attempts,key"`       // number of times a delivery has been attempted
+	Status        string     `json:"status" url:"status,key"`                   // the delivery's status
+	UpdatedAt     time.Time  `json:"updated_at" url:"updated_at,key"`           // when the delivery was last updated
+	Webhook       struct {
+		ID    string `json:"id" url:"id,key"`       // the webhook's unique identifier
+		Level string `json:"level" url:"level,key"` // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+		// If `sync`, Heroku attempts multiple deliveries until the request is
+		// successful or a limit is reached
+	} `json:"webhook" url:"webhook,key"` // identity of webhook
+}
+
+// Lists existing deliveries for an add-on.  Can only be accessed by the
+// add-on partner providing this add-on.
+func (s *Service) AddOnWebhookDeliveryList(ctx context.Context, addOnIdentity string, lr *ListRange) (AddOnWebhookDeliveryListResult, error) {
+	var addOnWebhookDelivery AddOnWebhookDeliveryListResult
+	return addOnWebhookDelivery, s.Get(ctx, &addOnWebhookDelivery, fmt.Sprintf("/addons/%v/webhook-deliveries", addOnIdentity), nil, lr)
+}
+
+// Represents a webhook event that occurred.
+type AddOnWebhookEvent struct{}
+type AddOnWebhookEventInfoResult struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when event was created
+	ID        string    `json:"id" url:"id,key"`                 // the event's unique identifier
+	Include   string    `json:"include" url:"include,key"`       // the type of entity that the event is related to
+	Payload   struct {
+		Action string `json:"action" url:"action,key"` // the type of event that occurred
+		Actor  struct {
+			Email string `json:"email" url:"email,key"` // unique email address of account
+			ID    string `json:"id" url:"id,key"`       // unique identifier of an account
+		} `json:"actor" url:"actor,key"` // user that caused event
+		Data         struct{} `json:"data" url:"data,key"`                   // the current details of the event
+		PreviousData struct{} `json:"previous_data" url:"previous_data,key"` // previous details of the event (if any)
+		Resource     string   `json:"resource" url:"resource,key"`           // the type of resource associated with the event
+		Version      string   `json:"version" url:"version,key"`             // the version of the details provided for the event
+	} `json:"payload" url:"payload,key"` // payload of event
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the event was last updated
+}
+
+// Returns the info for a specified webhook event.  Can only be accessed
+// by the add-on partner providing this add-on.
+func (s *Service) AddOnWebhookEventInfo(ctx context.Context, addOnIdentity string, appWebhookEventIdentity string) (*AddOnWebhookEventInfoResult, error) {
+	var addOnWebhookEvent AddOnWebhookEventInfoResult
+	return &addOnWebhookEvent, s.Get(ctx, &addOnWebhookEvent, fmt.Sprintf("/addons/%v/webhook-events/%v", addOnIdentity, appWebhookEventIdentity), nil, nil)
+}
+
+type AddOnWebhookEventListResult []struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when event was created
+	ID        string    `json:"id" url:"id,key"`                 // the event's unique identifier
+	Include   string    `json:"include" url:"include,key"`       // the type of entity that the event is related to
+	Payload   struct {
+		Action string `json:"action" url:"action,key"` // the type of event that occurred
+		Actor  struct {
+			Email string `json:"email" url:"email,key"` // unique email address of account
+			ID    string `json:"id" url:"id,key"`       // unique identifier of an account
+		} `json:"actor" url:"actor,key"` // user that caused event
+		Data         struct{} `json:"data" url:"data,key"`                   // the current details of the event
+		PreviousData struct{} `json:"previous_data" url:"previous_data,key"` // previous details of the event (if any)
+		Resource     string   `json:"resource" url:"resource,key"`           // the type of resource associated with the event
+		Version      string   `json:"version" url:"version,key"`             // the version of the details provided for the event
+	} `json:"payload" url:"payload,key"` // payload of event
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the event was last updated
+}
+
+// Lists existing webhook events for an add-on.  Can only be accessed by
+// the add-on partner providing this add-on.
+func (s *Service) AddOnWebhookEventList(ctx context.Context, addOnIdentity string, lr *ListRange) (AddOnWebhookEventListResult, error) {
+	var addOnWebhookEvent AddOnWebhookEventListResult
+	return addOnWebhookEvent, s.Get(ctx, &addOnWebhookEvent, fmt.Sprintf("/addons/%v/webhook-events", addOnIdentity), nil, lr)
+}
+
 // An app represents the program that you would like to deploy and run
 // on Heroku.
 type App struct {
@@ -997,6 +1265,213 @@ func (s *Service) AppTransferUpdate(ctx context.Context, appTransferIdentity str
 	return &appTransfer, s.Patch(ctx, &appTransfer, fmt.Sprintf("/account/app-transfers/%v", appTransferIdentity), o)
 }
 
+// Represents the details of a webhook subscription
+type AppWebhook struct{}
+type AppWebhookCreateOpts struct {
+	Authorization *string `json:"authorization,omitempty" url:"authorization,omitempty,key"` // a custom `Authorization` header that Heroku will include with all
+	// webhook notifications
+	Include []string `json:"include" url:"include,key"` // the entities that the subscription provides notifications for
+	Level   string   `json:"level" url:"level,key"`     // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	Secret *string `json:"secret,omitempty" url:"secret,omitempty,key"` // a value that Heroku will use to sign all webhook notification
+	// requests (the signature is included in the request’s
+	// `Heroku-Webhook-Hmac-SHA256` header)
+	URL string `json:"url" url:"url,key"` // the URL where the webhook's notification requests are sent
+}
+type AppWebhookCreateResult struct {
+	App struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of app
+		Name string `json:"name" url:"name,key"` // unique name of app
+	} `json:"app" url:"app,key"` // identity of app. Only used for customer webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Create an app webhook subscription.
+func (s *Service) AppWebhookCreate(ctx context.Context, appIdentity string, o AppWebhookCreateOpts) (*AppWebhookCreateResult, error) {
+	var appWebhook AppWebhookCreateResult
+	return &appWebhook, s.Post(ctx, &appWebhook, fmt.Sprintf("/apps/%v/webhooks", appIdentity), o)
+}
+
+type AppWebhookDeleteResult struct {
+	App struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of app
+		Name string `json:"name" url:"name,key"` // unique name of app
+	} `json:"app" url:"app,key"` // identity of app. Only used for customer webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Removes an app webhook subscription.
+func (s *Service) AppWebhookDelete(ctx context.Context, appIdentity string, appWebhookIdentity string) (*AppWebhookDeleteResult, error) {
+	var appWebhook AppWebhookDeleteResult
+	return &appWebhook, s.Delete(ctx, &appWebhook, fmt.Sprintf("/apps/%v/webhooks/%v", appIdentity, appWebhookIdentity))
+}
+
+type AppWebhookInfoResult struct {
+	App struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of app
+		Name string `json:"name" url:"name,key"` // unique name of app
+	} `json:"app" url:"app,key"` // identity of app. Only used for customer webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Returns the info for an app webhook subscription.
+func (s *Service) AppWebhookInfo(ctx context.Context, appIdentity string, appWebhookIdentity string) (*AppWebhookInfoResult, error) {
+	var appWebhook AppWebhookInfoResult
+	return &appWebhook, s.Get(ctx, &appWebhook, fmt.Sprintf("/apps/%v/webhooks/%v", appIdentity, appWebhookIdentity), nil, nil)
+}
+
+type AppWebhookListResult []struct {
+	App struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of app
+		Name string `json:"name" url:"name,key"` // unique name of app
+	} `json:"app" url:"app,key"` // identity of app. Only used for customer webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// List all webhook subscriptions for a particular app.
+func (s *Service) AppWebhookList(ctx context.Context, appIdentity string, lr *ListRange) (AppWebhookListResult, error) {
+	var appWebhook AppWebhookListResult
+	return appWebhook, s.Get(ctx, &appWebhook, fmt.Sprintf("/apps/%v/webhooks", appIdentity), nil, lr)
+}
+
+type AppWebhookUpdateOpts struct {
+	Authorization *string `json:"authorization,omitempty" url:"authorization,omitempty,key"` // a custom `Authorization` header that Heroku will include with all
+	// webhook notifications
+	Include *[]*string `json:"include,omitempty" url:"include,omitempty,key"` // the entities that the subscription provides notifications for
+	Level   *string    `json:"level,omitempty" url:"level,omitempty,key"`     // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	Secret *string `json:"secret,omitempty" url:"secret,omitempty,key"` // a value that Heroku will use to sign all webhook notification
+	// requests (the signature is included in the request’s
+	// `Heroku-Webhook-Hmac-SHA256` header)
+	URL *string `json:"url,omitempty" url:"url,omitempty,key"` // the URL where the webhook's notification requests are sent
+}
+type AppWebhookUpdateResult struct {
+	App struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of app
+		Name string `json:"name" url:"name,key"` // unique name of app
+	} `json:"app" url:"app,key"` // identity of app. Only used for customer webhooks.
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the webhook was created
+	ID        string    `json:"id" url:"id,key"`                 // the webhook's unique identifier
+	Include   []string  `json:"include" url:"include,key"`       // the entities that the subscription provides notifications for
+	Level     string    `json:"level" url:"level,key"`           // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+	// If `sync`, Heroku attempts multiple deliveries until the request is
+	// successful or a limit is reached
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the webhook was updated
+	URL       string    `json:"url" url:"url,key"`               // the URL where the webhook's notification requests are sent
+}
+
+// Updates the details of an app webhook subscription.
+func (s *Service) AppWebhookUpdate(ctx context.Context, appIdentity string, appWebhookIdentity string, o AppWebhookUpdateOpts) (*AppWebhookUpdateResult, error) {
+	var appWebhook AppWebhookUpdateResult
+	return &appWebhook, s.Patch(ctx, &appWebhook, fmt.Sprintf("/apps/%v/webhooks/%v", appIdentity, appWebhookIdentity), o)
+}
+
+// Represents the delivery of a webhook notification, including its
+// current status.
+type AppWebhookDelivery struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when the delivery was created
+	Event     struct {
+		ID      string `json:"id" url:"id,key"`           // the event's unique identifier
+		Include string `json:"include" url:"include,key"` // the type of entity that the event is related to
+	} `json:"event" url:"event,key"` // identity of event
+	ID          string `json:"id" url:"id,key"` // the delivery's unique identifier
+	LastAttempt *struct {
+		Code       *int      `json:"code" url:"code,key"`               // http response code received during attempt
+		CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when attempt was created
+		ErrorClass *string   `json:"error_class" url:"error_class,key"` // error class encountered during attempt
+		ID         string    `json:"id" url:"id,key"`                   // unique identifier of attempt
+		Status     string    `json:"status" url:"status,key"`           // status of an attempt
+		UpdatedAt  time.Time `json:"updated_at" url:"updated_at,key"`   // when attempt was updated
+	} `json:"last_attempt" url:"last_attempt,key"` // last attempt of a delivery
+	NextAttemptAt *time.Time `json:"next_attempt_at" url:"next_attempt_at,key"` // when delivery will be attempted again
+	NumAttempts   int        `json:"num_attempts" url:"num_attempts,key"`       // number of times a delivery has been attempted
+	Status        string     `json:"status" url:"status,key"`                   // the delivery's status
+	UpdatedAt     time.Time  `json:"updated_at" url:"updated_at,key"`           // when the delivery was last updated
+	Webhook       struct {
+		ID    string `json:"id" url:"id,key"`       // the webhook's unique identifier
+		Level string `json:"level" url:"level,key"` // if `notify`, Heroku makes a single, fire-and-forget delivery attempt.
+		// If `sync`, Heroku attempts multiple deliveries until the request is
+		// successful or a limit is reached
+	} `json:"webhook" url:"webhook,key"` // identity of webhook
+}
+
+// Returns the info for an existing delivery.
+func (s *Service) AppWebhookDeliveryInfo(ctx context.Context, appIdentity string, appWebhookDeliveryIdentity string) (*AppWebhookDelivery, error) {
+	var appWebhookDelivery AppWebhookDelivery
+	return &appWebhookDelivery, s.Get(ctx, &appWebhookDelivery, fmt.Sprintf("/apps/%v/webhook-deliveries/%v", appIdentity, appWebhookDeliveryIdentity), nil, nil)
+}
+
+type AppWebhookDeliveryListResult []AppWebhookDelivery
+
+// Lists existing deliveries for an app.
+func (s *Service) AppWebhookDeliveryList(ctx context.Context, appIdentity string, lr *ListRange) (AppWebhookDeliveryListResult, error) {
+	var appWebhookDelivery AppWebhookDeliveryListResult
+	return appWebhookDelivery, s.Get(ctx, &appWebhookDelivery, fmt.Sprintf("/apps/%v/webhook-deliveries", appIdentity), nil, lr)
+}
+
+// Represents a webhook event that occurred.
+type AppWebhookEvent struct {
+	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when event was created
+	ID        string    `json:"id" url:"id,key"`                 // the event's unique identifier
+	Include   string    `json:"include" url:"include,key"`       // the type of entity that the event is related to
+	Payload   struct {
+		Action string `json:"action" url:"action,key"` // the type of event that occurred
+		Actor  struct {
+			Email string `json:"email" url:"email,key"` // unique email address of account
+			ID    string `json:"id" url:"id,key"`       // unique identifier of an account
+		} `json:"actor" url:"actor,key"` // user that caused event
+		Data         struct{} `json:"data" url:"data,key"`                   // the current details of the event
+		PreviousData struct{} `json:"previous_data" url:"previous_data,key"` // previous details of the event (if any)
+		Resource     string   `json:"resource" url:"resource,key"`           // the type of resource associated with the event
+		Version      string   `json:"version" url:"version,key"`             // the version of the details provided for the event
+	} `json:"payload" url:"payload,key"` // payload of event
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when the event was last updated
+}
+
+// Returns the info for a specified webhook event.
+func (s *Service) AppWebhookEventInfo(ctx context.Context, appIdentity string, appWebhookEventIdentity string) (*AppWebhookEvent, error) {
+	var appWebhookEvent AppWebhookEvent
+	return &appWebhookEvent, s.Get(ctx, &appWebhookEvent, fmt.Sprintf("/apps/%v/webhook-events/%v", appIdentity, appWebhookEventIdentity), nil, nil)
+}
+
+type AppWebhookEventListResult []AppWebhookEvent
+
+// Lists existing webhook events for an app.
+func (s *Service) AppWebhookEventList(ctx context.Context, appIdentity string, lr *ListRange) (AppWebhookEventListResult, error) {
+	var appWebhookEvent AppWebhookEventListResult
+	return appWebhookEvent, s.Get(ctx, &appWebhookEvent, fmt.Sprintf("/apps/%v/webhook-events", appIdentity), nil, lr)
+}
+
 // A build represents the process of transforming a code tarball into a
 // slug
 type Build struct {
@@ -1027,6 +1502,7 @@ type Build struct {
 		// downloaded.
 		Version *string `json:"version" url:"version,key"` // Version of the gzipped tarball.
 	} `json:"source_blob" url:"source_blob,key"` // location of gzipped tarball of source code used to create build
+	Stack     string    `json:"stack" url:"stack,key"`           // stack of build
 	Status    string    `json:"status" url:"status,key"`         // status of build
 	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when build was updated
 	User      struct {
@@ -1066,6 +1542,12 @@ type BuildListResult []Build
 func (s *Service) BuildList(ctx context.Context, appIdentity string, lr *ListRange) (BuildListResult, error) {
 	var build BuildListResult
 	return build, s.Get(ctx, &build, fmt.Sprintf("/apps/%v/builds", appIdentity), nil, lr)
+}
+
+// Destroy a build cache.
+func (s *Service) BuildDeleteCache(ctx context.Context, appIdentity string) (*Build, error) {
+	var build Build
+	return &build, s.Delete(ctx, &build, fmt.Sprintf("/apps/%v/build-cache", appIdentity))
 }
 
 // A build result contains the output from a build.
@@ -1244,8 +1726,9 @@ func (s *Service) CreditList(ctx context.Context, lr *ListRange) (CreditListResu
 
 // Domains define what web routes should be routed to an app on Heroku.
 type Domain struct {
-	AcmStatus *string `json:"acm_status" url:"acm_status,key"` // status of this record's ACM
-	App       struct {
+	AcmStatus       *string `json:"acm_status" url:"acm_status,key"`               // status of this record's ACM
+	AcmStatusReason *string `json:"acm_status_reason" url:"acm_status_reason,key"` // reason for the status of this record's ACM
+	App             struct {
 		ID   string `json:"id" url:"id,key"`     // unique identifier of app
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // app that owns the domain
@@ -1395,7 +1878,8 @@ func (s *Service) DynoSizeList(ctx context.Context, lr *ListRange) (DynoSizeList
 	return dynoSize, s.Get(ctx, &dynoSize, fmt.Sprintf("/dyno-sizes"), nil, lr)
 }
 
-// An event represents an action performed on another API resource.
+// Deprecated: An event represents an action performed on another API
+// resource.
 type Event struct {
 	Action string `json:"action" url:"action,key"` // the operation performed on the resource
 	Actor  struct {
@@ -1439,8 +1923,8 @@ type Event struct {
 	Version      string     `json:"version" url:"version,key"`             // the event's API version string
 }
 
-// A failed event represents a failure of an action performed on another
-// API resource.
+// Deprecated: A failed event represents a failure of an action
+// performed on another API resource.
 type FailedEvent struct {
 	Action   string  `json:"action" url:"action,key"`     // The attempted operation performed on the resource.
 	Code     *int    `json:"code" url:"code,key"`         // An HTTP status code.
@@ -1468,15 +1952,19 @@ type FilterAppsAppsOpts struct {
 	} `json:"in,omitempty" url:"in,omitempty,key"`
 }
 type FilterAppsAppsResult []struct {
-	ArchivedAt                   *time.Time `json:"archived_at" url:"archived_at,key"`                                       // when app was archived
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
-	CreatedAt                    time.Time  `json:"created_at" url:"created_at,key"`                                         // when app was created
-	GitURL                       string     `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
-	ID                           string     `json:"id" url:"id,key"`                                                         // unique identifier of app
-	Joined                       bool       `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
-	Locked                       bool       `json:"locked" url:"locked,key"`                                                 // are other team members forbidden from joining this app.
-	Maintenance                  bool       `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
-	Name                         string     `json:"name" url:"name,key"`                                                     // unique name of app
+	ArchivedAt *time.Time `json:"archived_at" url:"archived_at,key"` // when app was archived
+	BuildStack struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of stack
+		Name string `json:"name" url:"name,key"` // unique name of stack
+	} `json:"build_stack" url:"build_stack,key"` // identity of the stack that will be used for new builds
+	BuildpackProvidedDescription *string   `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
+	CreatedAt                    time.Time `json:"created_at" url:"created_at,key"`                                         // when app was created
+	GitURL                       string    `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
+	ID                           string    `json:"id" url:"id,key"`                                                         // unique identifier of app
+	Joined                       bool      `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
+	Locked                       bool      `json:"locked" url:"locked,key"`                                                 // are other team members forbidden from joining this app.
+	Maintenance                  bool      `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
+	Name                         string    `json:"name" url:"name,key"`                                                     // unique name of app
 	Owner                        *struct {
 		Email string `json:"email" url:"email,key"` // unique email address of account
 		ID    string `json:"id" url:"id,key"`       // unique identifier of an account
@@ -1707,67 +2195,6 @@ type InboundRulesetCreateOpts struct {
 func (s *Service) InboundRulesetCreate(ctx context.Context, spaceIdentity string, o InboundRulesetCreateOpts) (*InboundRuleset, error) {
 	var inboundRuleset InboundRuleset
 	return &inboundRuleset, s.Put(ctx, &inboundRuleset, fmt.Sprintf("/spaces/%v/inbound-ruleset", spaceIdentity), o)
-}
-
-// An invitation represents an invite sent to a user to use the Heroku
-// platform.
-type Invitation struct {
-	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when invitation was created
-	User      struct {
-		Email string `json:"email" url:"email,key"` // unique email address of account
-		ID    string `json:"id" url:"id,key"`       // unique identifier of an account
-	} `json:"user" url:"user,key"`
-	VerificationRequired bool `json:"verification_required" url:"verification_required,key"` // if the invitation requires verification
-}
-
-// Info for invitation.
-func (s *Service) InvitationInfo(ctx context.Context, invitationIdentity string) (*Invitation, error) {
-	var invitation Invitation
-	return &invitation, s.Get(ctx, &invitation, fmt.Sprintf("/invitations/%v", invitationIdentity), nil, nil)
-}
-
-type InvitationCreateOpts struct {
-	Email string  `json:"email" url:"email,key"` // unique email address of account
-	Name  *string `json:"name" url:"name,key"`   // full name of the account owner
-}
-
-// Invite a user.
-func (s *Service) InvitationCreate(ctx context.Context, o InvitationCreateOpts) (*Invitation, error) {
-	var invitation Invitation
-	return &invitation, s.Post(ctx, &invitation, fmt.Sprintf("/invitations"), o)
-}
-
-type InvitationSendVerificationCodeOpts struct {
-	Method      *string `json:"method,omitempty" url:"method,omitempty,key"` // Transport used to send verification code
-	PhoneNumber string  `json:"phone_number" url:"phone_number,key"`         // Phone number to send verification code
-}
-
-// Send a verification code for an invitation via SMS/phone call.
-func (s *Service) InvitationSendVerificationCode(ctx context.Context, invitationIdentity string, o InvitationSendVerificationCodeOpts) (*Invitation, error) {
-	var invitation Invitation
-	return &invitation, s.Post(ctx, &invitation, fmt.Sprintf("/invitations/%v/actions/send-verification", invitationIdentity), o)
-}
-
-type InvitationVerifyOpts struct {
-	VerificationCode string `json:"verification_code" url:"verification_code,key"` // Value used to verify invitation
-}
-
-// Verify an invitation using a verification code.
-func (s *Service) InvitationVerify(ctx context.Context, invitationIdentity string, o InvitationVerifyOpts) (*Invitation, error) {
-	var invitation Invitation
-	return &invitation, s.Post(ctx, &invitation, fmt.Sprintf("/invitations/%v/actions/verify", invitationIdentity), o)
-}
-
-type InvitationFinalizeOpts struct {
-	Password             string `json:"password" url:"password,key"`                                         // current password on the account
-	PasswordConfirmation string `json:"password_confirmation" url:"password_confirmation,key"`               // current password on the account
-	ReceiveNewsletter    *bool  `json:"receive_newsletter,omitempty" url:"receive_newsletter,omitempty,key"` // whether this user should receive a newsletter or not
-}
-
-// Finalize Invitation and Create Account.
-func (s *Service) InvitationFinalize(ctx context.Context, invitationIdentity string, o InvitationFinalizeOpts) (*Invitation, error) {
-	var invitation Invitation
-	return &invitation, s.Patch(ctx, &invitation, fmt.Sprintf("/invitations/%v", invitationIdentity), o)
 }
 
 // An invoice is an itemized bill of goods for an account which includes
@@ -2250,15 +2677,19 @@ func (s *Service) OrganizationAddOnListForOrganization(ctx context.Context, orga
 // Deprecated: An organization app encapsulates the organization
 // specific functionality of Heroku apps.
 type OrganizationApp struct {
-	ArchivedAt                   *time.Time `json:"archived_at" url:"archived_at,key"`                                       // when app was archived
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
-	CreatedAt                    time.Time  `json:"created_at" url:"created_at,key"`                                         // when app was created
-	GitURL                       string     `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
-	ID                           string     `json:"id" url:"id,key"`                                                         // unique identifier of app
-	Joined                       bool       `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
-	Locked                       bool       `json:"locked" url:"locked,key"`                                                 // are other organization members forbidden from joining this app.
-	Maintenance                  bool       `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
-	Name                         string     `json:"name" url:"name,key"`                                                     // unique name of app
+	ArchivedAt *time.Time `json:"archived_at" url:"archived_at,key"` // when app was archived
+	BuildStack struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of stack
+		Name string `json:"name" url:"name,key"` // unique name of stack
+	} `json:"build_stack" url:"build_stack,key"` // identity of the stack that will be used for new builds
+	BuildpackProvidedDescription *string   `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
+	CreatedAt                    time.Time `json:"created_at" url:"created_at,key"`                                         // when app was created
+	GitURL                       string    `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
+	ID                           string    `json:"id" url:"id,key"`                                                         // unique identifier of app
+	Joined                       bool      `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
+	Locked                       bool      `json:"locked" url:"locked,key"`                                                 // are other organization members forbidden from joining this app.
+	Maintenance                  bool      `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
+	Name                         string    `json:"name" url:"name,key"`                                                     // unique name of app
 	Organization                 *struct {
 		Name string `json:"name" url:"name,key"` // unique name of organization
 	} `json:"organization" url:"organization,key"` // organization that owns this app
@@ -2301,15 +2732,6 @@ type OrganizationAppCreateOpts struct {
 func (s *Service) OrganizationAppCreate(ctx context.Context, o OrganizationAppCreateOpts) (*OrganizationApp, error) {
 	var organizationApp OrganizationApp
 	return &organizationApp, s.Post(ctx, &organizationApp, fmt.Sprintf("/organizations/apps"), o)
-}
-
-type OrganizationAppListResult []OrganizationApp
-
-// List apps in the default organization, or in personal account, if
-// default organization is not set.
-func (s *Service) OrganizationAppList(ctx context.Context, lr *ListRange) (OrganizationAppListResult, error) {
-	var organizationApp OrganizationAppListResult
-	return organizationApp, s.Get(ctx, &organizationApp, fmt.Sprintf("/organizations/apps"), nil, lr)
 }
 
 type OrganizationAppListForOrganizationResult []OrganizationApp
@@ -2650,15 +3072,19 @@ func (s *Service) OrganizationMemberList(ctx context.Context, organizationIdenti
 }
 
 type OrganizationMemberAppListResult []struct {
-	ArchivedAt                   *time.Time `json:"archived_at" url:"archived_at,key"`                                       // when app was archived
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
-	CreatedAt                    time.Time  `json:"created_at" url:"created_at,key"`                                         // when app was created
-	GitURL                       string     `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
-	ID                           string     `json:"id" url:"id,key"`                                                         // unique identifier of app
-	Joined                       bool       `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
-	Locked                       bool       `json:"locked" url:"locked,key"`                                                 // are other organization members forbidden from joining this app.
-	Maintenance                  bool       `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
-	Name                         string     `json:"name" url:"name,key"`                                                     // unique name of app
+	ArchivedAt *time.Time `json:"archived_at" url:"archived_at,key"` // when app was archived
+	BuildStack struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of stack
+		Name string `json:"name" url:"name,key"` // unique name of stack
+	} `json:"build_stack" url:"build_stack,key"` // identity of the stack that will be used for new builds
+	BuildpackProvidedDescription *string   `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
+	CreatedAt                    time.Time `json:"created_at" url:"created_at,key"`                                         // when app was created
+	GitURL                       string    `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
+	ID                           string    `json:"id" url:"id,key"`                                                         // unique identifier of app
+	Joined                       bool      `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
+	Locked                       bool      `json:"locked" url:"locked,key"`                                                 // are other organization members forbidden from joining this app.
+	Maintenance                  bool      `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
+	Name                         string    `json:"name" url:"name,key"`                                                     // unique name of app
 	Organization                 *struct {
 		Name string `json:"name" url:"name,key"` // unique name of organization
 	} `json:"organization" url:"organization,key"` // organization that owns this app
@@ -3570,15 +3996,19 @@ func (s *Service) TeamDelete(ctx context.Context, teamIdentity string) (*Team, e
 // An team app encapsulates the team specific functionality of Heroku
 // apps.
 type TeamApp struct {
-	ArchivedAt                   *time.Time `json:"archived_at" url:"archived_at,key"`                                       // when app was archived
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
-	CreatedAt                    time.Time  `json:"created_at" url:"created_at,key"`                                         // when app was created
-	GitURL                       string     `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
-	ID                           string     `json:"id" url:"id,key"`                                                         // unique identifier of app
-	Joined                       bool       `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
-	Locked                       bool       `json:"locked" url:"locked,key"`                                                 // are other team members forbidden from joining this app.
-	Maintenance                  bool       `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
-	Name                         string     `json:"name" url:"name,key"`                                                     // unique name of app
+	ArchivedAt *time.Time `json:"archived_at" url:"archived_at,key"` // when app was archived
+	BuildStack struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of stack
+		Name string `json:"name" url:"name,key"` // unique name of stack
+	} `json:"build_stack" url:"build_stack,key"` // identity of the stack that will be used for new builds
+	BuildpackProvidedDescription *string   `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
+	CreatedAt                    time.Time `json:"created_at" url:"created_at,key"`                                         // when app was created
+	GitURL                       string    `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
+	ID                           string    `json:"id" url:"id,key"`                                                         // unique identifier of app
+	Joined                       bool      `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
+	Locked                       bool      `json:"locked" url:"locked,key"`                                                 // are other team members forbidden from joining this app.
+	Maintenance                  bool      `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
+	Name                         string    `json:"name" url:"name,key"`                                                     // unique name of app
 	Owner                        *struct {
 		Email string `json:"email" url:"email,key"` // unique email address of account
 		ID    string `json:"id" url:"id,key"`       // unique identifier of an account
@@ -3620,15 +4050,6 @@ type TeamAppCreateOpts struct {
 func (s *Service) TeamAppCreate(ctx context.Context, o TeamAppCreateOpts) (*TeamApp, error) {
 	var teamApp TeamApp
 	return &teamApp, s.Post(ctx, &teamApp, fmt.Sprintf("/teams/apps"), o)
-}
-
-type TeamAppListResult []TeamApp
-
-// List apps in the default team, or in personal account, if default
-// team is not set.
-func (s *Service) TeamAppList(ctx context.Context, lr *ListRange) (TeamAppListResult, error) {
-	var teamApp TeamAppListResult
-	return teamApp, s.Get(ctx, &teamApp, fmt.Sprintf("/teams/apps"), nil, lr)
 }
 
 // Info for a team app.
@@ -3956,15 +4377,19 @@ func (s *Service) TeamMemberList(ctx context.Context, teamIdentity string, lr *L
 }
 
 type TeamMemberListByMemberResult []struct {
-	ArchivedAt                   *time.Time `json:"archived_at" url:"archived_at,key"`                                       // when app was archived
-	BuildpackProvidedDescription *string    `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
-	CreatedAt                    time.Time  `json:"created_at" url:"created_at,key"`                                         // when app was created
-	GitURL                       string     `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
-	ID                           string     `json:"id" url:"id,key"`                                                         // unique identifier of app
-	Joined                       bool       `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
-	Locked                       bool       `json:"locked" url:"locked,key"`                                                 // are other team members forbidden from joining this app.
-	Maintenance                  bool       `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
-	Name                         string     `json:"name" url:"name,key"`                                                     // unique name of app
+	ArchivedAt *time.Time `json:"archived_at" url:"archived_at,key"` // when app was archived
+	BuildStack struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of stack
+		Name string `json:"name" url:"name,key"` // unique name of stack
+	} `json:"build_stack" url:"build_stack,key"` // identity of the stack that will be used for new builds
+	BuildpackProvidedDescription *string   `json:"buildpack_provided_description" url:"buildpack_provided_description,key"` // description from buildpack of app
+	CreatedAt                    time.Time `json:"created_at" url:"created_at,key"`                                         // when app was created
+	GitURL                       string    `json:"git_url" url:"git_url,key"`                                               // git repo URL of app
+	ID                           string    `json:"id" url:"id,key"`                                                         // unique identifier of app
+	Joined                       bool      `json:"joined" url:"joined,key"`                                                 // is the current member a collaborator on this app.
+	Locked                       bool      `json:"locked" url:"locked,key"`                                                 // are other team members forbidden from joining this app.
+	Maintenance                  bool      `json:"maintenance" url:"maintenance,key"`                                       // maintenance status of app
+	Name                         string    `json:"name" url:"name,key"`                                                     // unique name of app
 	Owner                        *struct {
 		Email string `json:"email" url:"email,key"` // unique email address of account
 		ID    string `json:"id" url:"id,key"`       // unique identifier of an account
