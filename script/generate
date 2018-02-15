@@ -18,3 +18,5 @@ schematic v3/schema.json > v3/heroku.go
 sed -E -i '' \
   's/^([[:space:]]*Version[[:space:]]*=[[:space:]]*)""$/\1"v3"/' \
   v3/heroku.go
+
+gofmt -w v3/heroku.go
