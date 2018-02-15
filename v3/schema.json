@@ -609,15 +609,6 @@
             "string"
           ]
         },
-        "force": {
-          "default": false,
-          "description": "whether or not to allow existing attachment with same name to be replaced",
-          "example": false,
-          "readOnly": false,
-          "type": [
-            "boolean"
-          ]
-        },
         "identity": {
           "anyOf": [
             {
@@ -688,9 +679,6 @@
               },
               "confirm": {
                 "$ref": "#/definitions/add-on-attachment/definitions/confirm"
-              },
-              "force": {
-                "$ref": "#/definitions/add-on-attachment/definitions/force"
               },
               "name": {
                 "$ref": "#/definitions/add-on-attachment/definitions/name"
@@ -6198,6 +6186,20 @@
         "id": {
           "$ref": "#/definitions/inbound-ruleset/definitions/id"
         },
+        "space": {
+          "description": "identity of space",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/space/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/space/definitions/name"
+            }
+          },
+          "type": [
+            "object"
+          ]
+        },
         "created_at": {
           "$ref": "#/definitions/inbound-ruleset/definitions/created_at"
         },
@@ -9703,6 +9705,20 @@
       "properties": {
         "id": {
           "$ref": "#/definitions/outbound-ruleset/definitions/id"
+        },
+        "space": {
+          "description": "identity of space",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/space/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/space/definitions/name"
+            }
+          },
+          "type": [
+            "object"
+          ]
         },
         "created_at": {
           "$ref": "#/definitions/outbound-ruleset/definitions/created_at"
