@@ -3705,6 +3705,12 @@ type Space struct {
 		Name string `json:"name" url:"name,key"` // unique name of team
 	} `json:"team" url:"team,key"` // team that owns this space
 	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when space was updated
+	OutboundIPs struct {  // The stable outbound IP addresses for this space
+		CreatedAt time.Time `json:"created_at" url:"created_at,key"`
+		Sources   []string  `json:"sources" url:"sources,key"`
+		State     string    `json:"state" url:"state,key"`
+		UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"`
+	} `json:"outbound_ips" url:"outbound_ips,key"`
 }
 type SpaceListResult []Space
 
