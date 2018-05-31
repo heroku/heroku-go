@@ -336,8 +336,9 @@ type AddOn struct {
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // billing application associated with this add-on
 	BilledPrice *struct {
-		Cents int    `json:"cents" url:"cents,key"` // price in cents per unit of plan
-		Unit  string `json:"unit" url:"unit,key"`   // unit of price for plan
+		Cents    int    `json:"cents" url:"cents,key"`       // price in cents per unit of plan
+		Contract bool   `json:"contract" url:"contract,key"` // price is negotiated in a contract outside of monthly add-on billing
+		Unit     string `json:"unit" url:"unit,key"`         // unit of price for plan
 	} `json:"billed_price" url:"billed_price,key"` // billed price
 	ConfigVars []string  `json:"config_vars" url:"config_vars,key"` // config vars exposed to the owning app by this add-on
 	CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when add-on was created
@@ -442,8 +443,9 @@ type AddOnActionProvisionResult struct {
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // billing application associated with this add-on
 	BilledPrice *struct {
-		Cents int    `json:"cents" url:"cents,key"` // price in cents per unit of plan
-		Unit  string `json:"unit" url:"unit,key"`   // unit of price for plan
+		Cents    int    `json:"cents" url:"cents,key"`       // price in cents per unit of plan
+		Contract bool   `json:"contract" url:"contract,key"` // price is negotiated in a contract outside of monthly add-on billing
+		Unit     string `json:"unit" url:"unit,key"`         // unit of price for plan
 	} `json:"billed_price" url:"billed_price,key"` // billed price
 	ConfigVars []string  `json:"config_vars" url:"config_vars,key"` // config vars exposed to the owning app by this add-on
 	CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when add-on was created
@@ -476,8 +478,9 @@ type AddOnActionDeprovisionResult struct {
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // billing application associated with this add-on
 	BilledPrice *struct {
-		Cents int    `json:"cents" url:"cents,key"` // price in cents per unit of plan
-		Unit  string `json:"unit" url:"unit,key"`   // unit of price for plan
+		Cents    int    `json:"cents" url:"cents,key"`       // price in cents per unit of plan
+		Contract bool   `json:"contract" url:"contract,key"` // price is negotiated in a contract outside of monthly add-on billing
+		Unit     string `json:"unit" url:"unit,key"`         // unit of price for plan
 	} `json:"billed_price" url:"billed_price,key"` // billed price
 	ConfigVars []string  `json:"config_vars" url:"config_vars,key"` // config vars exposed to the owning app by this add-on
 	CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when add-on was created
@@ -509,10 +512,6 @@ type AddOnAttachment struct {
 		} `json:"app" url:"app,key"` // billing application associated with this add-on
 		ID   string `json:"id" url:"id,key"`     // unique identifier of add-on
 		Name string `json:"name" url:"name,key"` // globally unique name of the add-on
-		Plan struct {
-			ID   string `json:"id" url:"id,key"`     // unique identifier of this plan
-			Name string `json:"name" url:"name,key"` // unique name of this plan
-		} `json:"plan" url:"plan,key"` // identity of add-on plan
 	} `json:"addon" url:"addon,key"` // identity of add-on
 	App struct {
 		ID   string `json:"id" url:"id,key"`     // unique identifier of app
@@ -2621,8 +2620,9 @@ type OrganizationAddOnListForOrganizationResult []struct {
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // billing application associated with this add-on
 	BilledPrice *struct {
-		Cents int    `json:"cents" url:"cents,key"` // price in cents per unit of plan
-		Unit  string `json:"unit" url:"unit,key"`   // unit of price for plan
+		Cents    int    `json:"cents" url:"cents,key"`       // price in cents per unit of plan
+		Contract bool   `json:"contract" url:"contract,key"` // price is negotiated in a contract outside of monthly add-on billing
+		Unit     string `json:"unit" url:"unit,key"`         // unit of price for plan
 	} `json:"billed_price" url:"billed_price,key"` // billed price
 	ConfigVars []string  `json:"config_vars" url:"config_vars,key"` // config vars exposed to the owning app by this add-on
 	CreatedAt  time.Time `json:"created_at" url:"created_at,key"`   // when add-on was created
@@ -3197,6 +3197,65 @@ func (s *Service) PasswordResetCompleteResetPassword(ctx context.Context, passwo
 	return &passwordReset, s.Post(ctx, &passwordReset, fmt.Sprintf("/password-resets/%v/actions/finalize", passwordResetResetPasswordToken), o)
 }
 
+// [Peering](https://devcenter.heroku.com/articles/private-space-vpc-peer
+// ing) provides a way to peer your Private Space VPC to another AWS
+// VPC.
+type Peering struct {
+	AwsAccountID string    `json:"aws_account_id" url:"aws_account_id,key"` // The AWS account ID of your Private Space.
+	AwsVpcID     string    `json:"aws_vpc_id" url:"aws_vpc_id,key"`         // The AWS VPC ID of the peer.
+	CidrBlocks   []string  `json:"cidr_blocks" url:"cidr_blocks,key"`       // The CIDR blocks of the peer.
+	Expires      time.Time `json:"expires" url:"expires,key"`               // When a peering connection will expire.
+	PcxID        string    `json:"pcx_id" url:"pcx_id,key"`                 // The AWS VPC Peering Connection ID of the peering.
+	Status       string    `json:"status" url:"status,key"`                 // The status of the peering connection.
+	Type         string    `json:"type" url:"type,key"`                     // The type of peering connection.
+}
+type PeeringListResult []Peering
+
+// List peering connections of a private space.
+func (s *Service) PeeringList(ctx context.Context, spaceIdentity string, lr *ListRange) (PeeringListResult, error) {
+	var peering PeeringListResult
+	return peering, s.Get(ctx, &peering, fmt.Sprintf("/spaces/%v/peerings", spaceIdentity), nil, lr)
+}
+
+// Accept a pending peering connection with a private space.
+func (s *Service) PeeringAccept(ctx context.Context, spaceIdentity string, peeringPcxID string) (*Peering, error) {
+	var peering Peering
+	return &peering, s.Post(ctx, &peering, fmt.Sprintf("/spaces/%v/peerings/%v/actions/accept", spaceIdentity, peeringPcxID), nil)
+}
+
+// Destroy an active peering connection with a private space.
+func (s *Service) PeeringDestroy(ctx context.Context, spaceIdentity string, peeringPcxID string) (*Peering, error) {
+	var peering Peering
+	return &peering, s.Delete(ctx, &peering, fmt.Sprintf("/spaces/%v/peerings/%v", spaceIdentity, peeringPcxID))
+}
+
+// Fetch information for existing peering connection
+func (s *Service) PeeringInfo(ctx context.Context, spaceIdentity string, peeringPcxID string) (*Peering, error) {
+	var peering Peering
+	return &peering, s.Get(ctx, &peering, fmt.Sprintf("/spaces/%v/peerings/%v", spaceIdentity, peeringPcxID), nil, nil)
+}
+
+// [Peering
+// Info](https://devcenter.heroku.com/articles/private-space-vpc-peering)
+//  gives you the information necessary to peer an AWS VPC to a Private
+// Space.
+type PeeringInfo struct {
+	AwsAccountID          string   `json:"aws_account_id" url:"aws_account_id,key"`                   // The AWS account ID of your Private Space.
+	AwsRegion             string   `json:"aws_region" url:"aws_region,key"`                           // region name used by provider
+	DynoCidrBlocks        []string `json:"dyno_cidr_blocks" url:"dyno_cidr_blocks,key"`               // The CIDR ranges that should be routed to the Private Space VPC.
+	UnavailableCidrBlocks []string `json:"unavailable_cidr_blocks" url:"unavailable_cidr_blocks,key"` // The CIDR ranges that you must not conflict with.
+	VpcCidr               string   `json:"vpc_cidr" url:"vpc_cidr,key"`                               // An IP address and the number of significant bits that make up the
+	// routing or networking portion.
+	VpcID string `json:"vpc_id" url:"vpc_id,key"` // The AWS VPC ID of the peer.
+}
+
+// Provides the necessary information to establish an AWS VPC Peering
+// with your private space.
+func (s *Service) PeeringInfoInfo(ctx context.Context, spaceIdentity string) (*PeeringInfo, error) {
+	var peeringInfo PeeringInfo
+	return &peeringInfo, s.Get(ctx, &peeringInfo, fmt.Sprintf("/spaces/%v/peering-info", spaceIdentity), nil, nil)
+}
+
 // A pipeline allows grouping of apps into different stages.
 type Pipeline struct {
 	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when pipeline was created
@@ -3401,8 +3460,9 @@ type Plan struct {
 	InstallableOutsidePrivateNetwork bool      `json:"installable_outside_private_network" url:"installable_outside_private_network,key"` // whether this plan is installable to a Common Runtime app
 	Name                             string    `json:"name" url:"name,key"`                                                               // unique name of this plan
 	Price                            struct {
-		Cents int    `json:"cents" url:"cents,key"` // price in cents per unit of plan
-		Unit  string `json:"unit" url:"unit,key"`   // unit of price for plan
+		Cents    int    `json:"cents" url:"cents,key"`       // price in cents per unit of plan
+		Contract bool   `json:"contract" url:"contract,key"` // price is negotiated in a contract outside of monthly add-on billing
+		Unit     string `json:"unit" url:"unit,key"`         // unit of price for plan
 	} `json:"price" url:"price,key"` // price
 	SpaceDefault bool      `json:"space_default" url:"space_default,key"` // whether this plan is the default for apps in Private Spaces
 	State        string    `json:"state" url:"state,key"`                 // release status for plan
