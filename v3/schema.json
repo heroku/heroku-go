@@ -3709,6 +3709,9 @@
         "id": {
           "$ref": "#/definitions/app/definitions/id"
         },
+        "internal_routing": {
+          "$ref": "#/definitions/team-app/definitions/internal_routing"
+        },
         "maintenance": {
           "$ref": "#/definitions/app/definitions/maintenance"
         },
@@ -12138,6 +12141,9 @@
             "type": [
               "object"
             ],
+            "required": [
+              "permissions"
+            ],
             "properties": {
               "permissions": {
                 "type": [
@@ -13149,6 +13155,16 @@
             }
           ]
         },
+        "internal_routing": {
+          "default": false,
+          "description": "describes whether a Private Spaces app is externally routable or not",
+          "example": false,
+          "readOnly": false,
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "joined": {
           "default": false,
           "description": "is the current member a collaborator on this app.",
@@ -13194,6 +13210,9 @@
               },
               "stack": {
                 "$ref": "#/definitions/stack/definitions/name"
+              },
+              "internal_routing": {
+                "$ref": "#/definitions/team-app/definitions/internal_routing"
               }
             },
             "type": [
@@ -13320,6 +13339,9 @@
         },
         "id": {
           "$ref": "#/definitions/app/definitions/id"
+        },
+        "internal_routing": {
+          "$ref": "#/definitions/team-app/definitions/internal_routing"
         },
         "joined": {
           "$ref": "#/definitions/team-app/definitions/joined"
