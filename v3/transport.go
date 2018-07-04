@@ -79,7 +79,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			log.Println(err)
 		} else {
-			log.Printf("%s", string(dump[:]))
+			log.Printf("%s", dump)
 		}
 	}
 
@@ -96,7 +96,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			log.Println(err)
 		} else {
-			log.Printf("%s", string(dump[:]))
+			log.Printf("%s", dump)
 		}
 	}
 
