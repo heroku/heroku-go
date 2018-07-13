@@ -4526,6 +4526,54 @@ func (s *Service) UserPreferencesUpdate(ctx context.Context, userPreferencesIden
 	return &userPreferences, s.Patch(ctx, &userPreferences, fmt.Sprintf("/users/%v/preferences", userPreferencesIdentity), o)
 }
 
+// [VPN](https://devcenter.heroku.com/articles/private-spaces-vpn?preview
+// =1) provides a way to connect your Private Spaces to your network via
+// VPN.
+type VPNConnection struct {
+	ID             string   `json:"id" url:"id,key"`                             // VPN ID
+	IKEVersion     int      `json:"ike_version" url:"ike_version,key"`           // IKE Version
+	Name           string   `json:"name" url:"name,key"`                         // VPN Name
+	PublicIP       string   `json:"public_ip" url:"public_ip,key"`               // Public IP of VPN customer gateway
+	RoutableCidrs  []string `json:"routable_cidrs" url:"routable_cidrs,key"`     // Routable CIDRs of VPN
+	SpaceCIDRBlock string   `json:"space_cidr_block" url:"space_cidr_block,key"` // CIDR Block of the Private Space
+	Status         string   `json:"status" url:"status,key"`                     // Status of the VPN
+	StatusMessage  string   `json:"status_message" url:"status_message,key"`     // Details of the status
+	Tunnels        []struct {
+		CustomerIP       string `json:"customer_ip" url:"customer_ip,key"`               // Public IP address for the customer side of the tunnel
+		IP               string `json:"ip" url:"ip,key"`                                 // Public IP address for the tunnel
+		LastStatusChange string `json:"last_status_change" url:"last_status_change,key"` // Timestamp of last status changed
+		PreSharedKey     string `json:"pre_shared_key" url:"pre_shared_key,key"`         // Pre-shared key
+		Status           string `json:"status" url:"status,key"`                         // Status of the tunnel
+		StatusMessage    string `json:"status_message" url:"status_message,key"`         // Details of the status
+	} `json:"tunnels" url:"tunnels,key"`
+}
+
+// Create a new VPN connection in a private space.
+func (s *Service) VPNConnectionCreate(ctx context.Context, spaceIdentity string) (*VPNConnection, error) {
+	var vpnConnection VPNConnection
+	return &vpnConnection, s.Post(ctx, &vpnConnection, fmt.Sprintf("/spaces/%v/vpn-connections", spaceIdentity), nil)
+}
+
+// Destroy existing VPN Connection
+func (s *Service) VPNConnectionDestroy(ctx context.Context, spaceIdentity string, vpnConnectionIdentity string) (*VPNConnection, error) {
+	var vpnConnection VPNConnection
+	return &vpnConnection, s.Delete(ctx, &vpnConnection, fmt.Sprintf("/spaces/%v/vpn-connections/%v", spaceIdentity, vpnConnectionIdentity))
+}
+
+type VPNConnectionListResult []VPNConnection
+
+// List VPN connections for a space.
+func (s *Service) VPNConnectionList(ctx context.Context, spaceIdentity string, lr *ListRange) (VPNConnectionListResult, error) {
+	var vpnConnection VPNConnectionListResult
+	return vpnConnection, s.Get(ctx, &vpnConnection, fmt.Sprintf("/spaces/%v/vpn-connections", spaceIdentity), nil, lr)
+}
+
+// Info for an existing vpn-connection.
+func (s *Service) VPNConnectionInfo(ctx context.Context, spaceIdentity string, vpnConnectionIdentity string) (*VPNConnection, error) {
+	var vpnConnection VPNConnection
+	return &vpnConnection, s.Get(ctx, &vpnConnection, fmt.Sprintf("/spaces/%v/vpn-connections/%v", spaceIdentity, vpnConnectionIdentity), nil, nil)
+}
+
 // Entities that have been whitelisted to be used by an Organization
 type WhitelistedAddOnService struct {
 	AddedAt time.Time `json:"added_at" url:"added_at,key"` // when the add-on service was whitelisted
