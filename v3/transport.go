@@ -114,6 +114,8 @@ type Error struct {
 	error
 	ID  string
 	URL string
+	// StatusCode is the HTTP status code returned from the remote server.
+	StatusCode int
 }
 
 func checkResponse(resp *http.Response) error {
@@ -127,7 +129,7 @@ func checkResponse(resp *http.Response) error {
 		if err != nil {
 			return fmt.Errorf("encountered an error : %s", resp.Status)
 		}
-		return Error{error: errors.New(e.Message), ID: e.ID, URL: e.URL}
+		return Error{error: errors.New(e.Message), ID: e.ID, URL: e.URL, StatusCode: resp.StatusCode}
 	}
 	if msg := resp.Header.Get("X-Heroku-Warning"); msg != "" {
 		log.Println(strings.TrimSpace(msg))
