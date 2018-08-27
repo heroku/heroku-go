@@ -1,9 +1,11 @@
 package heroku
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -102,11 +104,16 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if t.Debug {
-		dump, err := httputil.DumpResponse(resp, true)
+		bodyBytes, readErr := ioutil.ReadAll(resp.Body)
+		if readErr != nil {
+			log.Fatal("unable to read response body")
+		}
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		dump, err := httputil.DumpResponse(resp, false)
 		if err != nil {
 			log.Println(err)
 		} else {
-			log.Printf("%s", dump)
+			log.Printf("response:\n%s\n'%s'", dump[:], bodyBytes[:])
 		}
 	}
 
