@@ -2,6 +2,7 @@ package heroku
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -38,7 +39,7 @@ func (_ RoundTripWithRetryBackoff) RoundTrip(req *http.Request) (*http.Response,
 	}
 	rateLimitRetryConfig.Reset()
 
-	err := backoff.Retry(retryableRoundTrip, rateLimitRetryConfig)
+	err := backoff.RetryNotify(retryableRoundTrip, rateLimitRetryConfig, notifyLog)
 	// Propagate the rate limit error when retries eventually fail.
 	if err != nil {
 		if lastResponse != nil {
@@ -55,4 +56,8 @@ func (_ RoundTripWithRetryBackoff) RoundTrip(req *http.Request) (*http.Response,
 	}
 
 	return lastResponse, nil
+}
+
+func notifyLog(err error, waitDuration time.Duration) {
+	log.Printf("Will retry Heroku API request in %s, because %s", waitDuration, err)
 }
