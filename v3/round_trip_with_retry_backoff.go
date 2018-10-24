@@ -7,7 +7,11 @@ import (
 	"github.com/cenkalti/backoff"
 )
 
-func RoundTripWithRetryBackoff(req *http.Request) (*http.Response, error) {
+// net/http RoundTripper interface, a.k.a. Transport
+// https://godoc.org/net/http#RoundTripper
+type RoundTripWithRetryBackoff struct {}
+
+func (_ RoundTripWithRetryBackoff) RoundTrip(req *http.Request) (*http.Response, error) {
 	var lastResponse *http.Response
 	var lastError error
 
