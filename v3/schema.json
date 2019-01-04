@@ -5735,6 +5735,19 @@
             "string"
           ]
         },
+        "docker_image": {
+          "description": "the Docker image used by this process type",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/docker-image/definitions/id"
+            }
+          },
+          "strictProperties": true,
+          "type": [
+            "object",
+            "null"
+          ]
+        },
         "id": {
           "description": "unique identifier of this process type",
           "example": "01234567-89ab-cdef-0123-456789abcdef",
@@ -5774,7 +5787,6 @@
           "description": "type of process to maintain",
           "example": "web",
           "readOnly": true,
-          "pattern": "^[-\\w]{1,128}$",
           "type": [
             "string"
           ]
@@ -5792,19 +5804,25 @@
           "additionalProperties": false,
           "description": "Properties to update a process type",
           "properties": {
+            "docker_image": {
+              "$ref": "#/definitions/docker-image/definitions/identity"
+            },
+            "command": {
+              "$ref": "#/definitions/formation/definitions/command"
+            },
+            "process": {
+              "$ref": "#/definitions/formation/definitions/identity"
+            },
             "quantity": {
               "$ref": "#/definitions/formation/definitions/quantity"
             },
             "size": {
               "$ref": "#/definitions/formation/definitions/size"
-            },
-            "type": {
-              "$ref": "#/definitions/formation/definitions/type"
             }
           },
           "readOnly": false,
           "required": [
-            "type"
+            "process"
           ],
           "type": [
             "object"
@@ -5844,6 +5862,9 @@
           "rel": "update",
           "schema": {
             "properties": {
+              "description": {
+                "$ref": "#/definitions/release/definitions/description"
+              },
               "updates": {
                 "type": [
                   "array"
@@ -5851,7 +5872,16 @@
                 "items": {
                   "$ref": "#/definitions/formation/definitions/update"
                 },
-                "description": "Array with formation updates. Each element must have \"type\", the id or name of the process type to be updated, and can optionally update its \"quantity\" or \"size\"."
+                "description": "Array with formation updates. Each element must have \"type\", the id or name of the process type to be updated, and can optionally update its \"quantity\" or \"size\".",
+                "example": [
+                  {
+                    "quantity": 1,
+                    "size": "standard-2X",
+                    "type": [
+                      "web"
+                    ]
+                  }
+                ]
               }
             },
             "required": [
@@ -5869,7 +5899,7 @@
               "array"
             ]
           },
-          "title": "Batch Update"
+          "title": "Batch update"
         },
         {
           "description": "Update process type",
@@ -5878,6 +5908,12 @@
           "rel": "update",
           "schema": {
             "properties": {
+              "command": {
+                "$ref": "#/definitions/formation/definitions/command"
+              },
+              "docker_image": {
+                "$ref": "#/definitions/docker-image/definitions/identity"
+              },
               "quantity": {
                 "$ref": "#/definitions/formation/definitions/quantity"
               },
@@ -5918,6 +5954,9 @@
         },
         "created_at": {
           "$ref": "#/definitions/formation/definitions/created_at"
+        },
+        "docker_image": {
+          "$ref": "#/definitions/formation/definitions/docker_image"
         },
         "id": {
           "$ref": "#/definitions/formation/definitions/id"
@@ -16378,6 +16417,279 @@
           "$ref": "#/definitions/whitelisted-add-on-service/definitions/id"
         }
       }
+    },
+    "docker-image": {
+      "description": "A Docker image is a snapshot of your application code that is ready to run on the platform.",
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "stability": "prototype",
+      "strictProperties": true,
+      "title": "Heroku Platform API - Docker Image",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "command": {
+          "description": "the command to run",
+          "example": [
+            "echo",
+            "Hello, World"
+          ],
+          "readOnly": false,
+          "type": [
+            "array"
+          ],
+          "minItems": 1
+        },
+        "created_at": {
+          "description": "when the image was created",
+          "example": "2012-01-01T12:00:00Z",
+          "format": "date-time",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "entrypoint": {
+          "description": "the entrypoint to the command",
+          "example": [
+            "/bin/sh",
+            "-c"
+          ],
+          "readOnly": false,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "env": {
+          "description": "the runtime environment required for the command",
+          "example": {
+            "PATH": "/bin"
+          },
+          "readOnly": false,
+          "additionalProperties": false,
+          "patternProperties": {
+            "^\\w+$": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "type": [
+            "object"
+          ]
+        },
+        "id": {
+          "description": "unique identifier of the image",
+          "example": "01234567-89ab-cdef-0123-456789abcdef",
+          "format": "uuid",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/docker-image/definitions/id"
+            }
+          ]
+        },
+        "image_id": {
+          "description": "the Docker image ID",
+          "example": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "layers": {
+          "description": "the layers of the image",
+          "properties": {
+            "system": {
+              "description": "the system layers of the image",
+              "example": [
+                {
+                  "url": "https://example.cloudfront.com/..."
+                }
+              ],
+              "readOnly": false,
+              "items": {
+                "$ref": "#/definitions/docker-image/definitions/system_layer"
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "user": {
+              "description": "the user layers of the image",
+              "example": [
+                {
+                  "bucket": "example",
+                  "object": "/..."
+                }
+              ],
+              "readOnly": false,
+              "items": {
+                "$ref": "#/definitions/docker-image/definitions/user_layer"
+              },
+              "type": [
+                "array"
+              ]
+            }
+          },
+          "readOnly": false,
+          "type": [
+            "object"
+          ]
+        },
+        "shell": {
+          "description": "the default shell",
+          "example": [
+            "/bin/sh",
+            "-c"
+          ],
+          "readOnly": false,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "system_layer": {
+          "description": "a system layer",
+          "properties": {
+            "url": {
+              "description": "the location of the system layer",
+              "example": "https://example.cloudfront.com/...",
+              "readOnly": false,
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "readOnly": false,
+          "type": [
+            "object"
+          ]
+        },
+        "updated_at": {
+          "description": "when the image was updated",
+          "example": "2012-01-01T12:00:00Z",
+          "format": "date-time",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "user_layer": {
+          "description": "a user layer",
+          "properties": {
+            "bucket": {
+              "description": "the S3 bucket name where the user layer is stored",
+              "example": "example",
+              "readOnly": false,
+              "type": [
+                "string"
+              ]
+            },
+            "object": {
+              "description": "the S3 object name where the user layer is stored",
+              "example": "/...",
+              "readOnly": false,
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "readOnly": false,
+          "type": [
+            "object"
+          ]
+        },
+        "working_directory": {
+          "description": "the working directory for the command",
+          "example": "/home/user",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "links": [
+        {
+          "description": "Create a new Docker image.",
+          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/docker-images",
+          "method": "POST",
+          "rel": "create",
+          "schema": {
+            "properties": {
+              "command": {
+                "$ref": "#/definitions/docker-image/definitions/command"
+              },
+              "entrypoint": {
+                "$ref": "#/definitions/docker-image/definitions/entrypoint"
+              },
+              "env": {
+                "$ref": "#/definitions/docker-image/definitions/env"
+              },
+              "image_id": {
+                "$ref": "#/definitions/docker-image/definitions/image_id"
+              },
+              "layers": {
+                "$ref": "#/definitions/docker-image/definitions/layers"
+              },
+              "shell": {
+                "$ref": "#/definitions/docker-image/definitions/shell"
+              },
+              "working_directory": {
+                "$ref": "#/definitions/docker-image/definitions/working_directory"
+              }
+            },
+            "required": [
+              "layers"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/docker-image"
+          },
+          "title": "Create"
+        }
+      ],
+      "properties": {
+        "command": {
+          "$ref": "#/definitions/docker-image/definitions/command"
+        },
+        "created_at": {
+          "$ref": "#/definitions/docker-image/definitions/created_at"
+        },
+        "entrypoint": {
+          "$ref": "#/definitions/docker-image/definitions/entrypoint"
+        },
+        "env": {
+          "$ref": "#/definitions/docker-image/definitions/env"
+        },
+        "id": {
+          "$ref": "#/definitions/docker-image/definitions/id"
+        },
+        "image_id": {
+          "$ref": "#/definitions/docker-image/definitions/image_id"
+        },
+        "layers": {
+          "$ref": "#/definitions/docker-image/definitions/layers"
+        },
+        "shell": {
+          "$ref": "#/definitions/docker-image/definitions/shell"
+        },
+        "updated_at": {
+          "$ref": "#/definitions/docker-image/definitions/updated_at"
+        },
+        "working_directory": {
+          "$ref": "#/definitions/docker-image/definitions/working_directory"
+        }
+      }
     }
   },
   "properties": {
@@ -16644,6 +16956,9 @@
     },
     "whitelisted-add-on-service": {
       "$ref": "#/definitions/whitelisted-add-on-service"
+    },
+    "docker-image": {
+      "$ref": "#/definitions/docker-image"
     }
   },
   "description": "The platform API empowers developers to automate, extend and combine Heroku with other services.",

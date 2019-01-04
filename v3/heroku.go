@@ -1790,6 +1790,52 @@ func (s *Service) CreditList(ctx context.Context, lr *ListRange) (CreditListResu
 	return credit, s.Get(ctx, &credit, fmt.Sprintf("/account/credits"), nil, lr)
 }
 
+// A Docker image is a snapshot of your application code that is ready
+// to run on the platform.
+type DockerImage struct {
+	Command    []interface{}     `json:"command" url:"command,key"`       // the command to run
+	CreatedAt  time.Time         `json:"created_at" url:"created_at,key"` // when the image was created
+	Entrypoint []interface{}     `json:"entrypoint" url:"entrypoint,key"` // the entrypoint to the command
+	Env        map[string]string `json:"env" url:"env,key"`               // the runtime environment required for the command
+	ID         string            `json:"id" url:"id,key"`                 // unique identifier of the image
+	ImageID    string            `json:"image_id" url:"image_id,key"`     // the Docker image ID
+	Layers     struct {
+		System []struct {
+			URL string `json:"url" url:"url,key"` // the location of the system layer
+		} `json:"system" url:"system,key"` // the system layers of the image
+		User []struct {
+			Bucket string `json:"bucket" url:"bucket,key"` // the S3 bucket name where the user layer is stored
+			Object string `json:"object" url:"object,key"` // the S3 object name where the user layer is stored
+		} `json:"user" url:"user,key"` // the user layers of the image
+	} `json:"layers" url:"layers,key"` // the layers of the image
+	Shell            []interface{} `json:"shell" url:"shell,key"`                         // the default shell
+	UpdatedAt        time.Time     `json:"updated_at" url:"updated_at,key"`               // when the image was updated
+	WorkingDirectory string        `json:"working_directory" url:"working_directory,key"` // the working directory for the command
+}
+type DockerImageCreateOpts struct {
+	Command    []interface{}     `json:"command,omitempty" url:"command,omitempty,key"`       // the command to run
+	Entrypoint []interface{}     `json:"entrypoint,omitempty" url:"entrypoint,omitempty,key"` // the entrypoint to the command
+	Env        map[string]string `json:"env,omitempty" url:"env,omitempty,key"`               // the runtime environment required for the command
+	ImageID    *string           `json:"image_id,omitempty" url:"image_id,omitempty,key"`     // the Docker image ID
+	Layers     struct {
+		System []*struct {
+			URL *string `json:"url,omitempty" url:"url,omitempty,key"` // the location of the system layer
+		} `json:"system,omitempty" url:"system,omitempty,key"` // the system layers of the image
+		User []*struct {
+			Bucket *string `json:"bucket,omitempty" url:"bucket,omitempty,key"` // the S3 bucket name where the user layer is stored
+			Object *string `json:"object,omitempty" url:"object,omitempty,key"` // the S3 object name where the user layer is stored
+		} `json:"user,omitempty" url:"user,omitempty,key"` // the user layers of the image
+	} `json:"layers" url:"layers,key"` // the layers of the image
+	Shell            []interface{} `json:"shell,omitempty" url:"shell,omitempty,key"`                         // the default shell
+	WorkingDirectory *string       `json:"working_directory,omitempty" url:"working_directory,omitempty,key"` // the working directory for the command
+}
+
+// Create a new Docker image.
+func (s *Service) DockerImageCreate(ctx context.Context, appIdentity string, o DockerImageCreateOpts) (*DockerImage, error) {
+	var dockerImage DockerImage
+	return &dockerImage, s.Post(ctx, &dockerImage, fmt.Sprintf("/apps/%v/docker-images", appIdentity), o)
+}
+
 // Domains define what web routes should be routed to an app on Heroku.
 type Domain struct {
 	AcmStatus       *string `json:"acm_status" url:"acm_status,key"`               // status of this record's ACM
@@ -2014,8 +2060,11 @@ type Formation struct {
 		ID   string `json:"id" url:"id,key"`     // unique identifier of app
 		Name string `json:"name" url:"name,key"` // unique name of app
 	} `json:"app" url:"app,key"` // app formation belongs to
-	Command   string    `json:"command" url:"command,key"`       // command to use to launch this process
-	CreatedAt time.Time `json:"created_at" url:"created_at,key"` // when process type was created
+	Command     string    `json:"command" url:"command,key"`       // command to use to launch this process
+	CreatedAt   time.Time `json:"created_at" url:"created_at,key"` // when process type was created
+	DockerImage *struct {
+		ID string `json:"id" url:"id,key"` // unique identifier of the image
+	} `json:"docker_image" url:"docker_image,key"` // the Docker image used by this process type
 	ID        string    `json:"id" url:"id,key"`                 // unique identifier of this process type
 	Quantity  int       `json:"quantity" url:"quantity,key"`     // number of processes to maintain
 	Size      string    `json:"size" url:"size,key"`             // dyno size (default: "standard-1X")
@@ -2038,10 +2087,13 @@ func (s *Service) FormationList(ctx context.Context, appIdentity string, lr *Lis
 }
 
 type FormationBatchUpdateOpts struct {
-	Updates []struct {
-		Quantity *int    `json:"quantity,omitempty" url:"quantity,omitempty,key"` // number of processes to maintain
-		Size     *string `json:"size,omitempty" url:"size,omitempty,key"`         // dyno size (default: "standard-1X")
-		Type     string  `json:"type" url:"type,key"`                             // type of process to maintain
+	Description *string `json:"description,omitempty" url:"description,omitempty,key"` // description of changes in this release
+	Updates     []struct {
+		Command     *string `json:"command,omitempty" url:"command,omitempty,key"`           // command to use to launch this process
+		DockerImage *string `json:"docker_image,omitempty" url:"docker_image,omitempty,key"` // unique identifier of the image
+		Process     string  `json:"process" url:"process,key"`                               // unique identifier of this process type
+		Quantity    *int    `json:"quantity,omitempty" url:"quantity,omitempty,key"`         // number of processes to maintain
+		Size        *string `json:"size,omitempty" url:"size,omitempty,key"`                 // dyno size (default: "standard-1X")
 	} `json:"updates" url:"updates,key"` // Array with formation updates. Each element must have "type", the id
 	// or name of the process type to be updated, and can optionally update
 	// its "quantity" or "size".
@@ -2055,8 +2107,10 @@ func (s *Service) FormationBatchUpdate(ctx context.Context, appIdentity string, 
 }
 
 type FormationUpdateOpts struct {
-	Quantity *int    `json:"quantity,omitempty" url:"quantity,omitempty,key"` // number of processes to maintain
-	Size     *string `json:"size,omitempty" url:"size,omitempty,key"`         // dyno size (default: "standard-1X")
+	Command     *string `json:"command,omitempty" url:"command,omitempty,key"`           // command to use to launch this process
+	DockerImage *string `json:"docker_image,omitempty" url:"docker_image,omitempty,key"` // unique identifier of the image
+	Quantity    *int    `json:"quantity,omitempty" url:"quantity,omitempty,key"`         // number of processes to maintain
+	Size        *string `json:"size,omitempty" url:"size,omitempty,key"`                 // dyno size (default: "standard-1X")
 }
 
 // Update process type
