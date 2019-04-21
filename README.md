@@ -1,16 +1,13 @@
 # Heroku Platform API
 
-[![GoDoc](https://godoc.org/github.com/heroku/heroku-go/v3?status.svg)](https://godoc.org/github.com/heroku/heroku-go/v3)
+[![GoDoc](https://godoc.org/github.com/heroku/heroku-go/v4?status.svg)](https://godoc.org/github.com/heroku/heroku-go/v4)
 
-An API client interface for Heroku Platform API for the Go (golang) programming language.
+An API client interface for Heroku Platform API for the Go (golang)
+programming language.
 
 ## Installation
 
-To download, build, and install the package:
-
-```
-$ go get github.com/heroku/heroku-go/v3
-```
+TODO
 
 ## Example
 
@@ -23,7 +20,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/heroku/heroku-go/v3"
+	"github.com/heroku/heroku-go/v4"
 )
 
 var (

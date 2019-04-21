@@ -1,22 +1,44 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-if [ -n "${DEBUG-}" ]; then
-  set -x
-fi
+set -ex
+
+: ${UPDATE_SCHEMA:=1}
+
+function usage() {
+cat <<EOT
+$0 [ARGS]
+  -n suppress download of latest schema
+EOT
+exit $1
+}
+
+while getopts "hnv:" opt; do
+  case $opt in
+    n)
+      UPDATE_SCHEMA=0
+      ;;
+    h)
+      usage 1
+      ;;
+    \?)
+      usage 0
+      ;;
+    esac
+done
 
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)"
 
-curl -so v3/schema.json https://api.heroku.com/schema \
-  -H "Accept: application/vnd.heroku+json; version=3"
+if [ $UPDATE_SCHEMA -eq 1 ]; then
+  curl -so schema.json https://api.heroku.com/schema \
+    -H "Accept: application/vnd.heroku+json; version=3"
+fi
 
 go get -u github.com/interagent/schematic/cmd/schematic
-schematic v3/schema.json > v3/heroku.go
 
-# Heroku's schema.json does not specify a "version" key
-# Replace Version="" with Version="v3"
+schematic schema.json > heroku.go
+
 sed -E -i '' \
   's/^([[:space:]]*Version[[:space:]]*=[[:space:]]*)""$/\1"v3"/' \
-  v3/heroku.go
+  heroku.go
 
-gofmt -w v3/heroku.go
+gofmt -w heroku.go

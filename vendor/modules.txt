@@ -1,0 +1,8 @@
+# github.com/cenkalti/backoff v2.1.1+incompatible
+github.com/cenkalti/backoff
+# github.com/google/go-querystring v1.0.0
+github.com/google/go-querystring/query
+# github.com/google/uuid v1.0.0
+github.com/google/uuid
+# github.com/pborman/uuid v1.2.0
+github.com/pborman/uuid
