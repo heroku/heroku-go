@@ -5,9 +5,9 @@
 An API client interface for Heroku Platform API for the Go (golang)
 programming language.
 
-## Installation
+## Usage
 
-TODO
+	import "github.com/heroku/heroku-go"
 
 ## Example
 
