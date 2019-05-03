@@ -1,6 +1,6 @@
 # Heroku Platform API
 
-[![GoDoc](https://godoc.org/github.com/heroku/heroku-go/v4?status.svg)](https://godoc.org/github.com/heroku/heroku-go/v4)
+[![GoDoc](https://godoc.org/github.com/heroku/heroku-go?status.svg)](https://godoc.org/github.com/heroku/heroku-go)
 
 An API client interface for Heroku Platform API for the Go (golang)
 programming language.
