@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/heroku/heroku-go/v4"
+	"github.com/heroku/heroku-go"
 )
 
 var (
