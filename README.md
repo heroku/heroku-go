@@ -2,12 +2,12 @@
 
 [![GoDoc](https://godoc.org/github.com/heroku/heroku-go?status.svg)](https://godoc.org/github.com/heroku/heroku-go)
 
-An API client interface for Heroku Platform API for the Go (golang)
-programming language.
+An API client interface for Heroku Platform API for the Go (golang) programming language.
 
 ## Usage
 
-	import "github.com/heroku/heroku-go"
+	$ go mod init myproj
+	$ cd myproj
 
 ## Example
 
@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/heroku/heroku-go"
+	heroku "github.com/heroku/heroku-go/v5"
 )
 
 var (
@@ -45,3 +45,5 @@ func main() {
 	}
 }
 ```
+
+	$ go build
