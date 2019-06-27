@@ -26,7 +26,7 @@ while getopts "hnv:" opt; do
     esac
 done
 
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)"
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)/v5"
 
 if [ $UPDATE_SCHEMA -eq 1 ]; then
   curl -so schema.json https://api.heroku.com/schema \
