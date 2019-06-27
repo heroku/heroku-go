@@ -415,6 +415,7 @@ func (s *Service) AddOnListByApp(ctx context.Context, appIdentity string, lr *Li
 }
 
 type AddOnUpdateOpts struct {
+	Name string `json:"name" url:"name,key"` // globally unique name of the add-on
 	Plan string `json:"plan" url:"plan,key"` // unique identifier of this plan
 }
 
