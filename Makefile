@@ -8,6 +8,9 @@ build: checks
 generate:
 	cd v5 && ../script/generate
 
+regenerate:
+	cd v5 && ../script/generate -n
+
 checks: fmt-check
 
 fmt-check:

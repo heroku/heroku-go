@@ -8,6 +8,21 @@ An API client interface for Heroku Platform API for the Go (golang) programming 
 
 	$ go mod init myproj
 	$ cd myproj
+	$ go build
+
+## Generate from Schema
+
+Fetch the current schema and generate:
+
+```
+make generate
+``` 
+
+Generate again with local schema (skips fetching schema updates):
+
+```
+make regenerate
+``` 
 
 ## Example
 
@@ -45,5 +60,3 @@ func main() {
 	}
 }
 ```
-
-	$ go build
