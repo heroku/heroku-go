@@ -1760,7 +1760,6 @@
           "description": "globally unique name of the add-on",
           "example": "acme-inc-primary-database",
           "pattern": "^[a-zA-Z][A-Za-z0-9_-]+$",
-          "readOnly": true,
           "type": [
             "string"
           ]
@@ -1928,6 +1927,9 @@
           "rel": "update",
           "schema": {
             "properties": {
+              "name": {
+                "$ref": "#/definitions/add-on/definitions/name"
+              },
               "plan": {
                 "$ref": "#/definitions/plan/definitions/identity"
               }

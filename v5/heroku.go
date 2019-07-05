@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	Version          = "v3"
+	Version          = "v5"
 	DefaultUserAgent = "heroku/" + Version + " (" + runtime.GOOS + "; " + runtime.GOARCH + ")"
 	DefaultURL       = "https://api.heroku.com"
 )
@@ -421,7 +421,8 @@ func (s *Service) AddOnListByApp(ctx context.Context, appIdentity string, lr *Li
 }
 
 type AddOnUpdateOpts struct {
-	Plan string `json:"plan" url:"plan,key"` // unique identifier of this plan
+	Name *string `json:"name,omitempty" url:"name,omitempty,key"` // globally unique name of the add-on
+	Plan string  `json:"plan" url:"plan,key"`                     // unique identifier of this plan
 }
 
 // Change add-on plan. Some add-ons may not support changing plans. In
