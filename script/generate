@@ -26,19 +26,25 @@ while getopts "hnv:" opt; do
     esac
 done
 
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)"
+API_VERSION="3"
+CLIENT_VERSION="v5"
+SCHEMA_FILE="$CLIENT_VERSION/schema.json"
+GENERATED_FILE="$CLIENT_VERSION/heroku.go"
+
+NEW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)"
+cd $NEW_DIR
 
 if [ $UPDATE_SCHEMA -eq 1 ]; then
-  curl -so schema.json https://api.heroku.com/schema \
-    -H "Accept: application/vnd.heroku+json; version=3"
+  curl -so "$SCHEMA_FILE" https://api.heroku.com/schema \
+    -H "Accept: application/vnd.heroku+json; version=$API_VERSION"
 fi
 
 go get -u github.com/interagent/schematic/cmd/schematic
 
-schematic schema.json > heroku.go
+schematic "$SCHEMA_FILE" > "$GENERATED_FILE"
 
 sed -E -i '' \
-  's/^([[:space:]]*Version[[:space:]]*=[[:space:]]*)""$/\1"v3"/' \
-  heroku.go
+  "s/^([[:space:]]*Version[[:space:]]*=[[:space:]]*)\"\"\$/\1\"${CLIENT_VERSION}\"/" \
+  "$GENERATED_FILE"
 
-gofmt -w heroku.go
+gofmt -w "$GENERATED_FILE"
