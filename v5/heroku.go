@@ -3672,7 +3672,9 @@ type ReviewAppConfig struct {
 	} `json:"deploy_target" url:"deploy_target,key"` // the deploy target for the review apps of a pipeline
 	DestroyStaleApps bool `json:"destroy_stale_apps" url:"destroy_stale_apps,key"` // automatically destroy review apps when they haven't been deployed for
 	// a number of days
-	PipelineID string `json:"pipeline_id" url:"pipeline_id,key"` // unique identifier of pipeline
+	Pipeline        *struct {
+		ID   string `json:"id" url:"id,key"`     // unique identifier of pipeline
+	} `json:"pipeline" url:"pipeline,key"` // the pipeline associated with the review app
 	Repo       struct {
 		ID int `json:"id" url:"id,key"` // repository id
 	} `json:"repo" url:"repo,key"`
