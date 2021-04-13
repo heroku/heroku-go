@@ -228,6 +228,15 @@
             "string"
           ]
         },
+        "country_of_residence": {
+          "description": "country where account owner resides",
+          "example": "United States",
+          "readOnly": false,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "email": {
           "description": "unique email address of account",
           "example": "username@example.com",
@@ -361,7 +370,8 @@
           ]
         },
         "acknowledged_msa": {
-          "description": "whether account has acknowledged the MSA terms of service",
+          "deprecated": true,
+          "description": "deprecated. whether account has acknowledged the MSA terms of service",
           "example": false,
           "readOnly": true,
           "type": [
@@ -369,7 +379,8 @@
           ]
         },
         "acknowledged_msa_at": {
-          "description": "when account has acknowledged the MSA terms of service",
+          "deprecated": true,
+          "description": "deprecated. when account has acknowledged the MSA terms of service",
           "example": "2012-01-01T12:00:00Z",
           "format": "date-time",
           "readOnly": true,
@@ -379,7 +390,8 @@
           ]
         },
         "italian_customer_terms": {
-          "description": "whether account has acknowledged the Italian customer terms of service",
+          "deprecated": true,
+          "description": "deprecated. whether account has acknowledged the Italian customer terms of service",
           "example": "affirmatively_accepted",
           "readOnly": true,
           "type": [
@@ -388,7 +400,8 @@
           ]
         },
         "italian_partner_terms": {
-          "description": "whether account has acknowledged the Italian provider terms of service",
+          "deprecated": true,
+          "description": "deprecated. whether account has acknowledged the Italian provider terms of service",
           "example": "affirmatively_accepted",
           "readOnly": true,
           "type": [
@@ -619,6 +632,9 @@
         },
         "italian_partner_terms": {
           "$ref": "#/definitions/account/definitions/italian_partner_terms"
+        },
+        "country_of_residence": {
+          "$ref": "#/definitions/account/definitions/country_of_residence"
         },
         "default_organization": {
           "description": "team selected by default",
@@ -4246,12 +4262,24 @@
         },
         "month": {
           "description": "month of the archive",
-          "example": 10,
+          "enum": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12"
+          ],
+          "example": "10",
           "readOnly": true,
-          "minimum": 1,
-          "maximum": 12,
           "type": [
-            "integer"
+            "string"
           ]
         },
         "year": {
@@ -4346,13 +4374,6 @@
           "format": "uuid",
           "type": [
             "string"
-          ]
-        },
-        "identity": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/audit-trail-event/definitions/id"
-            }
           ]
         },
         "type": {
@@ -4503,7 +4524,7 @@
       },
       "links": [
         {
-          "description": "List existing events.",
+          "description": "List existing events. Returns all events for one date, defaulting to current date. Order, actor, action, and type, and date query params can be specified as query parameters. For example, '/enterprise-accounts/:id/events?order=desc&actor=user@example.com&action=create&type=app&date=2020-09-30' would return events in descending order and only return app created events by the user with user@example.com email address.",
           "href": "/enterprise-accounts/{(%23%2Fdefinitions%2Fenterprise-account%2Fdefinitions%2Fidentity)}/events",
           "method": "GET",
           "rel": "instances",
@@ -6153,6 +6174,170 @@
         }
       }
     },
+    "enterprise-account-daily-usage": {
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "description": "Usage for an enterprise account at a daily resolution.",
+      "stability": "development",
+      "strictProperties": true,
+      "title": "Heroku Platform API - Enterprise Account Daily Usage",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "addons": {
+          "description": "total add-on credits used",
+          "example": 250.0,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "data": {
+          "description": "total add-on credits used for first party add-ons",
+          "example": 34.89,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "date": {
+          "description": "date of the usage",
+          "example": "2019-01-01",
+          "format": "date",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "dynos": {
+          "description": "dynos used",
+          "example": 1.548,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "id": {
+          "description": "enterprise account identifier",
+          "example": "01234567-89ab-cdef-0123-456789abcdef",
+          "format": "uuid",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "name": {
+          "description": "name of the enterprise account",
+          "example": "example-co",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "partner": {
+          "description": "total add-on credits used for third party add-ons",
+          "example": 12.34,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "space": {
+          "description": "space credits used",
+          "example": 1.548,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        }
+      },
+      "links": [
+        {
+          "description": "Retrieves usage for an enterprise account for a range of days. Start and end dates can be specified as query parameters using the date format, YYYY-MM-DD format. For example, '/enterprise-accounts/example-account/usage/daily?start=2019-01-01&end=2019-01-31' specifies all days in January for 2019.",
+          "href": "/enterprise-accounts/{(%23%2Fdefinitions%2Fenterprise-account%2Fdefinitions%2Fid)}/usage/daily",
+          "method": "GET",
+          "rel": "instances",
+          "title": "Info",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/enterprise-account-daily-usage"
+            },
+            "type": [
+              "array"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "addons": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/addons"
+        },
+        "teams": {
+          "description": "usage by team",
+          "type": [
+            "array"
+          ],
+          "items": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "addons": {
+                "$ref": "#/definitions/team-daily-usage/definitions/addons"
+              },
+              "apps": {
+                "description": "app usage in the team",
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "$ref": "#/definitions/team-daily-usage/definitions/app_usage_daily"
+                }
+              },
+              "data": {
+                "$ref": "#/definitions/team-daily-usage/definitions/data"
+              },
+              "dynos": {
+                "$ref": "#/definitions/team-daily-usage/definitions/dynos"
+              },
+              "id": {
+                "$ref": "#/definitions/team-daily-usage/definitions/id"
+              },
+              "name": {
+                "$ref": "#/definitions/team-daily-usage/definitions/name"
+              },
+              "partner": {
+                "$ref": "#/definitions/team-daily-usage/definitions/partner"
+              },
+              "space": {
+                "$ref": "#/definitions/team-daily-usage/definitions/space"
+              }
+            }
+          }
+        },
+        "data": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/data"
+        },
+        "date": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/date"
+        },
+        "dynos": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/dynos"
+        },
+        "id": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/id"
+        },
+        "name": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/name"
+        },
+        "partner": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/partner"
+        },
+        "space": {
+          "$ref": "#/definitions/enterprise-account-daily-usage/definitions/space"
+        }
+      }
+    },
     "enterprise-account-member": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "Enterprise account members are users with access to an enterprise account.",
@@ -6406,171 +6591,7 @@
         }
       }
     },
-    "enterprise-account-usage-daily": {
-      "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "description": "Usage for an enterprise account at a daily resolution.",
-      "stability": "development",
-      "strictProperties": true,
-      "title": "Heroku Platform API - Enterprise Account Daily Usage",
-      "type": [
-        "object"
-      ],
-      "definitions": {
-        "addons": {
-          "description": "total add-on credits used",
-          "example": 250.0,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "data": {
-          "description": "total add-on credits used for first party add-ons",
-          "example": 34.89,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "date": {
-          "description": "date of the usage",
-          "example": "2019-01-01",
-          "format": "date",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "dynos": {
-          "description": "dynos used",
-          "example": 1.548,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "id": {
-          "description": "enterprise account identifier",
-          "example": "01234567-89ab-cdef-0123-456789abcdef",
-          "format": "uuid",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "name": {
-          "description": "name of the enterprise account",
-          "example": "example-co",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "partner": {
-          "description": "total add-on credits used for third party add-ons",
-          "example": 12.34,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "space": {
-          "description": "space credits used",
-          "example": 1.548,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        }
-      },
-      "links": [
-        {
-          "description": "Retrieves usage for an enterprise account for a range of days. Start and end dates can be specified as query parameters using the date format, YYYY-MM-DD format. For example, '/enterprise-accounts/example-account/usage/daily?start=2019-01-01&end=2019-01-31' specifies all days in January for 2019.",
-          "href": "/enterprise-accounts/{(%23%2Fdefinitions%2Fenterprise-account%2Fdefinitions%2Fid)}/usage/daily",
-          "method": "GET",
-          "title": "Info",
-          "rel": "instances",
-          "targetSchema": {
-            "items": {
-              "$ref": "#/definitions/enterprise-account-usage-daily"
-            },
-            "type": [
-              "array"
-            ]
-          }
-        }
-      ],
-      "properties": {
-        "addons": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/addons"
-        },
-        "teams": {
-          "description": "usage by team",
-          "type": [
-            "array"
-          ],
-          "items": {
-            "type": [
-              "object"
-            ],
-            "properties": {
-              "addons": {
-                "$ref": "#/definitions/team-usage-daily/definitions/addons"
-              },
-              "apps": {
-                "description": "app usage in the team",
-                "type": [
-                  "array"
-                ],
-                "items": {
-                  "$ref": "#/definitions/team-usage-daily/definitions/app_usage_daily"
-                }
-              },
-              "data": {
-                "$ref": "#/definitions/team-usage-daily/definitions/data"
-              },
-              "dynos": {
-                "$ref": "#/definitions/team-usage-daily/definitions/dynos"
-              },
-              "id": {
-                "$ref": "#/definitions/team-usage-daily/definitions/id"
-              },
-              "name": {
-                "$ref": "#/definitions/team-usage-daily/definitions/name"
-              },
-              "partner": {
-                "$ref": "#/definitions/team-usage-daily/definitions/partner"
-              },
-              "space": {
-                "$ref": "#/definitions/team-usage-daily/definitions/space"
-              }
-            }
-          }
-        },
-        "data": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/data"
-        },
-        "date": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/date"
-        },
-        "dynos": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/dynos"
-        },
-        "id": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/id"
-        },
-        "name": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/name"
-        },
-        "partner": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/partner"
-        },
-        "space": {
-          "$ref": "#/definitions/enterprise-account-usage-daily/definitions/space"
-        }
-      }
-    },
-    "enterprise-account-usage-monthly": {
+    "enterprise-account-monthly-usage": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "Usage for an enterprise account at a monthly resolution.",
       "stability": "development",
@@ -6664,7 +6685,7 @@
           "title": "Info",
           "targetSchema": {
             "items": {
-              "$ref": "#/definitions/enterprise-account-usage-monthly"
+              "$ref": "#/definitions/enterprise-account-monthly-usage"
             },
             "type": [
               "array"
@@ -6674,7 +6695,7 @@
       ],
       "properties": {
         "addons": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/addons"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/addons"
         },
         "teams": {
           "description": "usage by team",
@@ -6687,7 +6708,7 @@
             ],
             "properties": {
               "addons": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/addons"
+                "$ref": "#/definitions/team-monthly-usage/definitions/addons"
               },
               "apps": {
                 "description": "app usage in the team",
@@ -6695,56 +6716,56 @@
                   "array"
                 ],
                 "items": {
-                  "$ref": "#/definitions/team-usage-monthly/definitions/app_usage_monthly"
+                  "$ref": "#/definitions/team-monthly-usage/definitions/app_usage_monthly"
                 }
               },
               "connect": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/connect"
+                "$ref": "#/definitions/team-monthly-usage/definitions/connect"
               },
               "data": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/data"
+                "$ref": "#/definitions/team-monthly-usage/definitions/data"
               },
               "dynos": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/dynos"
+                "$ref": "#/definitions/team-monthly-usage/definitions/dynos"
               },
               "id": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/id"
+                "$ref": "#/definitions/team-monthly-usage/definitions/id"
               },
               "name": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/name"
+                "$ref": "#/definitions/team-monthly-usage/definitions/name"
               },
               "partner": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/partner"
+                "$ref": "#/definitions/team-monthly-usage/definitions/partner"
               },
               "space": {
-                "$ref": "#/definitions/team-usage-monthly/definitions/space"
+                "$ref": "#/definitions/team-monthly-usage/definitions/space"
               }
             }
           }
         },
         "connect": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/connect"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/connect"
         },
         "data": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/data"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/data"
         },
         "dynos": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/dynos"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/dynos"
         },
         "id": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/id"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/id"
         },
         "month": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/month"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/month"
         },
         "name": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/name"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/name"
         },
         "partner": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/partner"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/partner"
         },
         "space": {
-          "$ref": "#/definitions/enterprise-account-usage-monthly/definitions/space"
+          "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/space"
         }
       }
     },
@@ -9787,7 +9808,7 @@
       "links": [
         {
           "description": "List latest builds for each app in a pipeline",
-          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fidentity)}/latest-builds",
+          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fid)}/latest-builds",
           "method": "GET",
           "rel": "instances",
           "targetSchema": {
@@ -10137,7 +10158,7 @@
       "links": [
         {
           "description": "List latest slug releases for each app in a pipeline",
-          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fidentity)}/latest-deployments",
+          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fid)}/latest-deployments",
           "method": "GET",
           "rel": "instances",
           "targetSchema": {
@@ -10486,7 +10507,7 @@
       "links": [
         {
           "description": "List latest releases for each app in a pipeline",
-          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fidentity)}/latest-releases",
+          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fid)}/latest-releases",
           "method": "GET",
           "rel": "instances",
           "targetSchema": {
@@ -10513,7 +10534,7 @@
       "links": [
         {
           "description": "The stack for a given pipeline, used for CI and Review Apps that have no stack defined in app.json.",
-          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fidentity)}/pipeline-stack",
+          "href": "/pipelines/{(%23%2Fdefinitions%2Fpipeline%2Fdefinitions%2Fid)}/pipeline-stack",
           "method": "GET",
           "rel": "self",
           "targetSchema": {
@@ -12532,14 +12553,6 @@
             "string"
           ]
         },
-        "cname": {
-          "description": "deprecated; refer to GET /apps/:id/domains for valid CNAMEs for this app",
-          "example": "example.herokussl.com",
-          "readOnly": false,
-          "type": [
-            "string"
-          ]
-        },
         "created_at": {
           "description": "when endpoint was created",
           "example": "2012-01-01T12:00:00Z",
@@ -12592,6 +12605,26 @@
           "readOnly": true,
           "type": [
             "string"
+          ]
+        },
+        "domains": {
+          "description": "domains associated with this SSL certificate",
+          "type": [
+            "array"
+          ],
+          "readOnly": true,
+          "items": {
+            "$ref": "#/definitions/domain/definitions/id"
+          }
+        },
+        "display_name": {
+          "description": "unique name for SSL certificate",
+          "example": "example",
+          "pattern": "^[a-z][a-z0-9-]{2,29}$",
+          "readOnly": false,
+          "type": [
+            "string",
+            "null"
           ]
         }
       },
@@ -12690,9 +12723,6 @@
         "certificate_chain": {
           "$ref": "#/definitions/sni-endpoint/definitions/certificate_chain"
         },
-        "cname": {
-          "$ref": "#/definitions/sni-endpoint/definitions/cname"
-        },
         "created_at": {
           "$ref": "#/definitions/sni-endpoint/definitions/created_at"
         },
@@ -12704,6 +12734,65 @@
         },
         "updated_at": {
           "$ref": "#/definitions/sni-endpoint/definitions/updated_at"
+        },
+        "display_name": {
+          "$ref": "#/definitions/sni-endpoint/definitions/display_name"
+        },
+        "domains": {
+          "$ref": "#/definitions/sni-endpoint/definitions/domains"
+        },
+        "app": {
+          "description": "application that this SSL certificate is on",
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/app/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/app/definitions/name"
+            }
+          },
+          "strictProperties": true,
+          "type": [
+            "object"
+          ]
+        },
+        "ssl_cert": {
+          "description": "certificate provided by this endpoint",
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "ca_signed?": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/ca_signed?"
+            },
+            "cert_domains": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/cert_domains"
+            },
+            "expires_at": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/expires_at"
+            },
+            "issuer": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/issuer"
+            },
+            "self_signed?": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/self_signed?"
+            },
+            "starts_at": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/starts_at"
+            },
+            "subject": {
+              "$ref": "#/definitions/ssl-endpoint/definitions/subject"
+            },
+            "id": {
+              "description": "unique identifier of this SSL certificate",
+              "example": "01234567-89ab-cdef-0123-456789abcdef",
+              "format": "uuid",
+              "readOnly": true,
+              "type": [
+                "string"
+              ]
+            }
+          }
         }
       }
     },
@@ -13187,7 +13276,7 @@
       ]
     },
     "space": {
-      "description": "A space is an isolated, highly available, secure app execution environments, running in the modern VPC substrate.",
+      "description": "A space is an isolated, highly available, secure app execution environment.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "prototype",
       "strictProperties": true,
@@ -13504,7 +13593,8 @@
           "pattern": "^[a-z][a-z0-9-]{2,29}$",
           "readOnly": false,
           "type": [
-            "string"
+            "string",
+            "null"
           ]
         },
         "expires_at": {
@@ -14463,6 +14553,159 @@
         }
       }
     },
+    "team-daily-usage": {
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "description": "Usage for an enterprise team at a daily resolution.",
+      "stability": "development",
+      "strictProperties": true,
+      "title": "Heroku Platform API - Team Daily Usage",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "addons": {
+          "description": "total add-on credits used",
+          "example": 250.0,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "app_usage_daily": {
+          "description": "Usage for an app at a daily resolution.",
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "addons": {
+              "$ref": "#/definitions/team-daily-usage/definitions/addons"
+            },
+            "app_name": {
+              "$ref": "#/definitions/app/definitions/name"
+            },
+            "data": {
+              "$ref": "#/definitions/team-daily-usage/definitions/data"
+            },
+            "dynos": {
+              "$ref": "#/definitions/team-daily-usage/definitions/dynos"
+            },
+            "partner": {
+              "$ref": "#/definitions/team-daily-usage/definitions/partner"
+            }
+          }
+        },
+        "data": {
+          "description": "total add-on credits used for first party add-ons",
+          "example": 34.89,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "date": {
+          "description": "date of the usage",
+          "example": "2019-01-01",
+          "format": "date",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "dynos": {
+          "description": "dynos used",
+          "example": 1.548,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "id": {
+          "description": "team identifier",
+          "example": "01234567-89ab-cdef-0123-456789abcdef",
+          "format": "uuid",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "name": {
+          "description": "name of the team",
+          "example": "ops",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "partner": {
+          "description": "total add-on credits used for third party add-ons",
+          "example": 12.34,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        },
+        "space": {
+          "description": "space credits used",
+          "example": 1.548,
+          "readOnly": true,
+          "type": [
+            "number"
+          ]
+        }
+      },
+      "links": [
+        {
+          "description": "Retrieves usage for an enterprise team for a range of days. Start and end dates can be specified as query parameters using the date format, YYYY-MM-DD format. For example, '/teams/example-team/usage/daily?start=2019-01-01&end=2019-01-31' specifies all days in January for 2019.",
+          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fid)}/usage/daily",
+          "method": "GET",
+          "title": "Info",
+          "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/team-daily-usage"
+            },
+            "type": [
+              "array"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "addons": {
+          "$ref": "#/definitions/team-daily-usage/definitions/addons"
+        },
+        "apps": {
+          "description": "app usage in the team",
+          "type": [
+            "array"
+          ],
+          "items": {
+            "$ref": "#/definitions/team-daily-usage/definitions/app_usage_daily"
+          }
+        },
+        "data": {
+          "$ref": "#/definitions/team-daily-usage/definitions/data"
+        },
+        "date": {
+          "$ref": "#/definitions/team-daily-usage/definitions/date"
+        },
+        "dynos": {
+          "$ref": "#/definitions/team-daily-usage/definitions/dynos"
+        },
+        "id": {
+          "$ref": "#/definitions/team-daily-usage/definitions/id"
+        },
+        "name": {
+          "$ref": "#/definitions/team-daily-usage/definitions/name"
+        },
+        "partner": {
+          "$ref": "#/definitions/team-daily-usage/definitions/partner"
+        },
+        "space": {
+          "$ref": "#/definitions/team-daily-usage/definitions/space"
+        }
+      }
+    },
     "team-feature": {
       "description": "A team feature represents a feature enabled on a team account.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
@@ -15345,281 +15588,7 @@
         }
       }
     },
-    "team-preferences": {
-      "description": "Tracks a Team's Preferences",
-      "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "stability": "development",
-      "strictProperties": true,
-      "title": "Heroku Platform API - Team Preferences",
-      "type": [
-        "object"
-      ],
-      "definitions": {
-        "default-permission": {
-          "description": "The default permission used when adding new members to the team",
-          "example": "member",
-          "readOnly": false,
-          "enum": [
-            "admin",
-            "member",
-            "viewer",
-            null
-          ],
-          "type": [
-            "null",
-            "string"
-          ]
-        },
-        "identity": {
-          "$ref": "#/definitions/team/definitions/identity"
-        },
-        "whitelisting-enabled": {
-          "description": "Whether whitelisting rules should be applied to add-on installations",
-          "example": true,
-          "readOnly": false,
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "addons-controls": {
-          "description": "Whether add-on service rules should be applied to add-on installations",
-          "example": true,
-          "readOnly": false,
-          "type": [
-            "boolean",
-            "null"
-          ]
-        }
-      },
-      "links": [
-        {
-          "description": "Retrieve Team Preferences",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam-preferences%2Fdefinitions%2Fidentity)}/preferences",
-          "method": "GET",
-          "rel": "self",
-          "targetSchema": {
-            "$ref": "#/definitions/team-preferences"
-          },
-          "title": "List"
-        },
-        {
-          "description": "Update Team Preferences",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam-preferences%2Fdefinitions%2Fidentity)}/preferences",
-          "method": "PATCH",
-          "rel": "update",
-          "schema": {
-            "type": [
-              "object"
-            ],
-            "properties": {
-              "whitelisting-enabled": {
-                "$ref": "#/definitions/team-preferences/definitions/whitelisting-enabled"
-              },
-              "addons-controls": {
-                "$ref": "#/definitions/team-preferences/definitions/addons-controls"
-              }
-            }
-          },
-          "targetSchema": {
-            "$ref": "#/definitions/team-preferences"
-          },
-          "title": "Update"
-        }
-      ],
-      "properties": {
-        "default-permission": {
-          "$ref": "#/definitions/team-preferences/definitions/default-permission"
-        },
-        "whitelisting-enabled": {
-          "$ref": "#/definitions/team-preferences/definitions/whitelisting-enabled"
-        },
-        "addons-controls": {
-          "$ref": "#/definitions/team-preferences/definitions/addons-controls"
-        }
-      }
-    },
-    "team-space": {
-      "description": "A space is an isolated, highly available, secure app execution environments, running in the modern VPC substrate.",
-      "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "stability": "prototype",
-      "strictProperties": true,
-      "title": "Heroku Platform API - Space",
-      "type": [
-        "object"
-      ],
-      "links": [
-        {
-          "description": "List spaces owned by the team",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fidentity)}/spaces",
-          "method": "GET",
-          "rel": "instances",
-          "targetSchema": {
-            "items": {
-              "$ref": "#/definitions/space"
-            },
-            "type": [
-              "array"
-            ]
-          },
-          "title": "List"
-        }
-      ]
-    },
-    "team-usage-daily": {
-      "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "description": "Usage for an enterprise team at a daily resolution.",
-      "stability": "development",
-      "strictProperties": true,
-      "title": "Heroku Platform API - Team Daily Usage",
-      "type": [
-        "object"
-      ],
-      "definitions": {
-        "addons": {
-          "description": "total add-on credits used",
-          "example": 250.0,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "app_usage_daily": {
-          "description": "Usage for an app at a daily resolution.",
-          "type": [
-            "object"
-          ],
-          "properties": {
-            "addons": {
-              "$ref": "#/definitions/team-usage-daily/definitions/addons"
-            },
-            "app_name": {
-              "$ref": "#/definitions/app/definitions/name"
-            },
-            "data": {
-              "$ref": "#/definitions/team-usage-daily/definitions/data"
-            },
-            "dynos": {
-              "$ref": "#/definitions/team-usage-daily/definitions/dynos"
-            },
-            "partner": {
-              "$ref": "#/definitions/team-usage-daily/definitions/partner"
-            }
-          }
-        },
-        "data": {
-          "description": "total add-on credits used for first party add-ons",
-          "example": 34.89,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "date": {
-          "description": "date of the usage",
-          "example": "2019-01-01",
-          "format": "date",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "dynos": {
-          "description": "dynos used",
-          "example": 1.548,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "id": {
-          "description": "team identifier",
-          "example": "01234567-89ab-cdef-0123-456789abcdef",
-          "format": "uuid",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "name": {
-          "description": "name of the team",
-          "example": "ops",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "partner": {
-          "description": "total add-on credits used for third party add-ons",
-          "example": 12.34,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        },
-        "space": {
-          "description": "space credits used",
-          "example": 1.548,
-          "readOnly": true,
-          "type": [
-            "number"
-          ]
-        }
-      },
-      "links": [
-        {
-          "description": "Retrieves usage for an enterprise team for a range of days. Start and end dates can be specified as query parameters using the date format, YYYY-MM-DD format. For example, '/teams/example-team/usage?start=2019-01-01&end=2019-01-31' specifies all days in January for 2019.",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fid)}/usage/daily",
-          "method": "GET",
-          "title": "Info",
-          "rel": "instances",
-          "targetSchema": {
-            "items": {
-              "$ref": "#/definitions/team-usage-daily"
-            },
-            "type": [
-              "array"
-            ]
-          }
-        }
-      ],
-      "properties": {
-        "addons": {
-          "$ref": "#/definitions/team-usage-daily/definitions/addons"
-        },
-        "apps": {
-          "description": "app usage in the team",
-          "type": [
-            "array"
-          ],
-          "items": {
-            "$ref": "#/definitions/team-usage-daily/definitions/app_usage_daily"
-          }
-        },
-        "data": {
-          "$ref": "#/definitions/team-usage-daily/definitions/data"
-        },
-        "date": {
-          "$ref": "#/definitions/team-usage-daily/definitions/date"
-        },
-        "dynos": {
-          "$ref": "#/definitions/team-usage-daily/definitions/dynos"
-        },
-        "id": {
-          "$ref": "#/definitions/team-usage-daily/definitions/id"
-        },
-        "name": {
-          "$ref": "#/definitions/team-usage-daily/definitions/name"
-        },
-        "partner": {
-          "$ref": "#/definitions/team-usage-daily/definitions/partner"
-        },
-        "space": {
-          "$ref": "#/definitions/team-usage-daily/definitions/space"
-        }
-      }
-    },
-    "team-usage-monthly": {
+    "team-monthly-usage": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "description": "Usage for an enterprise team at a monthly resolution.",
       "stability": "development",
@@ -15644,19 +15613,19 @@
           ],
           "properties": {
             "addons": {
-              "$ref": "#/definitions/team-usage-monthly/definitions/addons"
+              "$ref": "#/definitions/team-monthly-usage/definitions/addons"
             },
             "app_name": {
               "$ref": "#/definitions/app/definitions/name"
             },
             "data": {
-              "$ref": "#/definitions/team-usage-monthly/definitions/data"
+              "$ref": "#/definitions/team-monthly-usage/definitions/data"
             },
             "dynos": {
-              "$ref": "#/definitions/team-usage-monthly/definitions/dynos"
+              "$ref": "#/definitions/team-monthly-usage/definitions/dynos"
             },
             "partner": {
-              "$ref": "#/definitions/team-usage-monthly/definitions/partner"
+              "$ref": "#/definitions/team-monthly-usage/definitions/partner"
             }
           }
         },
@@ -15729,14 +15698,14 @@
       },
       "links": [
         {
-          "description": "Retrieves usage for an enterprise team for a range of months. Start and end dates can be specified as query parameters using the date format, YYYY-MM format. For example, '/teams/example-team/usage?start=2019-01&end=2019-02' specifies usage in January and February for 2019. If no end date is specified, one month of usage is returned.",
+          "description": "Retrieves usage for an enterprise team for a range of months. Start and end dates can be specified as query parameters using the date format, YYYY-MM format. For example, '/teams/example-team/usage/monthly?start=2019-01&end=2019-02' specifies usage in January and February for 2019. If no end date is specified, one month of usage is returned.",
           "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fid)}/usage/monthly",
           "method": "GET",
-          "rel": "instances",
           "title": "Info",
+          "rel": "instances",
           "targetSchema": {
             "items": {
-              "$ref": "#/definitions/team-usage-monthly"
+              "$ref": "#/definitions/team-monthly-usage"
             },
             "type": [
               "array"
@@ -15746,7 +15715,7 @@
       ],
       "properties": {
         "addons": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/addons"
+          "$ref": "#/definitions/team-monthly-usage/definitions/addons"
         },
         "apps": {
           "description": "app usage in the team",
@@ -15754,34 +15723,140 @@
             "array"
           ],
           "items": {
-            "$ref": "#/definitions/team-usage-monthly/definitions/app_usage_monthly"
+            "$ref": "#/definitions/team-monthly-usage/definitions/app_usage_monthly"
           }
         },
         "connect": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/connect"
+          "$ref": "#/definitions/team-monthly-usage/definitions/connect"
         },
         "data": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/data"
+          "$ref": "#/definitions/team-monthly-usage/definitions/data"
         },
         "dynos": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/dynos"
+          "$ref": "#/definitions/team-monthly-usage/definitions/dynos"
         },
         "id": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/id"
+          "$ref": "#/definitions/team-monthly-usage/definitions/id"
         },
         "month": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/month"
+          "$ref": "#/definitions/team-monthly-usage/definitions/month"
         },
         "name": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/name"
+          "$ref": "#/definitions/team-monthly-usage/definitions/name"
         },
         "partner": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/partner"
+          "$ref": "#/definitions/team-monthly-usage/definitions/partner"
         },
         "space": {
-          "$ref": "#/definitions/team-usage-monthly/definitions/space"
+          "$ref": "#/definitions/team-monthly-usage/definitions/space"
         }
       }
+    },
+    "team-preferences": {
+      "description": "Tracks a Team's Preferences",
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "stability": "development",
+      "strictProperties": true,
+      "title": "Heroku Platform API - Team Preferences",
+      "type": [
+        "object"
+      ],
+      "definitions": {
+        "default-permission": {
+          "description": "The default permission used when adding new members to the team",
+          "example": "member",
+          "readOnly": false,
+          "enum": [
+            "admin",
+            "member",
+            "viewer",
+            null
+          ],
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "identity": {
+          "$ref": "#/definitions/team/definitions/identity"
+        },
+        "addons-controls": {
+          "description": "Whether add-on service rules should be applied to add-on installations",
+          "example": true,
+          "readOnly": false,
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "links": [
+        {
+          "description": "Retrieve Team Preferences",
+          "href": "/teams/{(%23%2Fdefinitions%2Fteam-preferences%2Fdefinitions%2Fidentity)}/preferences",
+          "method": "GET",
+          "rel": "self",
+          "targetSchema": {
+            "$ref": "#/definitions/team-preferences"
+          },
+          "title": "List"
+        },
+        {
+          "description": "Update Team Preferences",
+          "href": "/teams/{(%23%2Fdefinitions%2Fteam-preferences%2Fdefinitions%2Fidentity)}/preferences",
+          "method": "PATCH",
+          "rel": "update",
+          "schema": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "addons-controls": {
+                "$ref": "#/definitions/team-preferences/definitions/addons-controls"
+              }
+            }
+          },
+          "targetSchema": {
+            "$ref": "#/definitions/team-preferences"
+          },
+          "title": "Update"
+        }
+      ],
+      "properties": {
+        "default-permission": {
+          "$ref": "#/definitions/team-preferences/definitions/default-permission"
+        },
+        "addons-controls": {
+          "$ref": "#/definitions/team-preferences/definitions/addons-controls"
+        }
+      }
+    },
+    "team-space": {
+      "description": "A space is an isolated, highly available, secure app execution environment.",
+      "$schema": "http://json-schema.org/draft-04/hyper-schema",
+      "stability": "prototype",
+      "strictProperties": true,
+      "title": "Heroku Platform API - Team Space",
+      "type": [
+        "object"
+      ],
+      "links": [
+        {
+          "description": "List spaces owned by the team",
+          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fidentity)}/spaces",
+          "method": "GET",
+          "rel": "instances",
+          "targetSchema": {
+            "items": {
+              "$ref": "#/definitions/space"
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "title": "List"
+        }
+      ]
     },
     "team": {
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
@@ -17361,159 +17436,31 @@
             "$ref": "#/definitions/vpn-connection"
           },
           "title": "Info"
-        }
-      ]
-    },
-    "whitelisted-add-on-service": {
-      "description": "Entities that have been whitelisted to be used by an Team",
-      "$schema": "http://json-schema.org/draft-04/hyper-schema",
-      "stability": "prototype",
-      "strictProperties": true,
-      "title": "Heroku Platform API - Whitelisted Entity",
-      "type": [
-        "object"
-      ],
-      "definitions": {
-        "added_at": {
-          "description": "when the add-on service was whitelisted",
-          "example": "2012-01-01T12:00:00Z",
-          "format": "date-time",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "added_by": {
-          "description": "the user which whitelisted the Add-on Service",
-          "properties": {
-            "email": {
-              "$ref": "#/definitions/account/definitions/email",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "id": {
-              "$ref": "#/definitions/account/definitions/id",
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          },
-          "readOnly": true,
-          "type": [
-            "object"
-          ]
-        },
-        "addon_service": {
-          "description": "the Add-on Service whitelisted for use",
-          "properties": {
-            "id": {
-              "$ref": "#/definitions/add-on-service/definitions/id"
-            },
-            "name": {
-              "$ref": "#/definitions/add-on-service/definitions/name"
-            },
-            "human_name": {
-              "$ref": "#/definitions/add-on-service/definitions/human_name"
-            }
-          },
-          "readOnly": true,
-          "type": [
-            "object"
-          ]
-        },
-        "id": {
-          "description": "unique identifier for this whitelisting entity",
-          "example": "01234567-89ab-cdef-0123-456789abcdef",
-          "format": "uuid",
-          "readOnly": true,
-          "type": [
-            "string"
-          ]
-        },
-        "identity": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/whitelisted-add-on-service/definitions/id"
-            },
-            {
-              "$ref": "#/definitions/add-on-service/definitions/name"
-            }
-          ]
-        }
-      },
-      "links": [
-        {
-          "description": "List all whitelisted Add-on Services for an Team",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fidentity)}/whitelisted-addon-services",
-          "method": "GET",
-          "rel": "instances",
-          "targetSchema": {
-            "items": {
-              "$ref": "#/definitions/whitelisted-add-on-service"
-            },
-            "type": [
-              "array"
-            ]
-          },
-          "title": "List By Team"
         },
         {
-          "description": "Whitelist an Add-on Service",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fidentity)}/whitelisted-addon-services",
-          "method": "POST",
-          "rel": "create",
+          "description": "Update a VPN connection in a private space.",
+          "href": "/spaces/{(%23%2Fdefinitions%2Fspace%2Fdefinitions%2Fidentity)}/vpn-connections/{(%23%2Fdefinitions%2Fvpn-connection%2Fdefinitions%2Fidentity)}",
+          "rel": "update",
           "schema": {
+            "properties": {
+              "routable_cidrs": {
+                "$ref": "#/definitions/vpn-connection/definitions/routable_cidrs"
+              }
+            },
+            "required": [
+              "routable_cidrs"
+            ],
             "type": [
               "object"
-            ],
-            "properties": {
-              "addon_service": {
-                "description": "name of the Add-on to whitelist",
-                "example": "heroku-postgresql",
-                "type": [
-                  "string"
-                ]
-              }
-            }
-          },
-          "targetSchema": {
-            "items": {
-              "$ref": "#/definitions/whitelisted-add-on-service"
-            },
-            "type": [
-              "array"
             ]
           },
-          "title": "Create By Team"
-        },
-        {
-          "description": "Remove a whitelisted entity",
-          "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fidentity)}/whitelisted-addon-services/{(%23%2Fdefinitions%2Fwhitelisted-add-on-service%2Fdefinitions%2Fidentity)}",
-          "method": "DELETE",
-          "rel": "destroy",
           "targetSchema": {
-            "$ref": "#/definitions/whitelisted-add-on-service"
+            "$ref": "#/definitions/vpn-connection"
           },
-          "title": "Delete By Team"
+          "method": "PATCH",
+          "title": "Update"
         }
-      ],
-      "properties": {
-        "added_at": {
-          "$ref": "#/definitions/whitelisted-add-on-service/definitions/added_at"
-        },
-        "added_by": {
-          "$ref": "#/definitions/whitelisted-add-on-service/definitions/added_by"
-        },
-        "addon_service": {
-          "$ref": "#/definitions/whitelisted-add-on-service/definitions/addon_service"
-        },
-        "id": {
-          "$ref": "#/definitions/whitelisted-add-on-service/definitions/id"
-        }
-      }
+      ]
     }
   },
   "properties": {
@@ -17610,14 +17557,14 @@
     "dyno": {
       "$ref": "#/definitions/dyno"
     },
+    "enterprise-account-daily-usage": {
+      "$ref": "#/definitions/enterprise-account-daily-usage"
+    },
     "enterprise-account-member": {
       "$ref": "#/definitions/enterprise-account-member"
     },
-    "enterprise-account-usage-daily": {
-      "$ref": "#/definitions/enterprise-account-usage-daily"
-    },
-    "enterprise-account-usage-monthly": {
-      "$ref": "#/definitions/enterprise-account-usage-monthly"
+    "enterprise-account-monthly-usage": {
+      "$ref": "#/definitions/enterprise-account-monthly-usage"
     },
     "enterprise-account": {
       "$ref": "#/definitions/enterprise-account"
@@ -17769,6 +17716,9 @@
     "team-app": {
       "$ref": "#/definitions/team-app"
     },
+    "team-daily-usage": {
+      "$ref": "#/definitions/team-daily-usage"
+    },
     "team-feature": {
       "$ref": "#/definitions/team-feature"
     },
@@ -17781,17 +17731,14 @@
     "team-member": {
       "$ref": "#/definitions/team-member"
     },
+    "team-monthly-usage": {
+      "$ref": "#/definitions/team-monthly-usage"
+    },
     "team-preferences": {
       "$ref": "#/definitions/team-preferences"
     },
     "team-space": {
       "$ref": "#/definitions/team-space"
-    },
-    "team-usage-daily": {
-      "$ref": "#/definitions/team-usage-daily"
-    },
-    "team-usage-monthly": {
-      "$ref": "#/definitions/team-usage-monthly"
     },
     "team": {
       "$ref": "#/definitions/team"
@@ -17810,9 +17757,6 @@
     },
     "vpn-connection": {
       "$ref": "#/definitions/vpn-connection"
-    },
-    "whitelisted-add-on-service": {
-      "$ref": "#/definitions/whitelisted-add-on-service"
     }
   },
   "description": "The platform API empowers developers to automate, extend and combine Heroku with other services.",
