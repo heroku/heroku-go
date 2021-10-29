@@ -368,46 +368,6 @@
           "type": [
             "boolean"
           ]
-        },
-        "acknowledged_msa": {
-          "deprecated": true,
-          "description": "deprecated. whether account has acknowledged the MSA terms of service",
-          "example": false,
-          "readOnly": true,
-          "type": [
-            "boolean"
-          ]
-        },
-        "acknowledged_msa_at": {
-          "deprecated": true,
-          "description": "deprecated. when account has acknowledged the MSA terms of service",
-          "example": "2012-01-01T12:00:00Z",
-          "format": "date-time",
-          "readOnly": true,
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "italian_customer_terms": {
-          "deprecated": true,
-          "description": "deprecated. whether account has acknowledged the Italian customer terms of service",
-          "example": "affirmatively_accepted",
-          "readOnly": true,
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "italian_partner_terms": {
-          "deprecated": true,
-          "description": "deprecated. whether account has acknowledged the Italian provider terms of service",
-          "example": "affirmatively_accepted",
-          "readOnly": true,
-          "type": [
-            "string",
-            "null"
-          ]
         }
       },
       "links": [
@@ -525,9 +485,13 @@
         },
         "identity_provider": {
           "description": "Identity Provider details for federated users.",
+          "strictProperties": true,
           "properties": {
             "id": {
               "$ref": "#/definitions/identity-provider/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/identity-provider/definitions/name"
             },
             "team": {
               "type": [
@@ -550,46 +514,7 @@
               }
             },
             "owner": {
-              "description": "entity that owns this identity provider",
-              "properties": {
-                "id": {
-                  "description": "unique identifier of the owner",
-                  "example": "01234567-89ab-cdef-0123-456789abcdef",
-                  "format": "uuid",
-                  "readOnly": true,
-                  "type": [
-                    "string"
-                  ]
-                },
-                "name": {
-                  "description": "name of the owner",
-                  "example": "acme",
-                  "readOnly": true,
-                  "type": [
-                    "string"
-                  ]
-                },
-                "type": {
-                  "description": "type of the owner",
-                  "enum": [
-                    "team",
-                    "enterprise-account"
-                  ],
-                  "example": "team",
-                  "readOnly": true,
-                  "type": [
-                    "string"
-                  ]
-                }
-              },
-              "readOnly": false,
-              "required": [
-                "id",
-                "type"
-              ],
-              "type": [
-                "object"
-              ]
+              "$ref": "#/definitions/identity-provider/definitions/owner"
             }
           },
           "type": [
@@ -620,18 +545,6 @@
         },
         "verified": {
           "$ref": "#/definitions/account/definitions/verified"
-        },
-        "acknowledged_msa": {
-          "$ref": "#/definitions/account/definitions/acknowledged_msa"
-        },
-        "acknowledged_msa_at": {
-          "$ref": "#/definitions/account/definitions/acknowledged_msa_at"
-        },
-        "italian_customer_terms": {
-          "$ref": "#/definitions/account/definitions/italian_customer_terms"
-        },
-        "italian_partner_terms": {
-          "$ref": "#/definitions/account/definitions/italian_partner_terms"
         },
         "country_of_residence": {
           "$ref": "#/definitions/account/definitions/country_of_residence"
@@ -4524,7 +4437,7 @@
       },
       "links": [
         {
-          "description": "List existing events. Returns all events for one date, defaulting to current date. Order, actor, action, and type, and date query params can be specified as query parameters. For example, '/enterprise-accounts/:id/events?order=desc&actor=user@example.com&action=create&type=app&date=2020-09-30' would return events in descending order and only return app created events by the user with user@example.com email address.",
+          "description": "List existing events. Returns all events for one day, defaulting to current day. Order, actor, action, and type, and day query params can be specified as query parameters. For example, '/enterprise-accounts/:id/events?order=desc&actor=user@example.com&action=create&type=app&day=2020-09-30' would return events in descending order and only return app created events by the user with user@example.com email address.",
           "href": "/enterprise-accounts/{(%23%2Fdefinitions%2Fenterprise-account%2Fdefinitions%2Fidentity)}/events",
           "method": "GET",
           "rel": "instances",
@@ -6249,15 +6162,49 @@
           "type": [
             "number"
           ]
+        },
+        "start_date": {
+          "description": "range start date",
+          "example": "2019-01-25",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "end_date": {
+          "description": "range end date",
+          "example": "2019-02-25",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
         }
       },
       "links": [
         {
-          "description": "Retrieves usage for an enterprise account for a range of days. Start and end dates can be specified as query parameters using the date format, YYYY-MM-DD format. For example, '/enterprise-accounts/example-account/usage/daily?start=2019-01-01&end=2019-01-31' specifies all days in January for 2019.",
+          "description": "Retrieves usage for an enterprise account for a range of days. Start and end dates can be specified as query parameters using the date format YYYY-MM-DD.\nThe enterprise account identifier can be found from the [enterprise account list](https://devcenter.heroku.com/articles/platform-api-reference#enterprise-account-list).\n",
           "href": "/enterprise-accounts/{(%23%2Fdefinitions%2Fenterprise-account%2Fdefinitions%2Fid)}/usage/daily",
           "method": "GET",
           "rel": "instances",
           "title": "Info",
+          "schema": {
+            "properties": {
+              "start": {
+                "$ref": "#/definitions/enterprise-account-daily-usage/definitions/start_date"
+              },
+              "end": {
+                "$ref": "#/definitions/enterprise-account-daily-usage/definitions/end_date"
+              }
+            },
+            "required": [
+              "start"
+            ],
+            "type": [
+              "object"
+            ]
+          },
           "targetSchema": {
             "items": {
               "$ref": "#/definitions/enterprise-account-daily-usage"
@@ -6674,15 +6621,49 @@
           "type": [
             "number"
           ]
+        },
+        "start_date": {
+          "description": "range start date",
+          "example": "2019-01",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "end_date": {
+          "description": "range end date",
+          "example": "2019-02",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
         }
       },
       "links": [
         {
-          "description": "Retrieves usage for an enterprise account for a range of months. Start and end dates can be specified as query parameters using the date format, YYYY-MM format. For example, '/enterprise-accounts/example-account/usage/monthly?start=2019-01&end=2019-02' specifies usage in January and February for 2019. If no end date is specified, one month of usage is returned.",
+          "description": "Retrieves usage for an enterprise account for a range of months. Start and end dates can be specified as query parameters using the date format YYYY-MM. If no end date is specified, one month of usage is returned.\nThe enterprise account identifier can be found from the [enterprise account list](https://devcenter.heroku.com/articles/platform-api-reference#enterprise-account-list).\n",
           "href": "/enterprise-accounts/{(%23%2Fdefinitions%2Fenterprise-account%2Fdefinitions%2Fid)}/usage/monthly",
           "method": "GET",
           "rel": "instances",
           "title": "Info",
+          "schema": {
+            "properties": {
+              "start": {
+                "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/start_date"
+              },
+              "end": {
+                "$ref": "#/definitions/enterprise-account-monthly-usage/definitions/end_date"
+              }
+            },
+            "required": [
+              "start"
+            ],
+            "type": [
+              "object"
+            ]
+          },
           "targetSchema": {
             "items": {
               "$ref": "#/definitions/enterprise-account-monthly-usage"
@@ -6804,6 +6785,25 @@
             }
           ]
         },
+        "identity_provider": {
+          "description": "Identity Provider associated with the Enterprise Account",
+          "strictProperties": true,
+          "type": [
+            "null",
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/identity-provider/definitions/id"
+            },
+            "name": {
+              "$ref": "#/definitions/identity-provider/definitions/name"
+            },
+            "owner": {
+              "$ref": "#/definitions/identity-provider/definitions/owner"
+            }
+          }
+        },
         "name": {
           "description": "unique name of the enterprise account",
           "example": "example",
@@ -6906,27 +6906,7 @@
           "$ref": "#/definitions/enterprise-account/definitions/trial"
         },
         "identity_provider": {
-          "description": "Identity Provider associated with the Enterprise Account",
-          "strictProperties": true,
-          "type": [
-            "null",
-            "object"
-          ],
-          "properties": {
-            "id": {
-              "$ref": "#/definitions/identity-provider/definitions/id"
-            },
-            "name": {
-              "description": "user-friendly unique identifier for this identity provider",
-              "example": "acme-sso",
-              "type": [
-                "string"
-              ]
-            },
-            "owner": {
-              "$ref": "#/definitions/identity-provider/definitions/owner"
-            }
-          }
+          "$ref": "#/definitions/enterprise-account/definitions/identity_provider"
         }
       }
     },
@@ -7223,7 +7203,7 @@
       }
     },
     "identity-provider": {
-      "description": "Identity Providers represent the SAML configuration of an Team.",
+      "description": "Identity Providers represent the SAML configuration of an Enterprise Account or Team.",
       "$schema": "http://json-schema.org/draft-04/hyper-schema",
       "stability": "production",
       "strictProperties": true,
@@ -7262,6 +7242,13 @@
           "example": "01234567-89ab-cdef-0123-456789abcdef",
           "format": "uuid",
           "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "name": {
+          "description": "user-friendly unique identifier for this identity provider",
+          "example": "acme-sso",
           "type": [
             "string"
           ]
@@ -13352,6 +13339,13 @@
             "string"
           ]
         },
+        "log_drain_url": {
+          "description": "URL to which all apps will drain logs. Only settable during space creation and enables direct logging. Must use HTTPS.",
+          "example": "https://example.com/logs",
+          "type": [
+            "string"
+          ]
+        },
         "cidr": {
           "description": "The RFC-1918 CIDR the Private Space will use. It must be a /16 in 10.0.0.0/8, 172.16.0.0/12 or 192.168.0.0/16",
           "example": "172.20.20.30/16",
@@ -13451,6 +13445,9 @@
               },
               "data_cidr": {
                 "$ref": "#/definitions/space/definitions/data_cidr"
+              },
+              "log_drain_url": {
+                "$ref": "#/definitions/space/definitions/log_drain_url"
               }
             },
             "required": [
@@ -14651,14 +14648,48 @@
           "type": [
             "number"
           ]
+        },
+        "start_date": {
+          "description": "range start date",
+          "example": "2019-01-25",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "end_date": {
+          "description": "range end date",
+          "example": "2019-02-25",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
         }
       },
       "links": [
         {
-          "description": "Retrieves usage for an enterprise team for a range of days. Start and end dates can be specified as query parameters using the date format, YYYY-MM-DD format. For example, '/teams/example-team/usage/daily?start=2019-01-01&end=2019-01-31' specifies all days in January for 2019.",
+          "description": "Retrieves usage for an enterprise team for a range of days. Start and end dates can be specified as query parameters using the date format YYYY-MM-DD.\nThe team identifier can be found from the [team list endpoint](https://devcenter.heroku.com/articles/platform-api-reference#team-list).\n",
           "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fid)}/usage/daily",
           "method": "GET",
           "title": "Info",
+          "schema": {
+            "properties": {
+              "start": {
+                "$ref": "#/definitions/team-daily-usage/definitions/start_date"
+              },
+              "end": {
+                "$ref": "#/definitions/team-daily-usage/definitions/end_date"
+              }
+            },
+            "required": [
+              "start"
+            ],
+            "type": [
+              "object"
+            ]
+          },
           "rel": "instances",
           "targetSchema": {
             "items": {
@@ -15694,14 +15725,48 @@
           "type": [
             "number"
           ]
+        },
+        "start_date": {
+          "description": "range start date",
+          "example": "2019-01",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
+        },
+        "end_date": {
+          "description": "range end date",
+          "example": "2019-02",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "readOnly": true,
+          "type": [
+            "string"
+          ]
         }
       },
       "links": [
         {
-          "description": "Retrieves usage for an enterprise team for a range of months. Start and end dates can be specified as query parameters using the date format, YYYY-MM format. For example, '/teams/example-team/usage/monthly?start=2019-01&end=2019-02' specifies usage in January and February for 2019. If no end date is specified, one month of usage is returned.",
+          "description": "Retrieves usage for an enterprise team for a range of months. Start and end dates can be specified as query parameters using the date, YYYY-MM. If no end date is specified, one month of usage is returned.\nThe team identifier can be found from the [team list endpoint](https://devcenter.heroku.com/articles/platform-api-reference#team-list).\n",
           "href": "/teams/{(%23%2Fdefinitions%2Fteam%2Fdefinitions%2Fid)}/usage/monthly",
           "method": "GET",
           "title": "Info",
+          "schema": {
+            "properties": {
+              "start": {
+                "$ref": "#/definitions/team-monthly-usage/definitions/start_date"
+              },
+              "end": {
+                "$ref": "#/definitions/team-monthly-usage/definitions/end_date"
+              }
+            },
+            "required": [
+              "start"
+            ],
+            "type": [
+              "object"
+            ]
+          },
           "rel": "instances",
           "targetSchema": {
             "items": {
@@ -15937,12 +16002,11 @@
             "id": {
               "$ref": "#/definitions/identity-provider/definitions/id"
             },
-            "slug": {
-              "description": "user-friendly unique identifier for this identity provider",
-              "example": "acme-sso",
-              "type": [
-                "string"
-              ]
+            "name": {
+              "$ref": "#/definitions/identity-provider/definitions/name"
+            },
+            "owner": {
+              "$ref": "#/definitions/identity-provider/definitions/owner"
             }
           }
         },

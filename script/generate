@@ -39,7 +39,7 @@ if [ $UPDATE_SCHEMA -eq 1 ]; then
     -H "Accept: application/vnd.heroku+json; version=$API_VERSION"
 fi
 
-go get -u github.com/interagent/schematic/cmd/schematic
+go install github.com/interagent/schematic/cmd/schematic@7f954c20daa584c8b9a5c13bce4973dbd2539482
 
 schematic "$SCHEMA_FILE" > "$GENERATED_FILE"
 
