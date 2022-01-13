@@ -5453,30 +5453,6 @@
       },
       "links": [
         {
-          "deactivate_on": "2021-10-31",
-          "description": "Create a new domain. Deprecated in favor of this same endpoint, but with a new required attribute of `sni_endpoint`. During the transitional phase sni_endpoint can be omitted entirely (current behavior), can be a valid id, or can be null which will skip auto-association.",
-          "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/domains",
-          "method": "POST",
-          "rel": "create",
-          "schema": {
-            "properties": {
-              "hostname": {
-                "$ref": "#/definitions/domain/definitions/hostname"
-              }
-            },
-            "required": [
-              "hostname"
-            ],
-            "type": [
-              "object"
-            ]
-          },
-          "targetSchema": {
-            "$ref": "#/definitions/domain"
-          },
-          "title": "Create - Deprecated"
-        },
-        {
           "description": "Create a new domain.",
           "href": "/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fidentity)}/domains",
           "method": "POST",
@@ -10830,11 +10806,11 @@
           "targetSchema": {
             "items": {
               "$ref": "#/definitions/pipeline"
-            }
+            },
+            "type": [
+              "array"
+            ]
           },
-          "type": [
-            "array"
-          ],
           "title": "List"
         }
       ],

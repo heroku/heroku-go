@@ -15,13 +15,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
 
 var _ = time.Second
@@ -1903,20 +1904,6 @@ type Domain struct {
 	Status    string    `json:"status" url:"status,key"`         // status of this record's cname
 	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when domain was updated
 }
-type DomainCreateDeprecatedOpts struct {
-	Hostname string `json:"hostname" url:"hostname,key"` // full hostname
-}
-
-// Create a new domain. Deprecated in favor of this same endpoint, but
-// with a new required attribute of `sni_endpoint`. During the
-// transitional phase sni_endpoint can be omitted entirely (current
-// behavior), can be a valid id, or can be null which will skip
-// auto-association.
-func (s *Service) DomainCreateDeprecated(ctx context.Context, appIdentity string, o DomainCreateDeprecatedOpts) (*Domain, error) {
-	var domain Domain
-	return &domain, s.Post(ctx, &domain, fmt.Sprintf("/apps/%v/domains", appIdentity), o)
-}
-
 type DomainCreateOpts struct {
 	Hostname    string  `json:"hostname" url:"hostname,key"`         // full hostname
 	SniEndpoint *string `json:"sni_endpoint" url:"sni_endpoint,key"` // null or unique identifier or name for SNI endpoint
@@ -3103,8 +3090,9 @@ func (s *Service) PipelineUpdate(ctx context.Context, pipelineID string, o Pipel
 type PipelineListResult []Pipeline
 
 // List existing pipelines.
-func (s *Service) PipelineList(ctx context.Context, lr *ListRange) error {
-	return s.Get(ctx, nil, fmt.Sprintf("/pipelines"), nil, lr)
+func (s *Service) PipelineList(ctx context.Context, lr *ListRange) (PipelineListResult, error) {
+	var pipeline PipelineListResult
+	return pipeline, s.Get(ctx, &pipeline, fmt.Sprintf("/pipelines"), nil, lr)
 }
 
 // Information about latest builds of apps in a pipeline.
