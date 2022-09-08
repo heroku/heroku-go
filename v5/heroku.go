@@ -15,14 +15,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
 	"time"
-
-	"github.com/google/go-querystring/query"
 )
 
 var _ = time.Second
@@ -271,7 +270,10 @@ func (s *Service) AccountUpdate(ctx context.Context, o AccountUpdateOpts) (*Acco
 	return &account, s.Patch(ctx, &account, fmt.Sprintf("/account"), o)
 }
 
-// Delete account. Note that this action cannot be undone.
+// Delete account. Note that this action cannot be undone. Note: This
+// endpoint requires the HTTP_HEROKU_PASSWORD or
+// HTTP_HEROKU_PASSWORD_BASE64 header be set correctly for the user
+// account.
 func (s *Service) AccountDelete(ctx context.Context) (*Account, error) {
 	var account Account
 	return &account, s.Delete(ctx, &account, fmt.Sprintf("/account"))
@@ -295,7 +297,10 @@ func (s *Service) AccountUpdateByUser(ctx context.Context, accountIdentity strin
 	return &account, s.Patch(ctx, &account, fmt.Sprintf("/users/%v", accountIdentity), o)
 }
 
-// Delete account. Note that this action cannot be undone.
+// Delete account. Note that this action cannot be undone. Note: This
+// endpoint requires the HTTP_HEROKU_PASSWORD or
+// HTTP_HEROKU_PASSWORD_BASE64 header be set correctly for the user
+// account.
 func (s *Service) AccountDeleteByUser(ctx context.Context, accountIdentity string) (*Account, error) {
 	var account Account
 	return &account, s.Delete(ctx, &account, fmt.Sprintf("/users/%v", accountIdentity))
@@ -1133,9 +1138,10 @@ type App struct {
 	WebURL    string    `json:"web_url" url:"web_url,key"`       // web URL of app
 }
 type AppCreateOpts struct {
-	Name   *string `json:"name,omitempty" url:"name,omitempty,key"`     // unique name of app
-	Region *string `json:"region,omitempty" url:"region,omitempty,key"` // unique identifier of region
-	Stack  *string `json:"stack,omitempty" url:"stack,omitempty,key"`   // unique name of stack
+	FeatureFlags []*string `json:"feature_flags,omitempty" url:"feature_flags,omitempty,key"` // unique name of app feature
+	Name         *string   `json:"name,omitempty" url:"name,omitempty,key"`                   // unique name of app
+	Region       *string   `json:"region,omitempty" url:"region,omitempty,key"`               // unique identifier of region
+	Stack        *string   `json:"stack,omitempty" url:"stack,omitempty,key"`                 // unique name of stack
 }
 
 // Create a new app.
@@ -2132,8 +2138,7 @@ type EnterpriseAccountDailyUsageInfoResult []EnterpriseAccountDailyUsage
 
 // Retrieves usage for an enterprise account for a range of days. Start
 // and end dates can be specified as query parameters using the date
-// format YYYY-MM-DD.
-// The enterprise account identifier can be found
+// format YYYY-MM-DD. The enterprise account identifier can be found
 // from the [enterprise account
 // list](https://devcenter.heroku.com/articles/platform-api-reference#ent
 // erprise-account-list).
@@ -2246,8 +2251,7 @@ type EnterpriseAccountMonthlyUsageInfoResult []EnterpriseAccountMonthlyUsage
 // Retrieves usage for an enterprise account for a range of months.
 // Start and end dates can be specified as query parameters using the
 // date format YYYY-MM. If no end date is specified, one month of usage
-// is returned.
-// The enterprise account identifier can be found from the
+// is returned. The enterprise account identifier can be found from the
 // [enterprise account
 // list](https://devcenter.heroku.com/articles/platform-api-reference#ent
 // erprise-account-list).
@@ -4094,82 +4098,6 @@ func (s *Service) SpaceTransferTransfer(ctx context.Context, spaceIdentity strin
 	return &spaceTransfer, s.Post(ctx, &spaceTransfer, fmt.Sprintf("/spaces/%v/transfer", spaceIdentity), o)
 }
 
-// [SSL Endpoint](https://devcenter.heroku.com/articles/ssl-endpoint) is
-// a public address serving custom SSL cert for HTTPS traffic to a
-// Heroku app. Note that an app must have the `ssl:endpoint` add-on
-// installed before it can provision an SSL Endpoint using these APIs.
-type SSLEndpoint struct {
-	App struct {
-		ID   string `json:"id" url:"id,key"`     // unique identifier of app
-		Name string `json:"name" url:"name,key"` // unique name of app
-	} `json:"app" url:"app,key"` // application associated with this ssl-endpoint
-	CertificateChain string    `json:"certificate_chain" url:"certificate_chain,key"` // raw contents of the public certificate chain (eg: .crt or .pem file)
-	CName            string    `json:"cname" url:"cname,key"`                         // canonical name record, the address to point a domain at
-	CreatedAt        time.Time `json:"created_at" url:"created_at,key"`               // when endpoint was created
-	DisplayName      *string   `json:"display_name" url:"display_name,key"`           // unique name for SSL endpoint
-	Domains          []string  `json:"domains" url:"domains,key"`                     // domains associated with this endpoint
-	ID               string    `json:"id" url:"id,key"`                               // unique identifier of this SSL endpoint
-	Name             string    `json:"name" url:"name,key"`                           // unique name for SSL endpoint
-	SSLCert          struct {
-		IsCaSigned   bool          `json:"ca_signed?" url:"ca_signed?,key"`
-		CertDomains  []interface{} `json:"cert_domains" url:"cert_domains,key"`
-		ExpiresAt    time.Time     `json:"expires_at" url:"expires_at,key"`
-		ID           string        `json:"id" url:"id,key"` // unique identifier of this SSL certificate
-		Issuer       string        `json:"issuer" url:"issuer,key"`
-		IsSelfSigned bool          `json:"self_signed?" url:"self_signed?,key"`
-		StartsAt     time.Time     `json:"starts_at" url:"starts_at,key"`
-		Subject      string        `json:"subject" url:"subject,key"`
-	} `json:"ssl_cert" url:"ssl_cert,key"` // certificate provided by this endpoint
-	UpdatedAt time.Time `json:"updated_at" url:"updated_at,key"` // when endpoint was updated
-}
-type SSLEndpointCreateOpts struct {
-	CertificateChain string `json:"certificate_chain" url:"certificate_chain,key"`       // raw contents of the public certificate chain (eg: .crt or .pem file)
-	Preprocess       *bool  `json:"preprocess,omitempty" url:"preprocess,omitempty,key"` // allow Heroku to modify an uploaded public certificate chain if deemed
-	// advantageous by adding missing intermediaries, stripping unnecessary
-	// ones, etc.
-	PrivateKey string `json:"private_key" url:"private_key,key"` // contents of the private key (eg .key file)
-}
-
-// Create a new SSL endpoint.
-func (s *Service) SSLEndpointCreate(ctx context.Context, appIdentity string, o SSLEndpointCreateOpts) (*SSLEndpoint, error) {
-	var sslEndpoint SSLEndpoint
-	return &sslEndpoint, s.Post(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), o)
-}
-
-// Delete existing SSL endpoint.
-func (s *Service) SSLEndpointDelete(ctx context.Context, appIdentity string, sslEndpointIdentity string) (*SSLEndpoint, error) {
-	var sslEndpoint SSLEndpoint
-	return &sslEndpoint, s.Delete(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity))
-}
-
-// Info for existing SSL endpoint.
-func (s *Service) SSLEndpointInfo(ctx context.Context, appIdentity string, sslEndpointIdentity string) (*SSLEndpoint, error) {
-	var sslEndpoint SSLEndpoint
-	return &sslEndpoint, s.Get(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), nil, nil)
-}
-
-type SSLEndpointListResult []SSLEndpoint
-
-// List existing SSL endpoints.
-func (s *Service) SSLEndpointList(ctx context.Context, appIdentity string, lr *ListRange) (SSLEndpointListResult, error) {
-	var sslEndpoint SSLEndpointListResult
-	return sslEndpoint, s.Get(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints", appIdentity), nil, lr)
-}
-
-type SSLEndpointUpdateOpts struct {
-	CertificateChain *string `json:"certificate_chain,omitempty" url:"certificate_chain,omitempty,key"` // raw contents of the public certificate chain (eg: .crt or .pem file)
-	Preprocess       *bool   `json:"preprocess,omitempty" url:"preprocess,omitempty,key"`               // allow Heroku to modify an uploaded public certificate chain if deemed
-	// advantageous by adding missing intermediaries, stripping unnecessary
-	// ones, etc.
-	PrivateKey *string `json:"private_key,omitempty" url:"private_key,omitempty,key"` // contents of the private key (eg .key file)
-}
-
-// Update an existing SSL endpoint.
-func (s *Service) SSLEndpointUpdate(ctx context.Context, appIdentity string, sslEndpointIdentity string, o SSLEndpointUpdateOpts) (*SSLEndpoint, error) {
-	var sslEndpoint SSLEndpoint
-	return &sslEndpoint, s.Patch(ctx, &sslEndpoint, fmt.Sprintf("/apps/%v/ssl-endpoints/%v", appIdentity, sslEndpointIdentity), o)
-}
-
 // Stacks are the different application execution environments available
 // in the Heroku platform.
 type Stack struct {
@@ -4550,8 +4478,7 @@ type TeamDailyUsageInfoResult []TeamDailyUsage
 
 // Retrieves usage for an enterprise team for a range of days. Start and
 // end dates can be specified as query parameters using the date format
-// YYYY-MM-DD.
-// The team identifier can be found from the [team list
+// YYYY-MM-DD. The team identifier can be found from the [team list
 // endpoint](https://devcenter.heroku.com/articles/platform-api-reference
 // #team-list).
 //
