@@ -1881,46 +1881,52 @@
         },
         "addon_service": {
           "description": "identity of add-on service",
-          "anyOf": [
-            {
-              "properties": {
-                "id": {
-                  "$ref": "#/definitions/add-on-service/definitions/id"
-                },
-                "name": {
-                  "$ref": "#/definitions/add-on-service/definitions/name"
-                }
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/add-on-service/definitions/id"
               },
-              "strictProperties": true,
-              "type": [
-                "object"
-              ]
+              {
+                "$ref": "#/definitions/add-on-service/definitions/name"
+              }
+            ]
+          },
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/add-on-service/definitions/id"
             },
-            {
-              "$ref": "#/definitions/add-on-service"
+            "name": {
+              "$ref": "#/definitions/add-on-service/definitions/name"
             }
+          },
+          "strictProperties": true,
+          "type": [
+            "object"
           ]
         },
         "plan": {
           "description": "identity of add-on plan",
-          "anyOf": [
-            {
-              "properties": {
-                "id": {
-                  "$ref": "#/definitions/plan/definitions/id"
-                },
-                "name": {
-                  "$ref": "#/definitions/plan/definitions/name"
-                }
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/plan/definitions/id"
               },
-              "strictProperties": true,
-              "type": [
-                "object"
-              ]
+              {
+                "$ref": "#/definitions/plan/definitions/name"
+              }
+            ]
+          },
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/plan/definitions/id"
             },
-            {
-              "$ref": "#/definitions/plan"
+            "name": {
+              "$ref": "#/definitions/plan/definitions/name"
             }
+          },
+          "strictProperties": true,
+          "type": [
+            "object"
           ]
         },
         "provision_message": {
@@ -7217,18 +7223,16 @@
           "example": {
             "id": "01234567-89ab-cdef-0123-456789abcdef"
           },
-          "oneOf": [
-            {
-              "required": [
-                "id"
-              ]
-            },
-            {
-              "required": [
-                "name"
-              ]
-            }
-          ],
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/dyno_size/definitions/id"
+              },
+              {
+                "$ref": "#/definitions/dyno_size/definitions/name"
+              }
+            ]
+          },
           "properties": {
             "id": {
               "description": "unique identifier of the dyno size",
