@@ -1,6 +1,6 @@
 module github.com/heroku/heroku-go/v6
 
-go 1.24.5
+go 1.24
 
 require (
 	github.com/cenkalti/backoff v2.1.1+incompatible
