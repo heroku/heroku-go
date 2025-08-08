@@ -27,7 +27,7 @@ while getopts "hnv:" opt; do
 done
 
 API_VERSION="3"
-CLIENT_VERSION="v5"
+CLIENT_VERSION="v6"
 SCHEMA_FILE="$CLIENT_VERSION/schema.json"
 GENERATED_FILE="$CLIENT_VERSION/heroku.go"
 
@@ -45,6 +45,9 @@ schematic "$SCHEMA_FILE" > "$GENERATED_FILE"
 
 sed -E -i '' \
   "s/^([[:space:]]*Version[[:space:]]*=[[:space:]]*)\"\"\$/\1\"${CLIENT_VERSION}\"/" \
+  "$GENERATED_FILE"
+sed -E -i '' \
+  "s/^package heroku/package ${CLIENT_VERSION}/g" \
   "$GENERATED_FILE"
 
 gofmt -w "$GENERATED_FILE"
