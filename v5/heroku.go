@@ -3,11 +3,10 @@
 // To be able to interact with this API, you have to
 // create a new service:
 //
-//     s := heroku.NewService(nil)
+//	s := heroku.NewService(nil)
 //
 // The Service struct has all the methods you need
 // to interact with heroku API.
-//
 package v5
 
 import (
@@ -2142,7 +2141,6 @@ type EnterpriseAccountDailyUsageInfoResult []EnterpriseAccountDailyUsage
 // from the [enterprise account
 // list](https://devcenter.heroku.com/articles/platform-api-reference#ent
 // erprise-account-list).
-//
 func (s *Service) EnterpriseAccountDailyUsageInfo(ctx context.Context, enterpriseAccountID string, o EnterpriseAccountDailyUsageInfoOpts, lr *ListRange) (EnterpriseAccountDailyUsageInfoResult, error) {
 	var enterpriseAccountDailyUsage EnterpriseAccountDailyUsageInfoResult
 	return enterpriseAccountDailyUsage, s.Get(ctx, &enterpriseAccountDailyUsage, fmt.Sprintf("/enterprise-accounts/%v/usage/daily", enterpriseAccountID), o, lr)
@@ -2255,7 +2253,6 @@ type EnterpriseAccountMonthlyUsageInfoResult []EnterpriseAccountMonthlyUsage
 // [enterprise account
 // list](https://devcenter.heroku.com/articles/platform-api-reference#ent
 // erprise-account-list).
-//
 func (s *Service) EnterpriseAccountMonthlyUsageInfo(ctx context.Context, enterpriseAccountID string, o EnterpriseAccountMonthlyUsageInfoOpts, lr *ListRange) (EnterpriseAccountMonthlyUsageInfoResult, error) {
 	var enterpriseAccountMonthlyUsage EnterpriseAccountMonthlyUsageInfoResult
 	return enterpriseAccountMonthlyUsage, s.Get(ctx, &enterpriseAccountMonthlyUsage, fmt.Sprintf("/enterprise-accounts/%v/usage/monthly", enterpriseAccountID), o, lr)
@@ -2965,7 +2962,8 @@ func (s *Service) PasswordResetCompleteResetPassword(ctx context.Context, passwo
 }
 
 // [Peering](https://devcenter.heroku.com/articles/private-space-peering)
-//  provides a way to peer your Private Space VPC to another AWS VPC.
+//
+//	provides a way to peer your Private Space VPC to another AWS VPC.
 type Peering struct {
 	AwsAccountID string    `json:"aws_account_id" url:"aws_account_id,key"` // The AWS account ID of your Private Space.
 	AwsRegion    string    `json:"aws_region" url:"aws_region,key"`         // The AWS region of the peer connection.
@@ -4481,7 +4479,6 @@ type TeamDailyUsageInfoResult []TeamDailyUsage
 // YYYY-MM-DD. The team identifier can be found from the [team list
 // endpoint](https://devcenter.heroku.com/articles/platform-api-reference
 // #team-list).
-//
 func (s *Service) TeamDailyUsageInfo(ctx context.Context, teamID string, o TeamDailyUsageInfoOpts, lr *ListRange) (TeamDailyUsageInfoResult, error) {
 	var teamDailyUsage TeamDailyUsageInfoResult
 	return teamDailyUsage, s.Get(ctx, &teamDailyUsage, fmt.Sprintf("/teams/%v/usage/daily", teamID), o, lr)
@@ -4788,7 +4785,6 @@ type TeamMonthlyUsageInfoResult []TeamMonthlyUsage
 // The team identifier can be found from the [team list
 // endpoint](https://devcenter.heroku.com/articles/platform-api-reference
 // #team-list).
-//
 func (s *Service) TeamMonthlyUsageInfo(ctx context.Context, teamID string, o TeamMonthlyUsageInfoOpts, lr *ListRange) (TeamMonthlyUsageInfoResult, error) {
 	var teamMonthlyUsage TeamMonthlyUsageInfoResult
 	return teamMonthlyUsage, s.Get(ctx, &teamMonthlyUsage, fmt.Sprintf("/teams/%v/usage/monthly", teamID), o, lr)
