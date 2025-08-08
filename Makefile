@@ -3,10 +3,10 @@ SRC = $(shell find . -type f -name '*.go' -not -path "*vendor/*")
 default: build
 
 build: checks
-	cd v5 && go install .
+	cd v6 && go install .
 
 generate:
-	cd v5 && ../script/generate
+	cd v6 && ../script/generate
 
 checks: fmt-check
 

@@ -27,7 +27,7 @@ while getopts "hnv:" opt; do
 done
 
 API_VERSION="3"
-CLIENT_VERSION="v5"
+CLIENT_VERSION="v6"
 SCHEMA_FILE="$CLIENT_VERSION/schema.json"
 GENERATED_FILE="$CLIENT_VERSION/heroku.go"
 
@@ -39,12 +39,15 @@ if [ $UPDATE_SCHEMA -eq 1 ]; then
     -H "Accept: application/vnd.heroku+json; version=$API_VERSION"
 fi
 
-go install github.com/interagent/schematic/cmd/schematic@7f954c20daa584c8b9a5c13bce4973dbd2539482
+go install github.com/interagent/schematic/cmd/schematic@latest
 
 schematic "$SCHEMA_FILE" > "$GENERATED_FILE"
 
 sed -E -i '' \
   "s/^([[:space:]]*Version[[:space:]]*=[[:space:]]*)\"\"\$/\1\"${CLIENT_VERSION}\"/" \
+  "$GENERATED_FILE"
+sed -E -i '' \
+  "s/^package heroku/package ${CLIENT_VERSION}/g" \
   "$GENERATED_FILE"
 
 gofmt -w "$GENERATED_FILE"
